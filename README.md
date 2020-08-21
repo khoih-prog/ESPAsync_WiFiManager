@@ -29,7 +29,7 @@
 ### Releases 1.0.11
 
 1. Initial coding to use ESPAsyncWebServer instead of (ESP8266)WebServer.
-2. Bump up to v1.0.11 to sync with ESP_WiFiManager v1.0.11
+2. Bump up to v1.0.11 to sync with ESP_WiFiManager v1.0.11.
 
 ---
 ---
@@ -44,6 +44,8 @@ This library is based on, modified, bug-fixed and improved from:
 to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) instead of (ESP8266)WebServer.
 
 This is an `ESP32 / ESP8266` WiFi Connection Manager with fallback Web ConfigPortal. This Library is used for configuring ESP32, ESP8266 modules' (WiFi / Dynamic) Credentials at runtime. You can also specify static DNS servers, personalized HostName, fixed or random AP channel. Now with CORS feature.
+
+Because this [ESPAsync_WiFiManager library](https://github.com/khoih-prog/ESPAsync_WiFiManager) is sync'ed with [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager), all the features currently supported by [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) will be available. Please have a look at [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) for those too-many-to-list features.
 
 ---
 
@@ -1745,6 +1747,58 @@ WiFi connected...yeey :)
 After waiting 0 secs more in setup(), connection result is connected. Local IP: 192.168.2.222
 [WM] freeing allocated params!
 HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH
+```
+---
+
+3. This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  ***ESP8266_NODEMCU.***. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+
+```cpp
+Starting Async_ConfigOnDoubleReset on ESP8266_NODEMCU
+[WM] RFC925 Hostname = ConfigOnDoubleReset
+[WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
+Stored: SSID = HueNet1, Pass = 12345678
+Got stored Credentials. Timeout 120s
+LittleFS Flag read = 0xd0d01234
+doubleResetDetected
+Saving config file...
+Saving config file OK
+Open Config Portal without Timeout: Double Reset Detected
+Starting configuration portal.
+[WM] WiFi.waitForConnectResult Done
+[WM] SET AP_STA
+[WM] 
+Configuring AP SSID = ESP_1190DD
+[WM] AP PWD = your_password
+[WM] AP Channel = 8
+[WM] AP IP address = 192.168.4.1
+[WM] HTTP server started
+[WM] ESPAsync_WiFiManager::startConfigPortal : Enter loop
+[WM] Request redirected to captive portal
+[WM] Handle root
+[WM] Info
+[WM] Info page sent
+[WM] Handle root
+[WM] Handle WiFi
+[WM] handleWifi: Scan done
+[WM] Static IP = 192.168.2.186
+[WM] Sent config page
+[WM] WiFi save
+[WM] New Static IP = 192.168.2.186
+[WM] New Static Gateway = 192.168.2.1
+[WM] New Static Netmask = 255.255.255.0
+[WM] New Static DNS1 = 192.168.2.1
+[WM] New Static DNS2 = 8.8.8.8
+[WM] Sent wifi save page
+[WM] Custom STA IP/GW/Subnet
+[WM] DNS1 and DNS2 set
+[WM] setWifiStaticIP IP = 192.168.2.186
+[WM] Connected after waiting (s) : 2.22
+[WM] Local ip = 192.168.2.186
+[WM] Timed out connection result: WL_CONNECTED
+WiFi connected...yeey :)
+After waiting 0 secs more in setup(), connection result is connected. Local IP: 192.168.2.186
+[WM] freeing allocated params!
+HHHHHHHHHH HHHHHHHHHH HHH
 ```
 
 ---
