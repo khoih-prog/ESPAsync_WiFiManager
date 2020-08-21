@@ -1,0 +1,20 @@
+{
+  "name": "ESPAsync_WifiManager",
+  "version": "1.0.11",
+  "keywords": "wifi, WiFiManager, esp8266, esp32, AsyncWebServer, Async, Communication",
+  "description": "ESP32, ESP8266 WiFi Connection Manager using AsyncWebServer, with enhanced GUI and fallback Web ConfigPortal. This Library is used for configuring ESP32, ESP8266 modules WiFi Credentials at runtime. You can also specify static DNS servers, personalized HostName, fixed or random AP channel. Now with CORS feature.",
+  "authors":
+  {
+    "name":  "Khoi Hoang",
+    "url":   "https://github.com/khoih-prog",
+    "maintainer": true
+  },
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/khoih-prog/ESPAsync_WiFiManager"
+  },
+  "frameworks": "*",
+  "platforms": "espressif",
+  "examples": "examples/*/*/*.ino"
+}
