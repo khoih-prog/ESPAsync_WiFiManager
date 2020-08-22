@@ -532,6 +532,9 @@ Once WiFi network information is saved in the `ESP32 / ESP8266`, it will try to 
  8. [Async_AutoConnectWithFeedbackLED](examples/Async_AutoConnectWithFeedbackLED)
  9. [Async_AutoConnectWithFSParameters](examples/Async_AutoConnectWithFSParameters)
 10. [Async_ConfigOnSwitchFS_MQTT_Ptr](examples/Async_ConfigOnSwitchFS_MQTT_Ptr)
+11. [Async_AutoConnectWithFSParametersAndCustomIP](examples/Async_AutoConnectWithFSParametersAndCustomIP)
+12. [ModelessConnect](examples/ModelessConnect)
+13. [ModelessWithInterrupts](examples/ModelessWithInterrupts)
 
 ---
 ---

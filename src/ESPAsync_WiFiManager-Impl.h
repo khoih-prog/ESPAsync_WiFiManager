@@ -289,16 +289,10 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   if (WiFi.getAutoConnect() == 0)
     WiFi.setAutoConnect(1);
 
-  //dnsServer.reset(new DNSServer());
-
 #ifdef ESP8266
   // KH, mod for Async
-  //server.reset(new ESP8266WebServer(80));
-  //server.reset(new AsyncWebServer(80));
-  //server.reset(new WifiManagerWebServerType(80));
   server->reset();
 #else		//ESP32
-  //server.reset(new WebServer(80));
   server->reset();
 #endif
 
@@ -326,7 +320,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   }
   
   
-  // KH, new from v1.0.10 to enable dynamic/random channel
+  // KH, To enable dynamic/random channel
   static int channel;
   // Use random channel if  _WiFiAPChannel == 0
   if (_WiFiAPChannel == 0)
@@ -348,7 +342,6 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   }
   //////
   
-  // From v1.0.11
   // Contributed by AlesSt (https://github.com/AlesSt) to solve issue softAP with custom IP sometimes not working
   // See https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/26 and https://github.com/espressif/arduino-esp32/issues/985
   // delay 100ms to wait for SYSTEM_EVENT_AP_START
@@ -377,7 +370,6 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   server->on("/i",        std::bind(&ESPAsync_WiFiManager::handleInfo,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/r",        std::bind(&ESPAsync_WiFiManager::handleReset,       this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/state",    std::bind(&ESPAsync_WiFiManager::handleState,       this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
-  server->on("/scan",     std::bind(&ESPAsync_WiFiManager::handleScan,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->on("/fwlink",   std::bind(&ESPAsync_WiFiManager::handleRoot,        this,std::placeholders::_1)).setFilter(ON_AP_FILTER);  
   server->onNotFound (std::bind(&ESPAsync_WiFiManager::handleNotFound,        this, std::placeholders::_1));
@@ -664,9 +656,8 @@ void ESPAsync_WiFiManager::setInfo()
 
 //////////////////////////////////////////
 
-/**
- * Anything that accesses WiFi, ESP or EEPROM goes here
- */
+// Anything that accesses WiFi, ESP or EEPROM goes here
+
 void ESPAsync_WiFiManager::criticalLoop()
 {
   LOGDEBUG(F("criticalLoop: Enter"));
@@ -723,9 +714,8 @@ void ESPAsync_WiFiManager::criticalLoop()
 
 //////////////////////////////////////////
 
-/*
- * Anything that doesn't access WiFi, ESP or EEPROM can go here
- */
+// Anything that doesn't access WiFi, ESP or EEPROM can go here
+
 void ESPAsync_WiFiManager::safeLoop()
 {
   #ifndef USE_EADNS	
@@ -868,7 +858,7 @@ boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const 
 
     if (stopConfigPortal)
     {
-      LOGERROR("Stop ConfigPortal");  	//KH
+      LOGERROR("Stop ConfigPortal");
      
       stopConfigPortal = false;
       break;
@@ -948,7 +938,6 @@ void ESPAsync_WiFiManager::setWifiStaticIP(void)
 
 int ESPAsync_WiFiManager::connectWifi(String ssid, String pass)
 {
-  //KH, from v1.0.10.
   // Add option if didn't input/update SSID/PW => Use the previous saved Credentials. \
   // But update the Static/DHCP options if changed.
   if ( (ssid != "") || ( (ssid == "") && (WiFi_SSID() != "") ) )
@@ -1112,7 +1101,7 @@ void ESPAsync_WiFiManager::resetSettings()
   WiFi.disconnect(true);
 #else
   WiFi.disconnect(true, true);
-  // New in v1.0.11
+  
   // Temporary fix for issue of not clearing WiFi SSID/PW from flash of ESP32
   // See https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/25 and https://github.com/espressif/arduino-esp32/issues/400
   WiFi.begin("0","0");
@@ -1251,7 +1240,7 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
   LOGDEBUG(F("Handle root"));
 
   // Disable _configPortalTimeout when someone accessing Portal to give some time to config
-  _configPortalTimeout = 0;		//KH
+  _configPortalTimeout = 0;
 
   if (captivePortal(request))
   {
@@ -1320,7 +1309,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
   LOGDEBUG(F("Handle WiFi"));
 
   // Disable _configPortalTimeout when someone accessing Portal to give some time to config
-  _configPortalTimeout = 0;		//KH
+  _configPortalTimeout = 0;
    
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Config ESP");
@@ -1665,7 +1654,7 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   LOGDEBUG(F("Info"));
 
   // Disable _configPortalTimeout when someone accessing Portal to give some time to config
-  _configPortalTimeout = 0;		//KH
+  _configPortalTimeout = 0;
  
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Info");
@@ -1751,11 +1740,14 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   page += F("</tbody></table>");
 
   page += FPSTR(WM_FLDSET_END);
+  
+#if USE_AVAILABLE_PAGES  
   page += FPSTR(WM_FLDSET_START);
   
   page += FPSTR(WM_HTTP_AVAILABLE_PAGES);
   
   page += FPSTR(WM_FLDSET_END);
+#endif
 
   page += F("<p/>More information about ESPAsync_WiFiManager at");
   page += F("<p/><a href=\"https://github.com/khoih-prog/ESPAsync_WiFiManager\">https://github.com/khoih-prog/ESPAsync_WiFiManager</a>");
@@ -1819,93 +1811,6 @@ void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
   request->send(response);
   
   LOGDEBUG(F("Sent state page in json format"));
-}
-
-//////////////////////////////////////////
-
-void ESPAsync_WiFiManager::handleScan(AsyncWebServerRequest *request)
-{
-  LOGDEBUG(F("Scan"));
-
-  // Disable _configPortalTimeout when someone accessing Portal to give some time to config
-  _configPortalTimeout = 0;		//KH
-
-  LOGDEBUG(F("State-Json"));
-  
-  int n;
-  int *indices;
-
-  //Space for indices array allocated on heap in scanWifiNetworks
-  //and should be freed when indices no longer required.
-  n = scanWifiNetworks(&indices);
-  
-  LOGDEBUG(F("In handleScan, scanWifiNetworks done"));
-  
-  String page = F("{\"Access_Points\":[");
-
-  // display networks in page
-  for (int i = 0; i < n; i++)
-  {
-    if (indices[i] == -1)
-    {
-      // skip duplicates and those that are below the required quality
-      continue;
-    }
-
-    if (i != 0)
-      page += F(", ");
-
-    LOGDEBUG1(F("Index ="), i);
-    LOGDEBUG1(F("SSID ="), WiFi.SSID(indices[i]));
-    LOGDEBUG1(F("RSSI ="), WiFi.RSSI(indices[i]));
-
-    int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
-    String item = FPSTR(JSON_ITEM);
-    String rssiQ;
-    rssiQ += quality;
-    
-    item.replace("{v}", WiFi.SSID(indices[i]));
-    item.replace("{r}", rssiQ);
-
-#ifdef ESP8266
-    if (WiFi.encryptionType(indices[i]) != ENC_TYPE_NONE)
-#else		//ESP32
-    if (WiFi.encryptionType(indices[i]) != WIFI_AUTH_OPEN)
-#endif
-    {
-      item.replace("{i}", "true");
-    }
-    else
-    {
-      item.replace("{i}", "false");
-    }
-    
-    //LOGDEBUG(item);
-    page += item;
-    delay(0);
-  }
-
-  if (indices)
-  {
-    //indices array no longer required so free memory
-    free(indices);
-  }
-
-  page += F("]}");
-   
-  AsyncWebServerResponse *response = request->beginResponse(200, "application/json", page);
-  response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
-  
-#if USING_CORS_FEATURE
-  response->addHeader(FPSTR(WM_HTTP_CORS), FPSTR(WM_HTTP_CORS_ALLOW_ALL));
-#endif
-  
-  response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
-  response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
-  
-  request->send(response);
-  
-  LOGDEBUG(F("Sent WiFiScan Data in Json format"));
 }
 
 //////////////////////////////////////////
