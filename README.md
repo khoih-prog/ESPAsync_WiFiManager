@@ -1926,22 +1926,22 @@ WiFi connected...yeey :)
 Connected! IP address: 192.168.2.186
 HTTP server started @ 192.168.2.186
 ===============================================================
-Open http://esp8266fs-browser.local/edit to see the file browser
+Open http://async-esp8266fs.local/edit to see the file browser
 Using username = admin and password = admin
 ===============================================================
 [WM] freeing allocated params!
 ```
 
-You can access using the HTTP server IP (http://192.168.2.186) or its mDNS hostname (http://esp8266fs-browser.local)
+You can access using the HTTP server IP (http://192.168.2.186) or its mDNS hostname (http://async-esp8266fs.local)
 
 <p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP_FSWebServer/pics/esp8266fs.local.png">
+    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP_FSWebServer/pics/async-esp8266fs.local.png">
 </p>
 
-By going to http://192.168.2.186/edit or http://esp8266fs-browser.local/edit, you can **edit / delete / upload / download** any file in the folder 
+By going to http://192.168.2.186/edit or http://async-esp8266fs.local/edit, you can **edit / delete / upload / download** any file in the folder 
 
 <p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP_FSWebServer/pics/esp8266fs.local_edit.png">
+    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP_FSWebServer/pics/async-esp8266fs.local_edit.png">
 </p>
 
 ---
