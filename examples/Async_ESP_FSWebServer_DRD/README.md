@@ -55,7 +55,7 @@ This shows you how to use this example in Ubuntu (but you can use similar comman
 
 Use one of these methods (preferable first)
 
-1. Go to http://esp32-fs-browser.local/edit, then "Choose file" -> "Upload"
+1. Go to http://esp8266fs.local/edit, then "Choose file" -> "Upload"
 2. or Upload the contents of the data folder with MkSPIFFS Tool ("ESP8266 Sketch Data Upload" in Tools menu in Arduino IDE)
 3. or upload the contents of a folder by running the following commands: 
 ```
