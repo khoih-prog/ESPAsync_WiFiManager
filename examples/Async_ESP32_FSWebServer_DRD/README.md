@@ -47,7 +47,7 @@ This shows you how to use this example in Ubuntu (but you can use similar comman
 
 ### Download Data files
 
-1. For example, you already downloaded data files from (https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ESP32_FSWebServer_DRD/data) to a local folder, for example:
+1. For example, you already downloaded data files from [Async_ESP32_FSWebServer_DRD data](https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ESP32_FSWebServer_DRD/data) to a local folder, for example:
 
 ~/Arduino/libraries/ESPAsync_WiFiManager-master/examples/Async_ESP32_FSWebServer_DRD/data
 
@@ -58,8 +58,10 @@ Use one of these methods (preferable first)
 1. Go to http://esp32-fs-browser.local/edit, then "Choose file" -> "Upload"
 2. or Upload the contents of the data folder with MkSPIFFS Tool ("ESP8266 Sketch Data Upload" in Tools menu in Arduino IDE)
 3. or upload the contents of a folder by running the following commands: 
- - Ubuntu$ cd ~/Arduino/libraries/ESPAsync_WiFiManager-master/examples/Async_ESP32_FSWebServer_DRD/data
- - Ubuntu$ for file in \`\ls -A1\`; do curl -F "file=@$PWD/$file" http://esp32-fs-browser.local/edit; done
+```
+Ubuntu$ cd ~/Arduino/libraries/ESPAsync_WiFiManager-master/examples/Async_ESP32_FSWebServer_DRD/data
+Ubuntu$ for file in \`\ls -A1\`; do curl -F "file=@$PWD/$file" http://esp32-fs-browser.local/edit; done
+```
 
 ---
 
