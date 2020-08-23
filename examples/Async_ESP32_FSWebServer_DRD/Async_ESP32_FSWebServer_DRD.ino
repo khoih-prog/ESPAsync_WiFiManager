@@ -25,14 +25,14 @@
    in (https://github.com/khoih-prog/ESP_WiFiManager) to appreciate the powerful AsynWebServer.
 
    How To Upload Files:
-   1) Go to http://esp32-fs-browser.local/edit, then "Choose file" -> "Upload"
+   1) Go to http://async-esp32fs.local/edit, then "Choose file" -> "Upload"
    2) or Upload the contents of the data folder with MkSPIFFS Tool ("ESP8266 Sketch Data Upload" in Tools menu in Arduino IDE)
    3) or you can upload the contents of a folder if you CD in that folder and run the following command:
       for file in `\ls -A1`; do curl -F "file=@$PWD/$file" esp8266fs.local/edit; done
    
    How To Use:
-   1) access the sample web page at http://esp32-fs-browser.local
-   2) edit the page by going to http://esp32-fs-browser.local/edit
+   1) access the sample web page at http://async-esp32fs.local
+   2) edit the page by going to http://async-esp32fs.local/edit
    3. Use configurable user/password to login. Default is admin/admin
 *****************************************************************************************************************************/
 
@@ -173,7 +173,7 @@ DNSServer dnsServer;
 
 AsyncEventSource events("/events");
 
-String host = "esp32-fs-browser";
+String host = "async-esp32fs";
 
 String http_username = "admin";
 String http_password = "admin";

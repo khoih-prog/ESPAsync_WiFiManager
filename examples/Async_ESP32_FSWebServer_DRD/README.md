@@ -49,18 +49,20 @@ This shows you how to use this example in Ubuntu (but you can use similar comman
 
 1. For example, you already downloaded data files from [Async_ESP32_FSWebServer_DRD data](https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ESP32_FSWebServer_DRD/data) to a local folder, for example:
 
+``
 ~/Arduino/libraries/ESPAsync_WiFiManager-master/examples/Async_ESP32_FSWebServer_DRD/data
+```
 
 ### HOWTO Upload files to ESP32 (SPIFFS or FFat)
 
 Use one of these methods (preferable first)
 
-1. Go to http://esp32-fs-browser.local/edit, then "Choose file" -> "Upload"
+1. Go to http://async-esp32fs.local/edit, then "Choose file" -> "Upload"
 2. or Upload the contents of the data folder with MkSPIFFS Tool ("ESP8266 Sketch Data Upload" in Tools menu in Arduino IDE)
 3. or upload the contents of a folder by running the following commands: 
 ```
 Ubuntu$ cd ~/Arduino/libraries/ESPAsync_WiFiManager-master/examples/Async_ESP32_FSWebServer_DRD/data
-Ubuntu$ for file in \`\ls -A1\`; do curl -F "file=@$PWD/$file" http://esp32-fs-browser.local/edit; done
+Ubuntu$ for file in \`\ls -A1\`; do curl -F "file=@$PWD/$file" http://async-esp32fs.local/edit; done
 ```
 
 ---
@@ -68,13 +70,13 @@ Ubuntu$ for file in \`\ls -A1\`; do curl -F "file=@$PWD/$file" http://esp32-fs-b
 ### Demonstrating pictures
 
 <p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP32_FSWebServer_DRD/pics/esp8266fs.local.png">
+    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP32_FSWebServer_DRD/pics/async-esp32fs.local.png">
 </p>
 
 4. Edit / Delete / Download any file in the the folder by going to http://esp32-fs-browser.local/edit
 
 <p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP32_FSWebServer_DRD/pics/esp8266fs.local_edit.png">
+    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP32_FSWebServer_DRD/pics/async-esp32fs.local_edit.png">
 </p>
 
 
