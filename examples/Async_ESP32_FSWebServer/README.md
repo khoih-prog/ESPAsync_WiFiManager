@@ -72,7 +72,7 @@ Ubuntu$ for file in \`\ls -A1\`; do curl -F "file=@$PWD/$file" http://async-esp3
     <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP32_FSWebServer_DRD/pics/async-esp32fs.local.png">
 </p>
 
-4. Edit / Delete / Download any file in the the folder by going to http://esp32-fs-browser.local/edit
+4. Edit / Delete / Download any file in the the folder by going to http://async-esp32fs.local/edit
 
 <p align="center">
     <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP32_FSWebServer_DRD/pics/async-esp32fs.local_edit.png">
