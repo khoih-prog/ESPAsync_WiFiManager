@@ -24,6 +24,8 @@
 - ServeStatic plugin that supports cache, Last-Modified, default index and more
 - Simple template processing engine to handle templates
 
+To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) and underlying Async libraries, please compare the more efficient [Async_ESP32_FSWebServer example](examples/Async_ESP32_FSWebServer) example with the complicated twin [ESP32_FSWebServer](https://github.com/khoih-prog/ESP_WiFiManager/tree/master/examples/ESP32_FSWebServer).
+
 ---
 
 ### Releases 1.0.11
@@ -45,7 +47,7 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
 
 This is an `ESP32 / ESP8266` WiFi Connection Manager with fallback Web ConfigPortal. This Library is used for configuring ESP32, ESP8266 modules' (WiFi / Dynamic) Credentials at runtime. You can also specify static DNS servers, personalized HostName, fixed or random AP channel. Now with CORS feature.
 
-Because this [ESPAsync_WiFiManager library](https://github.com/khoih-prog/ESPAsync_WiFiManager) is sync'ed with [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager), all the features currently supported by [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) will be available. Please have a look at [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) for those too-many-to-list features.
+Thanks to this [ESPAsync_WiFiManager library](https://github.com/khoih-prog/ESPAsync_WiFiManager) is based on and sync'ed with [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager), all the features currently supported by [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) will be available. Please have a look at [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) for those too-many-to-list features.
 
 ---
 
@@ -82,8 +84,8 @@ The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsy
 
 ## How It Works
 
-- The [Async_ConfigOnSwitch](examples/Async_) example shows how it works and should be used as the basis for a sketch that uses this library.
-- The concept of [Async_ConfigOnSwitch](examples/Async_) is that a new `ESP32 / ESP8266` will start a WiFi ConfigPortal when powered up and save the configuration data in non volatile memory. Thereafter, the ConfigPortal will only be started again if a button is pushed on the `ESP32 / ESP8266` module.
+- The [Async_ConfigOnSwitch](examples/Async_ConfigOnSwitch) example shows how it works and should be used as the basis for a sketch that uses this library.
+- The concept of [Async_ConfigOnSwitch](examples/Async_ConfigOnSwitch) is that a new `ESP32 / ESP8266` will start a WiFi ConfigPortal when powered up and save the configuration data in non volatile memory. Thereafter, the ConfigPortal will only be started again if a button is pushed on the `ESP32 / ESP8266` module.
 - Using any WiFi enabled device with a browser (computer, phone, tablet) connect to the newly created Access Point (AP) using configurable SSID and Password (specified in sketch)
 
 ```cpp
@@ -535,6 +537,10 @@ Once WiFi network information is saved in the `ESP32 / ESP8266`, it will try to 
 11. [Async_AutoConnectWithFSParametersAndCustomIP](examples/Async_AutoConnectWithFSParametersAndCustomIP)
 12. [ModelessConnect](examples/ModelessConnect)
 13. [ModelessWithInterrupts](examples/ModelessWithInterrupts)
+14. [Async_ESP32_FSWebServer](examples/Async_ESP32_FSWebServer)
+15. [Async_ESP32_FSWebServer_DRD](examples/Async_ESP32_FSWebServer_DRD)
+16. [Async_ESP_FSWebServer](examples/Async_ESP_FSWebServer)
+17. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)
 
 ---
 ---
@@ -1872,6 +1878,71 @@ After waiting 0 secs more in setup(), connection result is connected. Local IP: 
 [WM] freeing allocated params!
 HHHHHHHHHH HHHHHHHHHH HHH
 ```
+
+---
+
+4. This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  ***ESP8266_NODEMCU.***. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+
+```cpp
+Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
+Opening / directory
+FS File: CanadaFlag_1.png, size: 40.25KB
+FS File: CanadaFlag_2.png, size: 8.12KB
+FS File: CanadaFlag_3.jpg, size: 10.89KB
+FS File: drd.dat, size: 4B
+FS File: edit.htm.gz, size: 4.02KB
+FS File: graphs.js.gz, size: 1.92KB
+FS File: index.htm, size: 3.63KB
+
+[WM] RFC925 Hostname = AsyncESP-FSWebServer
+[WM] setAPStaticIPConfig
+[WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
+Stored: SSID = HueNet1, Pass = 12345678
+Got stored Credentials. Timeout 60s for Config Portal
+LittleFS Flag read = 0xd0d01234
+doubleResetDetected
+Saving config file...
+Saving config file OK
+Open Config Portal without Timeout: Double Reset Detected
+[WM] WiFi.waitForConnectResult Done
+[WM] SET AP_STA
+[WM] 
+Configuring AP SSID = ESP_1190DD
+[WM] AP PWD = your_password
+[WM] AP Channel = 9
+[WM] Custom AP IP/GW/Subnet = 
+[WM] 192.168.100.1 192.168.100.1 255.255.255.0
+[WM] AP IP address = 192.168.100.1
+[WM] HTTP server started
+[WM] ESPAsync_WiFiManager::startConfigPortal : Enter loop
+[WM] Custom STA IP/GW/Subnet
+[WM] DNS1 and DNS2 set
+[WM] setWifiStaticIP IP = 192.168.2.186
+[WM] Connected after waiting (s) : 2.22
+[WM] Local ip = 192.168.2.186
+[WM] Timed out connection result: WL_CONNECTED
+WiFi connected...yeey :)
+
+Connected! IP address: 192.168.2.186
+HTTP server started @ 192.168.2.186
+===============================================================
+Open http://esp8266fs-browser.local/edit to see the file browser
+Using username = admin and password = admin
+===============================================================
+[WM] freeing allocated params!
+```
+
+You can access using the HTTP server IP (http://192.168.2.186) or its mDNS hostname (http://esp8266fs-browser.local)
+
+<p align="center">
+    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP_FSWebServer/pics/esp8266fs.local.png">
+</p>
+
+By going to http://192.168.2.186/edit or http://esp8266fs-browser.local/edit, you can **edit / delete / upload / download** any file in the folder 
+
+<p align="center">
+    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/examples/Async_ESP_FSWebServer/pics/esp8266fs.local_edit.png">
+</p>
 
 ---
 ---
