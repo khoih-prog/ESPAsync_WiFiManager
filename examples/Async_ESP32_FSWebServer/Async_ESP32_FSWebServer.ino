@@ -33,7 +33,7 @@
    How To Use:
    1) access the sample web page at http://async-esp32fs.local
    2) edit the page by going to http://async-esp32fs.local/edit
-   3. Use configurable user/password to login. Default is admin/admin
+   3) Use configurable user/password to login. Default is admin/admin
 *****************************************************************************************************************************/
 
 #if !defined(ESP32)
@@ -181,18 +181,34 @@ void setup(void)
   Serial.begin(115200);
   while (!Serial);
 
-#if USE_SPIFFS 
-  Serial.println("\nStarting Async_ESP_FSWebServer using SPIFFS on " + String(ARDUINO_BOARD));
-#else
-  Serial.println("\nStarting Async_ESP_FSWebServer using FFat on " + String(ARDUINO_BOARD));
-#endif
-
   Serial.setDebugOutput(false);
 
-  if (FORMAT_FILESYSTEM) 
+  bool FileFSReady = true;
+
+  if (FORMAT_FILESYSTEM)
     FILESYSTEM.format();
 
+#if USE_SPIFFS 
+  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using USE_SPIFFS on " + String(ARDUINO_BOARD));
+
+  // Format SPIFFS if not yet
+  if (!FILESYSTEM.begin(true))
+  {
+    Serial.println(F("SPIFFS failed! Formatting."));
+    
+    if (!FILESYSTEM.begin())
+    {
+      Serial.println(F("SPIFFS failed!"));
+      FileFSReady = false;
+    }
+  }
+#else
+  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using FFat on " + String(ARDUINO_BOARD));
+  
   FILESYSTEM.begin();
+#endif
+ 
+  if (FileFSReady)
   {
     File root = FILESYSTEM.open("/");
     File file = root.openNextFile();
@@ -307,14 +323,16 @@ void setup(void)
   
   server.addHandler(&events);
   
-  server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
-
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest * request) 
   {
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
+  if (FileFSReady)
+  {
+    server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
+  }
 
   server.onNotFound([](AsyncWebServerRequest * request) 
   {

@@ -33,7 +33,7 @@
    How To Use:
    1) access the sample web page at http://async-esp8266fs.local
    2) edit the page by going to http://async-esp8266fs.local/edit
-   3. Use configurable user/password to login. Default is admin/admin
+   3) Use configurable user/password to login. Default is admin/admin
 *****************************************************************************************************************************/
 
 #if !defined(ESP8266)
@@ -56,22 +56,22 @@
 #include <ESP8266mDNS.h>
 #include <FS.h>
 
-#include <SPIFFSEditor.h>
-
 // You only need to format the filesystem once
-//#define FORMAT_FILESYSTEM true
-#define FORMAT_FILESYSTEM false
+//#define FORMAT_FILESYSTEM       true
+#define FORMAT_FILESYSTEM       false
 
-#define USE_LITTLEFS      true
+#define USE_LITTLEFS          true
 
 #if USE_LITTLEFS
   #include <LittleFS.h>
   FS* filesystem = &LittleFS;
-  #define FILESYSTEM    LittleFS
+  #define FILESYSTEM              LittleFS
 #else
   FS* filesystem = &SPIFFS;
-  #define FILESYSTEM    SPIFFS
+  #define FILESYSTEM              SPIFFS
 #endif
+
+#include <SPIFFSEditor.h>
 
 #define ESP_getChipId()   (ESP.getChipId())
 
@@ -196,21 +196,37 @@ void setup(void)
   Serial.begin(115200);
   while (!Serial);
 
+  Serial.setDebugOutput(false);
+
 #if USE_LITTLEFS 
   Serial.println("\nStarting Async_ESP_FSWebServer using LittleFS on " + String(ARDUINO_BOARD));
 #else
   Serial.println("\nStarting Async_ESP_FSWebServer using deprecated SPIFFS on " + String(ARDUINO_BOARD));
 #endif
 
-  Serial.setDebugOutput(false);
+  bool FileFSReady = true;
 
-  FILESYSTEM.begin();
-  {
-    // Uncomment to format FS. Remember to uncomment after done
+  // Uncomment to force FS format. Remember to uncomment after done
 #if FORMAT_FILESYSTEM
     FILESYSTEM.format();
 #endif
+  
+  // Format LittleFS/SPIFFS if not yet 
+  if (!FILESYSTEM.begin())
+  {
+    Serial.println(F("FileFS failed! Formatting."));
     
+    FILESYSTEM.format();
+    
+    if (!FILESYSTEM.begin())
+    {
+      Serial.println(F("FileFS failed!"));
+      FileFSReady = false;
+    }
+  }
+  
+  if (FileFSReady)
+  { 
     Dir dir = FILESYSTEM.openDir("/");
     Serial.println("Opening / directory");
     
@@ -223,7 +239,7 @@ void setup(void)
     }
     
     Serial.println();
-  }  
+  }
 
   unsigned long startedAt = millis();
 
@@ -319,15 +335,16 @@ void setup(void)
   
   server.addHandler(&events);
   
-  server.addHandler(new SPIFFSEditor(http_username, http_password, FILESYSTEM));
-
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest * request) 
   {
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
-  server.serveStatic("/", FILESYSTEM, "/").setDefaultFile("index.htm");
-  
+  if (FileFSReady)
+  {
+    server.addHandler(new SPIFFSEditor(http_username, http_password, FILESYSTEM));
+    server.serveStatic("/", FILESYSTEM, "/").setDefaultFile("index.htm");
+  }
 
   server.onNotFound([](AsyncWebServerRequest * request) 
   {

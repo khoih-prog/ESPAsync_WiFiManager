@@ -33,7 +33,7 @@
    How To Use:
    1) access the sample web page at http://async-esp8266fs.local
    2) edit the page by going to http://async-esp8266fs.local/edit
-   3. Use configurable user/password to login. Default is admin/admin
+   3) Use configurable user/password to login. Default is admin/admin
 *****************************************************************************************************************************/
 
 #if !defined(ESP8266)
@@ -56,18 +56,28 @@
 #include <ESP8266mDNS.h>
 #include <FS.h>
 
+// Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
+bool initialConfig = false;
+
+// You only need to format the filesystem once
+//#define FORMAT_FILESYSTEM       true
+#define FORMAT_FILESYSTEM       false
+
+#define USE_LITTLEFS          true
+
+#if USE_LITTLEFS
+  #include <LittleFS.h>
+  FS* filesystem = &LittleFS;
+  #define FILESYSTEM              LittleFS
+  #define ESP_DRD_USE_LITTLEFS    true
+#else
+  FS* filesystem = &SPIFFS;
+  #define FILESYSTEM              SPIFFS
+  #define ESP_DRD_USE_SPIFFS      true  
+#endif
+
 #include <SPIFFSEditor.h>
 
-// For DRD
-// These defines must be put before #include <ESP_DoubleResetDetector.h>
-// to select where to store DoubleResetDetector's variable.
-// For ESP8266, You must select one to be true (RTC, EEPROM, SPIFFS or LITTLEFS)
-// Otherwise, library will use default EEPROM storage
-#define ESP_DRD_USE_LITTLEFS    true
-#define ESP_DRD_USE_SPIFFS      false  
-#define ESP_DRD_USE_EEPROM      false
-#define ESP8266_DRD_USE_RTC     false   //true
-  
 #define DOUBLERESETDETECTOR_DEBUG       true  //false
 
 #include <ESP_DoubleResetDetector.h>      //https://github.com/khoih-prog/ESP_DoubleResetDetector
@@ -80,25 +90,7 @@
 #define DRD_ADDRESS 0
 
 //DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
-DoubleResetDetector* drd;
-
-// Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
-bool initialConfig = false;
-
-// You only need to format the filesystem once
-//#define FORMAT_FILESYSTEM true
-#define FORMAT_FILESYSTEM false
-
-#define USE_LITTLEFS      true
-
-#if USE_LITTLEFS
-  #include <LittleFS.h>
-  FS* filesystem = &LittleFS;
-  #define FILESYSTEM    LittleFS
-#else
-  FS* filesystem = &SPIFFS;
-  #define FILESYSTEM    SPIFFS
-#endif
+DoubleResetDetector* drd = NULL;
 
 #define ESP_getChipId()   (ESP.getChipId())
 
@@ -223,23 +215,37 @@ void setup(void)
   Serial.begin(115200);
   while (!Serial);
 
+  Serial.setDebugOutput(false);
+
 #if USE_LITTLEFS 
   Serial.println("\nStarting Async_ESP_FSWebServer_DRD using LittleFS on " + String(ARDUINO_BOARD));
 #else
   Serial.println("\nStarting Async_ESP_FSWebServer_DRD using deprecated SPIFFS on " + String(ARDUINO_BOARD));
 #endif
 
-  Serial.setDebugOutput(false);
+  bool FileFSReady = true;
 
-  drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
-  
-  FILESYSTEM.begin();
-  {
-    // Uncomment to format FS. Remember to uncomment after done
+  // Uncomment to force FS format. Remember to uncomment after done
 #if FORMAT_FILESYSTEM
     FILESYSTEM.format();
 #endif
+
+  // Format LittleFS/SPIFFS if not yet 
+  if (!FILESYSTEM.begin())
+  {
+    Serial.println(F("FileFS failed! Formatting."));
     
+    FILESYSTEM.format();
+    
+    if (!FILESYSTEM.begin())
+    {
+      Serial.println(F("FileFS failed!"));
+      FileFSReady = false;
+    }
+  }
+  
+  if (FileFSReady)
+  { 
     Dir dir = FILESYSTEM.openDir("/");
     Serial.println("Opening / directory");
     
@@ -252,7 +258,12 @@ void setup(void)
     }
     
     Serial.println();
-  }  
+  }
+
+  drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
+
+  if (!drd)
+    Serial.println(F("Can't instantiate. Disable DRD feature"));
 
   unsigned long startedAt = millis();
 
@@ -304,7 +315,7 @@ void setup(void)
     initialConfig = true;
   }
 
-  if (drd->detectDoubleReset())
+  if (drd && drd->detectDoubleReset())
   {
     // DRD, disable timeout.
     ESPAsync_wifiManager.setConfigPortalTimeout(0);
@@ -365,17 +376,18 @@ void setup(void)
   });
   
   server.addHandler(&events);
-  
-  server.addHandler(new SPIFFSEditor(http_username, http_password, FILESYSTEM));
 
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest * request) 
   {
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
-  server.serveStatic("/", FILESYSTEM, "/").setDefaultFile("index.htm");
+  if (FileFSReady)
+  {
+    server.addHandler(new SPIFFSEditor(http_username, http_password, FILESYSTEM));
+    server.serveStatic("/", FILESYSTEM, "/").setDefaultFile("index.htm");
+  }
   
-
   server.onNotFound([](AsyncWebServerRequest * request) 
   {
     Serial.print("NOT_FOUND: ");
@@ -475,7 +487,8 @@ void loop(void)
   // so that it can recognise when the timeout expires.
   // You can also call drd.stop() when you wish to no longer
   // consider the next reset as a double reset.
-  drd->loop();
+  if (drd)
+    drd->loop();
   
   MDNS.update();
 }

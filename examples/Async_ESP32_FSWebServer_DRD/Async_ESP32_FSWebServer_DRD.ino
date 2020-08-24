@@ -53,12 +53,27 @@
 #include <WiFiClient.h>
 #include <ESPmDNS.h>
 
-// These defines must be put before #include <ESP_DoubleResetDetector.h>
-// to select where to store DoubleResetDetector's variable.
-// For ESP32, You must select one to be true (EEPROM or SPIFFS)
-// Otherwise, library will use default EEPROM storage
-#define ESP_DRD_USE_EEPROM      false
+// You only need to format the filesystem once
+//#define FORMAT_FILESYSTEM true
+#define FORMAT_FILESYSTEM false
+
+#define USE_SPIFFS            true
+
+#if USE_SPIFFS
+#include <SPIFFS.h>
+FS* filesystem = &SPIFFS;
+#define FILESYSTEM              SPIFFS
 #define ESP_DRD_USE_SPIFFS      true
+#else
+// Use FFat
+#include <FFat.h>
+FS* filesystem = &FFat;
+#define FILESYSTEM              FFat
+//#define ESP_DRD_USE_EEPROM      true
+#define ESP_DRD_USE_SPIFFS      true
+#endif
+
+#include <SPIFFSEditor.h>
 
 #define DOUBLERESETDETECTOR_DEBUG       true  //false
 
@@ -72,30 +87,11 @@
 #define DRD_ADDRESS 0
 
 //DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
-DoubleResetDetector* drd;
+DoubleResetDetector* drd = NULL;
 //////
 
 // Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
 bool initialConfig = false;
-
-// You only need to format the filesystem once
-//#define FORMAT_FILESYSTEM true
-#define FORMAT_FILESYSTEM false
-
-#define USE_SPIFFS        false //true
-
-#if USE_SPIFFS
-#include <SPIFFS.h>
-FS* filesystem = &SPIFFS;
-#define FILESYSTEM    SPIFFS
-#else
-// Use FFat
-#include <FFat.h>
-FS* filesystem = &FFat;
-#define FILESYSTEM    FFat
-#endif
-
-#include <SPIFFSEditor.h>
 
 // SSID and PW for Config Portal
 String ssid = "ESP_" + String((uint32_t)ESP.getEfuseMac(), HEX);
@@ -207,20 +203,34 @@ void setup(void)
   Serial.begin(115200);
   while (!Serial);
 
-#if USE_SPIFFS 
-  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using USE_SPIFFS on " + String(ARDUINO_BOARD));
-#else
-  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using FFat on " + String(ARDUINO_BOARD));
-#endif
-
   Serial.setDebugOutput(false);
 
-  drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
+  bool FileFSReady = true;
 
   if (FORMAT_FILESYSTEM)
     FILESYSTEM.format();
 
+#if USE_SPIFFS 
+  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using USE_SPIFFS on " + String(ARDUINO_BOARD));
+
+  // Format SPIFFS if not yet
+  if (!FILESYSTEM.begin(true))
+  {
+    Serial.println(F("SPIFFS failed! Formatting."));
+    
+    if (!FILESYSTEM.begin())
+    {
+      Serial.println(F("SPIFFS failed!"));
+      FileFSReady = false;
+    }
+  }
+#else
+  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using FFat on " + String(ARDUINO_BOARD));
+  
   FILESYSTEM.begin();
+#endif
+ 
+  if (FileFSReady)
   {
     File root = FILESYSTEM.open("/");
     File file = root.openNextFile();
@@ -238,6 +248,11 @@ void setup(void)
     Serial.println();
   }
 
+  drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
+
+  if (!drd)
+    Serial.println(F("Can't instantiate. Disable DRD feature"));
+    
   unsigned long startedAt = millis();
 
   //Local intialization. Once its business is done, there is no need to keep it around
@@ -288,7 +303,7 @@ void setup(void)
     initialConfig = true;
   }
 
-  if (drd->detectDoubleReset())
+  if (drd && drd->detectDoubleReset())
   {
     // DRD, disable timeout.
     ESPAsync_wifiManager.setConfigPortalTimeout(0);
@@ -353,14 +368,16 @@ void setup(void)
 
   server.addHandler(&events);
 
-  server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
-
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest * request)
   {
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
+  if (FileFSReady)
+  {
+    server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
+    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
+  }
 
   server.onNotFound([](AsyncWebServerRequest * request)
   {
@@ -463,5 +480,6 @@ void loop(void)
   // so that it can recognise when the timeout expires.
   // You can also call drd.stop() when you wish to no longer
   // consider the next reset as a double reset.
-  drd->loop();
+  if (drd)
+    drd->loop();
 }
