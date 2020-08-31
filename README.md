@@ -885,9 +885,9 @@ void loop()
     //ESPAsync_wifiManager.setAPStaticIPConfig(IPAddress(192, 168, 100, 1), IPAddress(192, 168, 100, 1), IPAddress(255, 255, 255, 0));
 
 #if !USE_DHCP_IP    
-  #if USE_CONFIGURABLE_DNS  
+  #if USE_CONFIGURABLE_DNS
     // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
-    ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
+    ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask, dns1IP, dns2IP);
   #else
     // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
     ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask);
@@ -2153,7 +2153,7 @@ MQTT connection successful!
 TWWWW WTWWWW WWTW
 ```
 
-2. This is terminal debug output when running [Async_ConfigOnSwitchFS_MQTT_Ptr](examples/Async_ConfigOnSwitchFS_MQTT_Ptr) on  ***ESP8266 NodeMCU 1.0.***. Config Portal was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
+2. This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr) on  ***ESP8266 NodeMCU 1.0.***. Config Portal was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr using LittleFS on ESP8266_NODEMCU
