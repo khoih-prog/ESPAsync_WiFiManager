@@ -13,12 +13,14 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.0.11
+  Version: Version: 1.1.1
 
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.11   K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                    to sync with ESP_WiFiManager v1.0.11
+  1.1.1    K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
  *****************************************************************************************************************************/
 
 #if !defined(ESP8266)
@@ -36,6 +38,9 @@
 
 #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
 #include <DNSServer.h>
+
+#define LED_ON      LOW
+#define LED_OFF     HIGH
 
 // Use false if you don't like to display Available Pages in Information Page of Config Portal
 // Comment out or use true to display Available Pages in Information Page of Config Portal
@@ -94,19 +99,27 @@ IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
 
 #include <ESPAsync_WiFiManager.h>              //https://github.com/khoih-prog/ESPAsync_WiFiManager
 
-AsyncWebServer webServer(80);
+#define HTTP_PORT           80
+
+AsyncWebServer webServer(HTTP_PORT);
 DNSServer dnsServer;
 
 ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "ModelessConnect");
+
+void toggleLED()
+{
+  //toggle state
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+}
 
 void heartBeatPrint(void)
 {
   static int num = 1;
 
   if (WiFi.status() == WL_CONNECTED)
-    Serial.print("W");        // W means connected to WiFi
+    Serial.print(F("W"));        // W means connected to WiFi
   else
-    Serial.print("N");        // N means not connected to WiFi
+    Serial.print(F("N"));        // N means not connected to WiFi
 
   if (num == 80)
   {
@@ -115,20 +128,34 @@ void heartBeatPrint(void)
   }
   else if (num++ % 5 == 0)
   {
-    Serial.print(" ");
+    Serial.print(F(" "));
   }
 }
 
 void check_status()
 {
-  static ulong checkstatus_timeout = 0;
+  static ulong checkstatus_timeout  = 0;
+  static ulong LEDstatus_timeout    = 0;
 
+  static ulong current_millis;
+
+#define LED_INTERVAL          2000L
 #define HEARTBEAT_INTERVAL    10000L
+
+  current_millis = millis();
+  
+  if ((current_millis > LEDstatus_timeout) || (LEDstatus_timeout == 0))
+  {
+    // Toggle LED at LED_INTERVAL = 2s
+    toggleLED();
+    LEDstatus_timeout = current_millis + LED_INTERVAL;
+  }
+
   // Print hearbeat every HEARTBEAT_INTERVAL (10) seconds.
-  if ((millis() > checkstatus_timeout) || (checkstatus_timeout == 0))
+  if ((current_millis > checkstatus_timeout) || (checkstatus_timeout == 0))
   {
     heartBeatPrint();
-    checkstatus_timeout = millis() + HEARTBEAT_INTERVAL;
+    checkstatus_timeout = current_millis + HEARTBEAT_INTERVAL;
   }
 }
 
@@ -164,6 +191,9 @@ String helloString = "ModelessWithInterrupts on " + String(ARDUINO_BOARD);
 
 void setup()
 {
+  // Initialize the LED digital pin as an output.
+  pinMode(LED_BUILTIN, OUTPUT);
+  
   // Put your setup code here, to run once
   Serial.begin(115200);
   while (!Serial);
@@ -193,6 +223,8 @@ void setup()
   #endif 
 #endif  
 
+  digitalWrite(LED_BUILTIN, LED_ON); // Turn led on as we are in configuration mode.
+  
   //fetches ssid and pass and tries to connect
   //if it does not connect it starts an AP with the specified name "AutoConnectAP"/"password"
   //and goes into a blocking loop awaiting configuration
@@ -200,6 +232,8 @@ void setup()
   //or use this for auto generated name ESP + ChipID
   //ESPAsync_wifiManager.autoConnect();
   ESPAsync_wifiManager.startConfigPortalModeless("ModelessAP", "Password");
+
+  digitalWrite(LED_BUILTIN, LED_OFF); // Turn led off as we are not in configuration mode.
 
   webServer.on("/", HTTP_GET, [](AsyncWebServerRequest * request) 
   {

@@ -13,12 +13,14 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.0.11
+  Version: Version: 1.1.1
 
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.11   K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                    to sync with ESP_WiFiManager v1.0.11
+  1.1.1    K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
  *****************************************************************************************************************************/
 /*****************************************************************************************************************************
    Compare this efficient Async_ESP32_FSWebServer_DRD example with the so complicated twin ESP32_FSWebServer 
@@ -53,6 +55,11 @@
 #include <WiFiClient.h>
 #include <ESPmDNS.h>
 
+// From v1.1.0
+#include <WiFiMulti.h>
+WiFiMulti wifiMulti;
+//////
+
 // You only need to format the filesystem once
 //#define FORMAT_FILESYSTEM true
 #define FORMAT_FILESYSTEM false
@@ -60,18 +67,24 @@
 #define USE_SPIFFS            true
 
 #if USE_SPIFFS
-#include <SPIFFS.h>
-FS* filesystem = &SPIFFS;
-#define FILESYSTEM              SPIFFS
-#define ESP_DRD_USE_SPIFFS      true
+  #include <SPIFFS.h>
+  FS* filesystem =                &SPIFFS;
+  #define FileFS                  SPIFFS
+  #define FS_Name                 "SPIFFS"
+  #define ESP_DRD_USE_SPIFFS      true
 #else
-// Use FFat
-#include <FFat.h>
-FS* filesystem = &FFat;
-#define FILESYSTEM              FFat
-//#define ESP_DRD_USE_EEPROM      true
-#define ESP_DRD_USE_SPIFFS      true
+  // Use FFat
+  #include <FFat.h>
+  FS* filesystem =                &FFat;
+  #define FileFS                  FFat
+  #define FS_Name                 "FFat"
+  //#define ESP_DRD_USE_EEPROM    true
+  #define ESP_DRD_USE_SPIFFS      true
 #endif
+
+#define LED_BUILTIN       2
+#define LED_ON            HIGH
+#define LED_OFF           LOW
 
 #include <SPIFFSEditor.h>
 
@@ -90,9 +103,6 @@ FS* filesystem = &FFat;
 DoubleResetDetector* drd = NULL;
 //////
 
-// Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
-bool initialConfig = false;
-
 // SSID and PW for Config Portal
 String ssid = "ESP_" + String((uint32_t)ESP.getEfuseMac(), HEX);
 const char* password = "your_password";
@@ -100,6 +110,40 @@ const char* password = "your_password";
 // SSID and PW for your Router
 String Router_SSID;
 String Router_Pass;
+
+// From v1.1.0
+#define MIN_AP_PASSWORD_SIZE    8
+
+#define SSID_MAX_LEN            32
+//From v1.0.10, WPA2 passwords can be up to 63 characters long.
+#define PASS_MAX_LEN            64
+
+typedef struct
+{
+  char wifi_ssid[SSID_MAX_LEN];
+  char wifi_pw  [PASS_MAX_LEN];
+}  WiFi_Credentials;
+
+typedef struct
+{
+  String wifi_ssid;
+  String wifi_pw;
+}  WiFi_Credentials_String;
+
+#define NUM_WIFI_CREDENTIALS      2
+
+typedef struct
+{
+  WiFi_Credentials  WiFi_Creds [NUM_WIFI_CREDENTIALS];
+} WM_Config;
+
+WM_Config         WM_config;
+
+#define  CONFIG_FILENAME              F("/wifi_cred.dat")
+//////
+
+// Indicates whether ESP has WiFi credentials saved from previous session, or double reset detected
+bool initialConfig = false;
 
 // Use false if you don't like to display Available Pages in Information Page of Config Portal
 // Comment out or use true to display Available Pages in Information Page of Config Portal
@@ -125,34 +169,34 @@ String Router_Pass;
 // Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
 #if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
 // Force DHCP to be true
-#if defined(USE_DHCP_IP)
-#undef USE_DHCP_IP
-#endif
-#define USE_DHCP_IP     true
+  #if defined(USE_DHCP_IP)
+    #undef USE_DHCP_IP
+  #endif
+  #define USE_DHCP_IP     true
 #else
-// You can select DHCP or Static IP here
-//#define USE_DHCP_IP     true
-#define USE_DHCP_IP     false
+  // You can select DHCP or Static IP here
+  //#define USE_DHCP_IP     true
+  #define USE_DHCP_IP     false
 #endif
 
 #if ( USE_DHCP_IP || ( defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP ) )
-// Use DHCP
-#warning Using DHCP IP
-IPAddress stationIP   = IPAddress(0, 0, 0, 0);
-IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
-IPAddress netMask     = IPAddress(255, 255, 255, 0);
+  // Use DHCP
+  #warning Using DHCP IP
+  IPAddress stationIP   = IPAddress(0, 0, 0, 0);
+  IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
+  IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #else
-// Use static IP
-#warning Using static IP
-
-#ifdef ESP32
-IPAddress stationIP   = IPAddress(192, 168, 2, 232);
-#else
-IPAddress stationIP   = IPAddress(192, 168, 2, 186);
-#endif
-
-IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
-IPAddress netMask     = IPAddress(255, 255, 255, 0);
+  // Use static IP
+  #warning Using static IP
+  
+  #ifdef ESP32
+    IPAddress stationIP   = IPAddress(192, 168, 2, 232);
+  #else
+    IPAddress stationIP   = IPAddress(192, 168, 2, 186);
+  #endif
+  
+  IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
+  IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #endif
 
 #define USE_CONFIGURABLE_DNS      true
@@ -160,22 +204,21 @@ IPAddress netMask     = IPAddress(255, 255, 255, 0);
 IPAddress dns1IP      = gatewayIP;
 IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
 
-#define HTTP_PORT     80
-
 #include <ESPAsync_WiFiManager.h>              //https://github.com/khoih-prog/ESPAsync_WiFiManager
+
+String host = "async-esp32fs";
+
+#define HTTP_PORT     80
 
 AsyncWebServer server(HTTP_PORT);
 DNSServer dnsServer;
 
 AsyncEventSource events("/events");
 
-String host = "async-esp32fs";
-
 String http_username = "admin";
 String http_password = "admin";
 
 String separatorLine = "===============================================================";
-
 
 //format bytes
 String formatBytes(size_t bytes)
@@ -198,55 +241,218 @@ String formatBytes(size_t bytes)
   }
 }
 
+void toggleLED()
+{
+  //toggle state
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+}
+
+void heartBeatPrint(void)
+{
+  static int num = 1;
+
+  if (WiFi.status() == WL_CONNECTED)
+    Serial.print("H");        // H means connected to WiFi
+  else
+    Serial.print("F");        // F means not connected to WiFi
+
+  if (num == 80)
+  {
+    Serial.println();
+    num = 1;
+  }
+  else if (num++ % 10 == 0)
+  {
+    Serial.print(" ");
+  }
+}
+
+void check_WiFi(void)
+{
+  if ( (WiFi.status() != WL_CONNECTED) )
+  {
+    Serial.println("\nWiFi lost. Call connectMultiWiFi in loop");
+    connectMultiWiFi();
+  }
+}  
+
+void check_status(void)
+{
+  static ulong checkstatus_timeout  = 0;
+  static ulong LEDstatus_timeout    = 0;
+  static ulong checkwifi_timeout    = 0;
+
+  static ulong current_millis;
+
+#define WIFICHECK_INTERVAL    1000L
+#define LED_INTERVAL          2000L
+#define HEARTBEAT_INTERVAL    10000L
+
+  current_millis = millis();
+  
+  // Check WiFi every WIFICHECK_INTERVAL (1) seconds.
+  if ((current_millis > checkwifi_timeout) || (checkwifi_timeout == 0))
+  {
+    check_WiFi();
+    checkwifi_timeout = current_millis + WIFICHECK_INTERVAL;
+  }
+
+  if ((current_millis > LEDstatus_timeout) || (LEDstatus_timeout == 0))
+  {
+    // Toggle LED at LED_INTERVAL = 2s
+    toggleLED();
+    LEDstatus_timeout = current_millis + LED_INTERVAL;
+  }
+
+  // Print hearbeat every HEARTBEAT_INTERVAL (10) seconds.
+  if ((current_millis > checkstatus_timeout) || (checkstatus_timeout == 0))
+  {
+    heartBeatPrint();
+    checkstatus_timeout = current_millis + HEARTBEAT_INTERVAL;
+  }
+}
+
+void loadConfigData(void)
+{
+  File file = FileFS.open(CONFIG_FILENAME, "r");
+  LOGERROR(F("LoadWiFiCfgFile "));
+
+  if (file)
+  {
+    file.readBytes((char *) &WM_config, sizeof(WM_config));
+    file.close();
+    LOGERROR(F("OK"));
+  }
+  else
+  {
+    LOGERROR(F("failed"));
+  }
+}
+    
+void saveConfigData(void)
+{
+  File file = FileFS.open(CONFIG_FILENAME, "w");
+  LOGERROR(F("SaveWiFiCfgFile "));
+
+  if (file)
+  {
+    file.write((uint8_t*) &WM_config, sizeof(WM_config));
+    file.close();
+    LOGERROR(F("OK"));
+  }
+  else
+  {
+    LOGERROR(F("failed"));
+  }
+}
+
+uint8_t connectMultiWiFi(void)
+{
+#if ESP32
+  // For ESP32, this better be 0 to shorten the connect time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
+#else
+  // For ESP8266, this better be 2200 to enable connect the 1st time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
+#endif
+
+#define WIFI_MULTI_CONNECT_WAITING_MS           100L
+  
+  uint8_t status;
+
+  LOGERROR(F("ConnectMultiWiFi with :"));
+  
+  if ( (Router_SSID != "") && (Router_Pass != "") )
+  {
+    LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
+  }
+
+  for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+    {
+      LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
+    }
+  }
+  
+  LOGERROR(F("Connecting MultiWifi..."));
+
+  WiFi.mode(WIFI_STA);
+
+#if !USE_DHCP_IP    
+  #if USE_CONFIGURABLE_DNS  
+    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
+    WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
+  #else
+    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
+    WiFi.config(stationIP, gatewayIP, netMask);
+  #endif 
+#endif
+
+  int i = 0;
+  status = wifiMulti.run();
+  delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
+
+  while ( ( i++ < 20 ) && ( status != WL_CONNECTED ) )
+  {
+    status = wifiMulti.run();
+
+    if ( status == WL_CONNECTED )
+      break;
+    else
+      delay(WIFI_MULTI_CONNECT_WAITING_MS);
+  }
+
+  if ( status == WL_CONNECTED )
+  {
+    LOGERROR1(F("WiFi connected after time: "), i);
+    LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
+    LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
+  }
+  else
+    LOGERROR(F("WiFi not connected"));
+
+  return status;
+}
+
 void setup(void)
 {
+  //set led pin as output
+  pinMode(LED_BUILTIN, OUTPUT);
+  
   Serial.begin(115200);
   while (!Serial);
+
+  Serial.print("\nStarting ESP32_FSWebServer_DRD using " + String(FS_Name));
+  Serial.println(" on " + String(ARDUINO_BOARD));
 
   Serial.setDebugOutput(false);
 
   bool FileFSReady = true;
 
-  if (FORMAT_FILESYSTEM)
-    FILESYSTEM.format();
-
-#if USE_SPIFFS 
-  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using USE_SPIFFS on " + String(ARDUINO_BOARD));
+  if (FORMAT_FILESYSTEM) 
+    FileFS.format();
 
   // Format SPIFFS if not yet
-  if (!FILESYSTEM.begin(true))
+  if (!FileFS.begin(true))
   {
-    Serial.println(F("SPIFFS failed! Formatting."));
-    
-    if (!FILESYSTEM.begin())
-    {
-      Serial.println(F("SPIFFS failed!"));
-      FileFSReady = false;
-    }
+    Serial.print(FS_Name);
+    Serial.println(F(" failed! AutoFormatting."));
   }
-#else
-  Serial.println("\nStarting Async_ESP32_FSWebServer_DRD using FFat on " + String(ARDUINO_BOARD));
   
-  FILESYSTEM.begin();
-#endif
- 
-  if (FileFSReady)
+  File root = FileFS.open("/");
+  File file = root.openNextFile();
+  
+  while (file) 
   {
-    File root = FILESYSTEM.open("/");
-    File file = root.openNextFile();
-
-    while (file)
-    {
-      String fileName = file.name();
-      size_t fileSize = file.size();
-
-      Serial.println("FS File: " + fileName + ", size: " + formatBytes(fileSize));
-
-      file = root.openNextFile();
-    }
-
-    Serial.println();
+    String fileName = file.name();
+    size_t fileSize = file.size();
+    Serial.printf("FS File: %s, size: %s\n", fileName.c_str(), formatBytes(fileSize).c_str());
+    file = root.openNextFile();
   }
+  
+  Serial.println();
 
   drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
 
@@ -255,11 +461,13 @@ void setup(void)
     
   unsigned long startedAt = millis();
 
+  digitalWrite(LED_BUILTIN, LED_ON);
+
   //Local intialization. Once its business is done, there is no need to keep it around
   // Use this to default DHCP hostname to ESP8266-XXXXXX or ESP32-XXXXXX
   //ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer);
   // Use this to personalize DHCP hostname (RFC952 conformed)
-  ESPAsync_WiFiManager ESPAsync_wifiManager(&server, &dnsServer, "Async_ESP32-FSWebServer");
+  ESPAsync_WiFiManager ESPAsync_wifiManager(&server, &dnsServer, "AsyncESP32-FSWebServer");
 
   //set custom ip for portal
   ESPAsync_wifiManager.setAPStaticIPConfig(IPAddress(192, 168, 100, 1), IPAddress(192, 168, 100, 1), IPAddress(255, 255, 255, 0));
@@ -271,13 +479,18 @@ void setup(void)
   //////
 
 #if !USE_DHCP_IP
-#if USE_CONFIGURABLE_DNS
-  // Set static IP, Gateway, Subnetmask, DNS1 and DNS2.
-  ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask, dns1IP, dns2IP);
-#else
-  // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
-  ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask);
+  #if USE_CONFIGURABLE_DNS
+    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2.
+    ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask, dns1IP, dns2IP);
+  #else
+    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
+    ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask);
+  #endif
 #endif
+
+  // New from v1.1.1
+#if USING_CORS_FEATURE
+  ESPAsync_wifiManager.setCORSHeader("Your Access-Control-Allow-Origin");
 #endif
 
   // We can't use WiFi.SSID() in ESP32as it's only valid after connected.
@@ -292,10 +505,14 @@ void setup(void)
   // SSID to uppercase
   ssid.toUpperCase();
 
-  if (Router_SSID != "")
+  // From v1.1.0, Don't permit NULL password
+  if ( (Router_SSID != "") && (Router_Pass != "") )
   {
-    ESPAsync_wifiManager.setConfigPortalTimeout(60); //If no access point name has been previously entered disable timeout.
-    Serial.println("Got stored Credentials. Timeout 60s for Config Portal");
+    LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
+    wifiMulti.addAP(Router_SSID.c_str(), Router_Pass.c_str());
+    
+    ESPAsync_wifiManager.setConfigPortalTimeout(120); //If no access point name has been previously entered disable timeout.
+    Serial.println("Got stored Credentials. Timeout 120s for Config Portal");
   }
   else
   {
@@ -303,7 +520,7 @@ void setup(void)
     initialConfig = true;
   }
 
-  if (drd && drd->detectDoubleReset())
+  if (drd->detectDoubleReset())
   {
     // DRD, disable timeout.
     ESPAsync_wifiManager.setConfigPortalTimeout(0);
@@ -318,39 +535,75 @@ void setup(void)
     if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
       Serial.println("Not connected to WiFi but continuing anyway.");
     else
+    {
       Serial.println("WiFi connected...yeey :)");
-  }
+    }
 
-#define WIFI_CONNECT_TIMEOUT        30000L
-#define WHILE_LOOP_DELAY            200L
-#define WHILE_LOOP_STEPS            (WIFI_CONNECT_TIMEOUT / ( 3 * WHILE_LOOP_DELAY ))
+    // Stored  for later usage, from v1.1.0, but clear first
+    memset(&WM_config, 0, sizeof(WM_config));
+    
+    for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+    {
+      String tempSSID = ESPAsync_wifiManager.getSSID(i);
+      String tempPW   = ESPAsync_wifiManager.getPW(i);
+  
+      if (strlen(tempSSID.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1)
+        strcpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str());
+      else
+        strncpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1);
+
+      if (strlen(tempPW.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1)
+        strcpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str());
+      else
+        strncpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1);  
+
+      // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+      if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+      {
+        LOGERROR3(F("* Add SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
+        wifiMulti.addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
+      }
+    }
+
+    saveConfigData();
+  }
 
   startedAt = millis();
 
-  while ( (WiFi.status() != WL_CONNECTED) && (millis() - startedAt < WIFI_CONNECT_TIMEOUT ) )
+  if (!initialConfig)
   {
-    WiFi.mode(WIFI_STA);
-    WiFi.persistent (true);
+    // Load stored data, the addAP ready for MultiWiFi reconnection
+    loadConfigData();
 
-    // We start by connecting to a WiFi network
-    Serial.print("Connecting to ");
-    Serial.println(Router_SSID);
-
-    WiFi.config(stationIP, gatewayIP, netMask);
-    //WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);
-
-    WiFi.begin(Router_SSID.c_str(), Router_Pass.c_str());
-
-    int i = 0;
-
-    while ((!WiFi.status() || WiFi.status() >= WL_DISCONNECTED) && i++ < WHILE_LOOP_STEPS)
+    for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
     {
-      delay(WHILE_LOOP_DELAY);
+      // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+      if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+      {
+        LOGERROR3(F("* Add SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
+        wifiMulti.addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
+      }
+    }
+
+    if ( WiFi.status() != WL_CONNECTED ) 
+    {
+      Serial.println("ConnectMultiWiFi in setup");
+     
+      connectMultiWiFi();
     }
   }
 
-  Serial.print("\nConnected! IP address: ");
-  Serial.println(WiFi.localIP());
+  Serial.print("After waiting ");
+  Serial.print((float) (millis() - startedAt) / 1000);
+  Serial.print(" secs more in setup(), connection result is ");
+
+  if (WiFi.status() == WL_CONNECTED)
+  {
+    Serial.print("connected. Local IP: ");
+    Serial.println(WiFi.localIP());
+  }
+  else
+    Serial.println(ESPAsync_wifiManager.getStatus(WiFi.status()));
 
   if ( !MDNS.begin(host.c_str()) )
   {
@@ -373,11 +626,8 @@ void setup(void)
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
-  if (FileFSReady)
-  {
-    server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
-    server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
-  }
+  server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
+  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
 
   server.onNotFound([](AsyncWebServerRequest * request)
   {
@@ -472,6 +722,8 @@ void setup(void)
   Serial.println("Open http://" + host + ".local/edit to see the file browser");
   Serial.println("Using username = " + http_username + " and password = " + http_password);
   Serial.println(separatorLine);
+
+  digitalWrite(LED_BUILTIN, LED_OFF);
 }
 
 void loop(void)
@@ -482,4 +734,6 @@ void loop(void)
   // consider the next reset as a double reset.
   if (drd)
     drd->loop();
+
+  check_status();
 }

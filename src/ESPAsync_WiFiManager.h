@@ -13,12 +13,14 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.0.11
+  Version: Version: 1.1.1
 
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.11   K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                    to sync with ESP_WiFiManager v1.0.11
+  1.1.1    K Hoang      30/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+                                   ESP_WiFiManager v1.1.0. Add setCORSHeader function to allow flexible CORS      
  *****************************************************************************************************************************/
 
 #ifndef ESPAsync_WiFiManager_h
@@ -68,6 +70,8 @@
 /** Handle CORS in pages */
 // Default false for using only whenever necessary to avoid security issue when using CORS (Cross-Origin Resource Sharing)
 #ifndef USING_CORS_FEATURE
+  // Contributed by AlesSt (https://github.com/AlesSt) to solve AJAX CORS protection problem of API redirects on client side
+  // See more in https://github.com/khoih-prog/ESP_WiFiManager/issues/27 and https://en.wikipedia.org/wiki/Cross-origin_resource_sharing
   #define USING_CORS_FEATURE     false
 #endif
 
@@ -88,7 +92,9 @@ const char WM_HTTP_HEAD_START[] PROGMEM     = "<!DOCTYPE html><html lang=\"en\">
 
 const char WM_HTTP_STYLE[] PROGMEM = "<style>div{padding:2px;font-size:1em;}body,textarea,input,select{background: 0;border-radius: 0;font: 16px sans-serif;margin: 0}textarea,input,select{outline: 0;font-size: 14px;border: 1px solid #ccc;padding: 8px;width: 90%}.btn a{text-decoration: none}.container{margin: auto;width: 90%}@media(min-width:1200px){.container{margin: auto;width: 30%}}@media(min-width:768px) and (max-width:1200px){.container{margin: auto;width: 50%}}.btn,h2{font-size: 2em}h1{font-size: 3em}.btn{background: #0ae;border-radius: 4px;border: 0;color: #fff;cursor: pointer;display: inline-block;margin: 2px 0;padding: 10px 14px 11px;width: 100%}.btn:hover{background: #09d}.btn:active,.btn:focus{background: #08b}label>*{display: inline}form>*{display: block;margin-bottom: 10px}textarea:focus,input:focus,select:focus{border-color: #5ab}.msg{background: #def;border-left: 5px solid #59d;padding: 1.5em}.q{float: right;width: 64px;text-align: right}.l{background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAALVBMVEX///8EBwfBwsLw8PAzNjaCg4NTVVUjJiZDRUUUFxdiZGSho6OSk5Pg4eFydHTCjaf3AAAAZElEQVQ4je2NSw7AIAhEBamKn97/uMXEGBvozkWb9C2Zx4xzWykBhFAeYp9gkLyZE0zIMno9n4g19hmdY39scwqVkOXaxph0ZCXQcqxSpgQpONa59wkRDOL93eAXvimwlbPbwwVAegLS1HGfZAAAAABJRU5ErkJggg==') no-repeat left center;background-size: 1em}input[type='checkbox']{float: left;width: 20px}.table td{padding:.5em;text-align:left}.table tbody>:nth-child(2n-1){background:#ddd}fieldset{border-radius:0.5rem;margin:0px;}</style>";
 
-const char WM_HTTP_SCRIPT[] PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();}</script>";
+// KH, update from v1.1.0
+const char WM_HTTP_SCRIPT[] PROGMEM = "<script>function c(l){document.getElementById('s').value=l.innerText||l.textContent;document.getElementById('p').focus();document.getElementById('s1').value=l.innerText||l.textContent;document.getElementById('p1').focus();}</script>";
+//////
 
 // To permit disable or configure NTP from sketch
 #ifndef USE_ESP_WIFIMANAGER_NTP
@@ -125,7 +131,9 @@ const char WM_HTTP_PORTAL_OPTIONS[] PROGMEM = "<form action=\"/wifi\" method=\"g
 const char WM_HTTP_ITEM[] PROGMEM = "<div><a href=\"#p\" onclick=\"c(this)\">{v}</a>&nbsp;<span class=\"q {i}\">{r}%</span></div>";
 const char JSON_ITEM[] PROGMEM = "{\"SSID\":\"{v}\", \"Encryption\":{i}, \"Quality\":\"{r}\"}";
 
-const char WM_HTTP_FORM_START[] PROGMEM = "<form method=\"get\" action=\"wifisave\"><fieldset><div><label>SSID</label><input id=\"s\" name=\"s\" length=32 placeholder=\"SSID\"><div></div></div><div><label>Password</label><input id=\"p\" name=\"p\" length=64 placeholder=\"password\"><div></div></div></fieldset>";
+// KH, update from v1.1.0
+const char WM_HTTP_FORM_START[] PROGMEM = "<form method=\"get\" action=\"wifisave\"><fieldset><div><label>SSID</label><input id=\"s\" name=\"s\" length=32 placeholder=\"SSID\"><div></div></div><div><label>Password</label><input id=\"p\" name=\"p\" length=64 placeholder=\"password\"><div></div></div><div><label>SSID1</label><input id=\"s1\" name=\"s1\" length=32 placeholder=\"SSID1\"><div></div></div><div><label>Password</label><input id=\"p1\" name=\"p1\" length=64 placeholder=\"password1\"><div></div></div></fieldset>";
+//////
 
 const char WM_HTTP_FORM_LABEL_BEFORE[]  PROGMEM   = "<div><label for=\"{i}\">{p}</label><input id=\"{i}\" name=\"{n}\" length={l} placeholder=\"{p}\" value=\"{v}\" {c}><div></div></div>";
 const char WM_HTTP_FORM_LABEL_AFTER[]   PROGMEM   = "<div><input id=\"{i}\" name=\"{n}\" length={l} placeholder=\"{p}\" value=\"{v}\" {c}><label for=\"{i}\">{p}</label><div></div></div>";
@@ -134,7 +142,11 @@ const char WM_HTTP_FORM_LABEL[] PROGMEM = "<label for=\"{i}\">{p}</label>";
 const char WM_HTTP_FORM_PARAM[] PROGMEM = "<input id=\"{i}\" name=\"{n}\" length={l} placeholder=\"{p}\" value=\"{v}\" {c}>";
 
 const char WM_HTTP_FORM_END[] PROGMEM = "<button class=\"btn\" type=\"submit\">Save</button></form>";
-const char WM_HTTP_SAVED[] PROGMEM = "<div class=\"msg\"><b>Credentials Saved</b><br>Try connecting ESP to the {x} network.<br>Wait around 10 seconds then check <a href=\"/\">how it went.</a> <p/>The {v} network you are connected to will be restarted on the radio channel of the {x} network. You may have to manually reconnect to the {v} network.</div>";
+
+// KH, update from v1.1.0
+const char WM_HTTP_SAVED[] PROGMEM = "<div class=\"msg\"><b>Credentials Saved</b><br>Try connecting ESP to the {x}/{x1} network. Wait around 10 seconds then check <a href=\"/\">if it's OK.</a> <p/>The {v} AP will run on the same WiFi channel of the {x}/{x1} AP. You may have to manually reconnect to the {v} AP.</div>";
+//////
+
 const char WM_HTTP_END[] PROGMEM = "</div></body></html>";
 
 const char WM_HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
@@ -333,6 +345,56 @@ class ESPAsync_WiFiManager
     {
       return _pass;
     }
+    
+    // New from v1.1.0
+    // return SSID of router in STA mode got from config portal. NULL if no user's input //KH
+    String				getSSID1(void) 
+    {
+      return _ssid1;
+    }
+
+    // return password of router in STA mode got from config portal. NULL if no user's input //KH
+    String				getPW1(void) 
+    {
+      return _pass1;
+    }
+    
+    #define MAX_WIFI_CREDENTIALS        2
+    
+    String				getSSID(uint8_t index) 
+    {
+      if (index == 0)
+        return _ssid;
+      else if (index == 1)
+        return _ssid1;
+      else     
+        return String("");
+    }
+    
+    String				getPW(uint8_t index) 
+    {
+      if (index == 0)
+        return _pass;
+      else if (index == 1)
+        return _pass1;
+      else     
+        return String("");
+    }
+    //////
+    
+    // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+#if USING_CORS_FEATURE
+    void setCORSHeader(const char * CORSHeaders = "*")
+    {
+      _CORS_Header = String(CORSHeaders);
+      LOGWARN1(F("Set CORS Header to : "), _CORS_Header);
+    }
+    
+    String getCORSHeader(void)
+    {
+      return _CORS_Header;
+    }
+#endif   
 
     //returns the list of Parameters
     ESPAsync_WMParameter** getParameters();
@@ -402,8 +464,14 @@ class ESPAsync_WiFiManager
 
     const char*   _apName               = "no-net";
     const char*   _apPassword           = NULL;
+    
     String        _ssid                 = "";
     String        _pass                 = "";
+    
+    // New from v1.1.0
+    String        _ssid1  = "";
+    String        _pass1  = "";
+    //////
 
     // Timezone info
     String        _timezoneName         = "";
@@ -423,7 +491,7 @@ class ESPAsync_WiFiManager
     // To enable dynamic/random channel
     // default to channel 1
     #define MIN_WIFI_CHANNEL      1
-    #define MAX_WIFI_CHANNEL      12    // Channel 13 is flaky, because of bad number 13 ;-)
+    #define MAX_WIFI_CHANNEL      11    // Channel 12,13 is flaky, because of bad number 13 ;-)
 
     int _WiFiAPChannel = 1;
     //////
@@ -449,12 +517,22 @@ class ESPAsync_WiFiManager
     const char*   _customHeadElement        = "";
 
     int           status                    = WL_IDLE_STATUS;
+    
+    // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+#if USING_CORS_FEATURE
+    String        _CORS_Header              = FPSTR(WM_HTTP_CORS_ALLOW_ALL);
+#endif   
+    //////
 
     void          setWifiStaticIP(void);
     
+    // New v1.1.0
+    int           reconnectWifi(void);
+    //////
+    
     int           connectWifi(String ssid = "", String pass = "");
     
-    uint8_t       waitForConnectResult();
+    wl_status_t   waitForConnectResult();
     
     void          setInfo();
     String        networkListAsString();

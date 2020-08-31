@@ -13,12 +13,14 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.0.11
+  Version: Version: 1.1.1
 
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
   1.0.11   K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                    to sync with ESP_WiFiManager v1.0.11
+  1.1.1    K Hoang      30/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+                                   ESP_WiFiManager v1.1.0. Add setCORSHeader function to allow flexible CORS 
  *****************************************************************************************************************************/
 
 #ifndef ESPAsync_WiFiManager_Impl_h
@@ -351,8 +353,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   //optional soft ip config
   if (_ap_static_ip)
   {
-    LOGWARN(F("Custom AP IP/GW/Subnet = "));
-    LOGWARN2(_ap_static_ip, _ap_static_gw, _ap_static_sn);
+    LOGWARN3(F("Custom AP IP/GW/Subnet = "), _ap_static_ip, _ap_static_gw, _ap_static_sn);
     
     WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
   }
@@ -825,6 +826,28 @@ boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const 
 
       LOGERROR(F("Connecting to new AP"));
 
+#if 0
+
+      // New Mod from v1.1.0
+      int wifiConnected = reconnectWifi();
+          
+      if ( wifiConnected == WL_CONNECTED )
+      {
+        //notify that configuration has changed and any optional parameters should be saved
+        if (_savecallback != NULL)
+        {
+          //todo: check if any custom parameters actually exist, and check if they really changed maybe
+          _savecallback();
+        }
+        
+        break;
+      }
+      
+      WiFi.mode(WIFI_AP); // Dual mode becomes flaky if not connected to a WiFi network.
+      //////
+
+#else
+
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED)
       {  
@@ -842,6 +865,8 @@ boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const 
         }
         break;
       }
+      
+#endif
 
       if (_shouldBreakAfterConfig)
       {
@@ -936,25 +961,51 @@ void ESPAsync_WiFiManager::setWifiStaticIP(void)
 
 //////////////////////////////////////////
 
+// New from v1.1.1
+int ESPAsync_WiFiManager::reconnectWifi(void)
+{
+  int connectResult;
+  
+  // using user-provided  _ssid, _pass in place of system-stored ssid and pass
+  if ( ( connectResult = connectWifi(_ssid, _pass) ) != WL_CONNECTED)
+  {  
+    LOGERROR1(F("Failed to connect to"), _ssid);
+    
+    if ( ( connectResult = connectWifi(_ssid1, _pass1) ) != WL_CONNECTED)
+    {  
+      LOGERROR1(F("Failed to connect to"), _ssid1);
+
+    }
+    else
+      LOGERROR1(F("Connected to"), _ssid1);
+  }
+  else
+      LOGERROR1(F("Connected to"), _ssid);
+  
+  return connectResult;
+}
+
+//////////////////////////////////////////
+
 int ESPAsync_WiFiManager::connectWifi(String ssid, String pass)
 {
   // Add option if didn't input/update SSID/PW => Use the previous saved Credentials. \
   // But update the Static/DHCP options if changed.
   if ( (ssid != "") || ( (ssid == "") && (WiFi_SSID() != "") ) )
-  {   
+  {  
+    //fix for auto connect racing issue. Move up from v1.1.0 to avoid resetSettings()
+    if (WiFi.status() == WL_CONNECTED)
+    {
+      LOGWARN(F("Already connected. Bailing out."));
+      return WL_CONNECTED;
+    }
+     
     if (ssid != "")
       resetSettings();
 
 #ifdef ESP8266
     setWifiStaticIP();
 #endif
-
-    //fix for auto connect racing issue
-    if (WiFi.status() == WL_CONNECTED)
-    {
-      LOGWARN(F("Already connected. Bailing out."));
-      return WL_CONNECTED;
-    }
 
     WiFi.mode(WIFI_AP_STA); //It will start in station mode if it was previously in AP mode.
 
@@ -1001,25 +1052,34 @@ int ESPAsync_WiFiManager::connectWifi(String ssid, String pass)
 
 //////////////////////////////////////////
 
-uint8_t ESPAsync_WiFiManager::waitForConnectResult()
+wl_status_t ESPAsync_WiFiManager::waitForConnectResult()
 {
   if (_connectTimeout == 0)
   {
     unsigned long startedAt = millis();
-    int connRes = WiFi.waitForConnectResult();
+    
+    // In ESP8266, WiFi.waitForConnectResult() @return wl_status_t (0-255) or -1 on timeout !!!
+    // In ESP32, WiFi.waitForConnectResult() @return wl_status_t (0-255)
+    // So, using int for connRes to be safe
+    //int connRes = WiFi.waitForConnectResult();
+    WiFi.waitForConnectResult();
+    
     float waited = (millis() - startedAt);
 
     LOGWARN1(F("Connected after waiting (s) :"), waited / 1000);
     LOGWARN1(F("Local ip ="), WiFi.localIP());
 
-    return connRes;
+    // Fix bug from v1.1.0+, connRes is sometimes not correct.
+    //return connRes;
+    return WiFi.status();
   }
   else
   {
     LOGERROR(F("Waiting WiFi connection with time out"));
     unsigned long start = millis();
     boolean keepConnecting = true;
-    uint8_t status;
+    
+    wl_status_t status;
 
     while (keepConnecting)
     {
@@ -1036,6 +1096,7 @@ uint8_t ESPAsync_WiFiManager::waitForConnectResult()
       }
       delay(100);
     }
+    
     return status;
   }
 }
@@ -1290,9 +1351,8 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
 #if USING_CORS_FEATURE
-  // Contributed by AlesSt (https://github.com/AlesSt) to solve AJAX CORS protection problem of API redirects on client side
-  // See more in https://github.com/khoih-prog/ESP_WiFiManager/issues/27 and https://en.wikipedia.org/wiki/Cross-origin_resource_sharing
-  response->addHeader(FPSTR(WM_HTTP_CORS), FPSTR(WM_HTTP_CORS_ALLOW_ALL));
+  // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+  response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
   
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
@@ -1485,7 +1545,8 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
 #if USING_CORS_FEATURE
-  response->addHeader(FPSTR(WM_HTTP_CORS), FPSTR(WM_HTTP_CORS_ALLOW_ALL));
+  // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+  response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
   
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
@@ -1506,6 +1567,11 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   //SAVE/connect here
   _ssid = request->arg("s").c_str();
   _pass = request->arg("p").c_str();
+  
+  // New from v1.1.0
+  _ssid1 = request->arg("s1").c_str();
+  _pass1 = request->arg("p1").c_str();
+  //////
 
   //parameters
   for (int i = 0; i < _paramsCount; i++)
@@ -1578,13 +1644,19 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   page += FPSTR(WM_HTTP_SAVED);
   page.replace("{v}", _apName);
   page.replace("{x}", _ssid);
+  
+  // KH, update from v1.1.0
+  page.replace("{x1}", _ssid1);
+  //////
+  
   page += FPSTR(WM_HTTP_END);
  
   AsyncWebServerResponse *response = request->beginResponse(200, "text/html", page);
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
 #if USING_CORS_FEATURE
-  response->addHeader(FPSTR(WM_HTTP_CORS), FPSTR(WM_HTTP_CORS_ALLOW_ALL));
+  // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+  response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
   
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
@@ -1630,7 +1702,8 @@ void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
 #if USING_CORS_FEATURE
-  response->addHeader(FPSTR(WM_HTTP_CORS), FPSTR(WM_HTTP_CORS_ALLOW_ALL));
+  // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+  response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
   
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
@@ -1757,7 +1830,8 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
 #if USING_CORS_FEATURE
-  response->addHeader(FPSTR(WM_HTTP_CORS), FPSTR(WM_HTTP_CORS_ALLOW_ALL));
+  // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+  response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
   
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
@@ -1802,7 +1876,8 @@ void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
 #if USING_CORS_FEATURE
-  response->addHeader(FPSTR(WM_HTTP_CORS), FPSTR(WM_HTTP_CORS_ALLOW_ALL));
+  // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
+  response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
   
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
