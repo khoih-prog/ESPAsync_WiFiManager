@@ -16,7 +16,7 @@
 - When you send the response, you are **immediately ready** to handle other connections while the server is taking care of sending the response in the background
 - **Speed is OMG**
 - **Easy to use API, HTTP Basic and Digest MD5 Authentication (default), ChunkedResponse**
-- Easily extendible to handle **any type of content**
+- Easily extensible to handle **any type of content**
 - Supports Continue 100
 - Async WebSocket plugin offering different locations without extra servers or ports
 - Async EventSource (Server-Sent Events) plugin to send events to the browser
@@ -34,7 +34,7 @@ To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/
 2. Fix bug, typo and minor improvement.
 3. Completely enhanced examples to use new MultiWiFi feature.
 4. Add setCORSHeader function to allow **configurable CORS Header**. See [Using CORS feature](https://github.com/khoih-prog/ESPAsync_WiFiManager#15-using-cors-cross-origin-resource-sharing-feature)
-5. Bump up to v1.1.1 to sync with [ESP_WiFiManager v1.0.11](https://github.com/khoih-prog/ESP_WiFiManager/releases/tag/v1.1.1).
+5. Bump up to v1.1.1 to sync with [ESP_WiFiManager v1.1.1](https://github.com/khoih-prog/ESP_WiFiManager/releases/tag/v1.1.1).
 
 ### Releases 1.0.11
 
@@ -88,7 +88,7 @@ The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsy
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
 3. Install **ESPAsync_WiFiManager** library by using [Library Manager](https://docs.platformio.org/en/latest/librarymanager/). Search for ***ESPAsync_WiFiManager*** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
-4. Use included [platformio.ini](examples/platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically.
+4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
 ---
 
