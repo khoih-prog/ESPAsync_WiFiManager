@@ -28,6 +28,10 @@ To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/
 
 ---
 
+### Releases v1.1.2
+
+1. Fix bug in examples.
+
 ### Major Releases v1.1.1
 
 1. Add **MultiWiFi feature to auto(Re)connect to the best WiFi at runtime**
@@ -60,15 +64,16 @@ This is an `ESP32 / ESP8266` WiFi Connection Manager with fallback Web ConfigPor
 Thanks to this [ESPAsync_WiFiManager library](https://github.com/khoih-prog/ESPAsync_WiFiManager) is based on and sync'ed with [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager), all the features currently supported by [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) will be available. Please have a look at [`ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager) for those too-many-to-list features.
 
 ---
+---
 
 ## Prerequisite
 
  1. [`Arduino IDE 1.8.12+` for Arduino](https://www.arduino.cc/en/Main/Software)
  2. [`ESP8266 Core 2.7.3+`](https://github.com/esp8266/Arduino) for ESP8266-based boards.
  3. [`ESP32 Core 1.0.4+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards
- 4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer)
- 5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266
- 6. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32
+ 4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards.
+ 5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
+ 6. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards
  
 ---
 
@@ -1051,18 +1056,6 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
 ### Example [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr)
 
 ```cpp
-/****************************************************************************************************************************
-  This example will open a Config Portal when there is no stored WiFi Credentials or when a DRD is detected.
-  
-  You can reconfigure to use another pin, such as the convenience FLASH / BOOT button @ PIN_D0;.
-   
-  A password is required to connect to the Config Portal so that only who know the password can access the Config Portal.
-  
-  The Credentials, being input via Config Portal, will then be saved into LittleFS / SPIFFS file, and be used to connect to 
-  Adafruit MQTT Server at "io.adafruit.com" and publish a Temperature Topic
-  
-  Based on original sketch posted by "Marko"(https://github.com/wackoo-arduino) on https://forum.arduino.cc/index.php?topic=692108
- *****************************************************************************************************************************/
 #if !( defined(ESP8266) ||  defined(ESP32) )
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
@@ -1203,7 +1196,7 @@ const char* CONFIG_FILE = "/ConfigMQTT.json";
 // Default configuration values for Adafruit IO MQTT
 // This actually works
 #define AIO_SERVER              "io.adafruit.com"
-#define AIO_SERVERPORT          1883 //1883, or 8883 for SSL
+#define AIO_SERVERPORT          "1883" //1883, or 8883 for SSL
 #define AIO_USERNAME            "private" //Adafruit IO
 #define AIO_KEY                 "private"
 
@@ -1219,11 +1212,12 @@ String MQTT_Pub_Topic   = "private/feeds/Temperature";
 // Variables to save custom parameters to...
 // I would like to use these instead of #defines
 #define custom_AIO_SERVER_LEN       20
+#define custom_AIO_PORT_LEN          5
 #define custom_AIO_USERNAME_LEN     20
 #define custom_AIO_KEY_LEN          40
 
 char custom_AIO_SERVER[custom_AIO_SERVER_LEN];
-int  custom_AIO_SERVERPORT;
+char custom_AIO_SERVERPORT[custom_AIO_PORT_LEN];
 char custom_AIO_USERNAME[custom_AIO_USERNAME_LEN];
 char custom_AIO_KEY[custom_AIO_KEY_LEN];
 
@@ -1351,6 +1345,79 @@ WiFiClient *client                    = NULL;
 Adafruit_MQTT_Client    *mqtt         = NULL;
 Adafruit_MQTT_Publish   *Temperature  = NULL;
 
+// Forward Declaration
+
+
+uint8_t connectMultiWiFi(void)
+{
+#if ESP32
+  // For ESP32, this better be 0 to shorten the connect time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
+#else
+  // For ESP8266, this better be 2200 to enable connect the 1st time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
+#endif
+
+#define WIFI_MULTI_CONNECT_WAITING_MS           100L
+  
+  uint8_t status;
+
+  LOGERROR(F("ConnectMultiWiFi with :"));
+  
+  if ( (Router_SSID != "") && (Router_Pass != "") )
+  {
+    LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
+  }
+
+  for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+    {
+      LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
+    }
+  }
+  
+  LOGERROR(F("Connecting MultiWifi..."));
+
+  WiFi.mode(WIFI_STA);
+
+#if !USE_DHCP_IP    
+  #if USE_CONFIGURABLE_DNS  
+    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
+    WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
+  #else
+    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
+    WiFi.config(stationIP, gatewayIP, netMask);
+  #endif 
+#endif
+
+  int i = 0;
+  status = wifiMulti.run();
+  delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
+
+  while ( ( i++ < 20 ) && ( status != WL_CONNECTED ) )
+  {
+    status = wifiMulti.run();
+
+    if ( status == WL_CONNECTED )
+      break;
+    else
+      delay(WIFI_MULTI_CONNECT_WAITING_MS);
+  }
+
+  if ( status == WL_CONNECTED )
+  {
+    LOGERROR1(F("WiFi connected after time: "), i);
+    LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
+    LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
+  }
+  else
+    LOGERROR(F("WiFi not connected"));
+
+  return status;
+}
+
 void toggleLED()
 {
   //toggle state
@@ -1404,7 +1471,7 @@ void check_WiFi(void)
     Serial.println(F("\nWiFi lost. Call connectMultiWiFi in loop"));
     connectMultiWiFi();
   }
-}
+}  
 
 void check_status(void)
 {
@@ -1487,76 +1554,6 @@ void saveConfigData(void)
   }
 }
 
-uint8_t connectMultiWiFi(void)
-{
-#if ESP32
-  // For ESP32, this better be 0 to shorten the connect time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
-#else
-  // For ESP8266, this better be 2200 to enable connect the 1st time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
-#endif
-
-#define WIFI_MULTI_CONNECT_WAITING_MS           100L
-  
-  uint8_t status;
-
-  LOGERROR(F("ConnectMultiWiFi with :"));
-  
-  if ( (Router_SSID != "") && (Router_Pass != "") )
-  {
-    LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
-  }
-
-  for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
-  {
-    // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
-    {
-      LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
-    }
-  }
-  
-  LOGERROR(F("Connecting MultiWifi..."));
-
-  WiFi.mode(WIFI_STA);
-
-#if !USE_DHCP_IP    
-  #if USE_CONFIGURABLE_DNS
-    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
-    WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);
-  #else
-    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
-    WiFi.config(stationIP, gatewayIP, netMask);
-  #endif 
-#endif
-
-  int i = 0;
-  status = wifiMulti.run();
-  delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
-
-  while ( ( i++ < 20 ) && ( status != WL_CONNECTED ) )
-  {
-    status = wifiMulti.run();
-
-    if ( status == WL_CONNECTED )
-      break;
-    else
-      delay(WIFI_MULTI_CONNECT_WAITING_MS);
-  }
-
-  if ( status == WL_CONNECTED )
-  {
-    LOGERROR1(F("WiFi connected after time: "), i);
-    LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
-    LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
-  }
-  else
-    LOGERROR(F("WiFi not connected"));
-
-  return status;
-}
-
 void deleteOldInstances(void)
 {
   // Delete previous instances
@@ -1574,7 +1571,7 @@ void deleteOldInstances(void)
     Temperature = NULL;
     
     Serial.println(F("Deleting old Temperature object"));
-  }
+  }  
 }
 
 void createNewInstances(void)
@@ -1591,7 +1588,7 @@ void createNewInstances(void)
   if (!mqtt)
   {
     // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
-    mqtt = new Adafruit_MQTT_Client(client, custom_AIO_SERVER, custom_AIO_SERVERPORT, custom_AIO_USERNAME, custom_AIO_KEY);
+    mqtt = new Adafruit_MQTT_Client(client, custom_AIO_SERVER, atoi(custom_AIO_SERVERPORT), custom_AIO_USERNAME, custom_AIO_KEY);
     
     Serial.print(F("Creating new MQTT object : "));
     
@@ -1672,9 +1669,8 @@ void wifi_manager()
   // AIO_SERVER
   ESPAsync_WMParameter AIO_SERVER_FIELD(AIO_SERVER_Label, "AIO SERVER", custom_AIO_SERVER, custom_AIO_SERVER_LEN + 1);
 
-  // AIO_SERVERPORT (because it is int, it needs to be converted to string)
-  String convertedValue = String(custom_AIO_SERVERPORT);
-  ESPAsync_WMParameter AIO_SERVERPORT_FIELD(AIO_SERVERPORT_Label, "AIO SERVER PORT", convertedValue.c_str(), convertedValue.length() + 1);
+  // AIO_SERVERPORT
+  ESPAsync_WMParameter AIO_SERVERPORT_FIELD(AIO_SERVERPORT_Label, "AIO SERVER PORT", custom_AIO_SERVERPORT, custom_AIO_PORT_LEN + 1);
 
   // AIO_USERNAME
   ESPAsync_WMParameter AIO_USERNAME_FIELD(AIO_USERNAME_Label, "AIO USERNAME", custom_AIO_USERNAME, custom_AIO_USERNAME_LEN + 1);
@@ -1774,10 +1770,10 @@ void wifi_manager()
   // Getting posted form values and overriding local variables parameters
   // Config file is written regardless the connection state
   strcpy(custom_AIO_SERVER, AIO_SERVER_FIELD.getValue());
-  custom_AIO_SERVERPORT = atoi(AIO_SERVERPORT_FIELD.getValue());
+  strcpy(custom_AIO_SERVERPORT, AIO_SERVERPORT_FIELD.getValue());
   strcpy(custom_AIO_USERNAME, AIO_USERNAME_FIELD.getValue());
   strcpy(custom_AIO_KEY, AIO_KEY_FIELD.getValue());
-
+ 
   // Writing JSON config file to flash for next boot
   writeConfigFile();
 
@@ -1852,7 +1848,7 @@ bool readConfigFile()
 
     if (json.containsKey(AIO_SERVERPORT_Label))
     {
-      custom_AIO_SERVERPORT = json[AIO_SERVERPORT_Label];
+      strcpy(custom_AIO_SERVERPORT, json[AIO_SERVERPORT_Label]);
     }
 
     if (json.containsKey(AIO_USERNAME_Label))
@@ -1883,10 +1879,10 @@ bool writeConfigFile()
 #endif
 
   // JSONify local configuration parameters
-  json[AIO_SERVER_Label] = custom_AIO_SERVER;
-  json[AIO_SERVERPORT_Label] = custom_AIO_SERVERPORT;
-  json[AIO_USERNAME_Label] = custom_AIO_USERNAME;
-  json[AIO_KEY_Label] = custom_AIO_KEY;
+  json[AIO_SERVER_Label]      = custom_AIO_SERVER;
+  json[AIO_SERVERPORT_Label]  = custom_AIO_SERVERPORT;
+  json[AIO_USERNAME_Label]    = custom_AIO_USERNAME;
+  json[AIO_KEY_Label]         = custom_AIO_KEY;
 
   // Open file for writing
   File f = FileFS.open(CONFIG_FILE, "w");
@@ -2115,7 +2111,6 @@ Configuring AP SSID = ESP_E92DE6B4
 [WM] AP IP address = 192.168.4.1
 [WM] HTTP server started
 [WM] ESPAsync_WiFiManager::startConfigPortal : Enter loop
-dhcps: send_offer>>udp_sendto result 0
 [WM] Connecting to new AP
 [WM] Previous settings invalidated
 [WM] Custom STA IP/GW/Subnet
@@ -2134,7 +2129,7 @@ Local IP: 192.168.2.232
 Saving Config File
 {
   "AIO_SERVER_Label": "io.adafruit.com",
-  "AIO_SERVERPORT_Label": 1883,
+  "AIO_SERVERPORT_Label": "1883",
   "AIO_USERNAME_Label": "account",
   "AIO_KEY_Label": "aio_token"
 }
@@ -2162,8 +2157,7 @@ Config File successfully parsed
 LittleFS Flag read = 0xd0d01234
 doubleResetDetected
 Saving config file...
-Saving config file OK
-Open Config Portal without Timeout: Double Reset Detected
+Saving config file OK Config Portal without Timeout: Double Reset Detected
 
 Config Portal requested.
 [WM] RFC925 Hostname = ConfigOnSwichFS-MQTT
@@ -2201,7 +2195,7 @@ Local IP: 192.168.2.186
 Saving Config File
 {
   "AIO_SERVER_Label": "io.adafruit.com",
-  "AIO_SERVERPORT_Label": 1883,
+  "AIO_SERVERPORT_Label": "1883",
   "AIO_USERNAME_Label": "account",
   "AIO_KEY_Label": "aio_token"
 }
@@ -2439,6 +2433,10 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ---
 ---
 
+### Releases v1.1.2
+
+1. Fix bug in examples.
+
 ### Major Releases v1.1.1
 
 1. Add **MultiWiFi feature to auto(Re)connect to the best WiFi at runtime**
@@ -2469,18 +2467,18 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
 ### Contributions and Thanks
 
 1. Based on and modified from [Tzapu](https://github.com/tzapu/WiFiManager), [KenTaylor's version]( https://github.com/kentaylor/WiFiManager), [`Alan Steremberg's ESPAsyncWiFiManager`](https://github.com/alanswx/ESPAsyncWiFiManager) and [`Khoi Hoang's ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager).
-2. Thanks to [me-no-dev](https://github.com/me-no-dev) for great [ESPAsyncWebServer Library](https://github.com/me-no-dev/ESPAsyncWebServer)
+2. Thanks to [Hristo Gochkov](https://github.com/me-no-dev) for great [ESPAsyncWebServer Library](https://github.com/me-no-dev/ESPAsyncWebServer)
 3. Thanks to good work of [Miguel Alexandre Wisintainer](https://github.com/tcpipchip) for working with, developing, debugging and testing.
 4. Thanks to [cancodr](https://github.com/cancodr) for requesting an enhancement in [Issue #29: Is it possible to use AsyncWebServer.h instead of WebServer.h?](https://github.com/khoih-prog/ESP_WiFiManager/issues/29), leading to this [ESPAsync_WiFiManager Library](https://github.com/khoih-prog/ESPAsync_WiFiManager).
 
 
 <table>
   <tr>
-    <td align="center"><a href="https://github.com/me-no-dev"><img src="https://github.com/me-no-dev.png" width="100px;" alt="me-no-dev"/><br /><sub><b>⭐️⭐️ me-no-dev</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/me-no-dev"><img src="https://github.com/me-no-dev.png" width="100px;" alt="me-no-dev"/><br /><sub><b>⭐️⭐️ Hristo Gochkov</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/Tzapu"><img src="https://github.com/Tzapu.png" width="100px;" alt="Tzapu"/><br /><sub><b>⭐️ Tzapu</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/kentaylor"><img src="https://github.com/kentaylor.png" width="100px;" alt="kentaylor"/><br /><sub><b>⭐️ kentaylor</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/kentaylor"><img src="https://github.com/kentaylor.png" width="100px;" alt="kentaylor"/><br /><sub><b>⭐️ Ken Taylor</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/alanswx"><img src="https://github.com/alanswx.png" width="100px;" alt="alanswx"/><br /><sub><b>⭐️ Alan Steremberg</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/tcpipchip"><img src="https://github.com/tcpipchip.png" width="100px;" alt="tcpipchip"/><br /><sub><b>tcpipchip</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/tcpipchip"><img src="https://github.com/tcpipchip.png" width="100px;" alt="tcpipchip"/><br /><sub><b>Miguel Wisintainer</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/cancodr"><img src="https://github.com/cancodr.png" width="100px;" alt="cancodr"/><br /><sub><b>cancodr</b></sub></a><br /></td>
   </tr> 
 </table>

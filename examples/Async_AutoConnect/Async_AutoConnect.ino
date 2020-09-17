@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: Version: 1.1.1
+  Version: Version: 1.1.2
 
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -21,6 +21,7 @@
                                    to sync with ESP_WiFiManager v1.0.11
   1.1.1    K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
                                    ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
+  1.1.2    K Hoang      17/09/2020 Fix bug in examples.
  *****************************************************************************************************************************/
 #if !( defined(ESP8266) ||  defined(ESP32) )
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
@@ -206,6 +207,76 @@ IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
 AsyncWebServer webServer(HTTP_PORT);
 DNSServer dnsServer;
 
+uint8_t connectMultiWiFi(void)
+{
+#if ESP32
+  // For ESP32, this better be 0 to shorten the connect time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
+#else
+  // For ESP8266, this better be 2200 to enable connect the 1st time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
+#endif
+
+#define WIFI_MULTI_CONNECT_WAITING_MS           100L
+  
+  uint8_t status;
+
+  LOGERROR(F("ConnectMultiWiFi with :"));
+  
+  if ( (Router_SSID != "") && (Router_Pass != "") )
+  {
+    LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
+  }
+
+  for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+    {
+      LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
+    }
+  }
+  
+  LOGERROR(F("Connecting MultiWifi..."));
+
+  WiFi.mode(WIFI_STA);
+
+#if !USE_DHCP_IP    
+  #if USE_CONFIGURABLE_DNS  
+    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
+    WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
+  #else
+    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
+    WiFi.config(stationIP, gatewayIP, netMask);
+  #endif 
+#endif
+
+  int i = 0;
+  status = wifiMulti.run();
+  delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
+
+  while ( ( i++ < 20 ) && ( status != WL_CONNECTED ) )
+  {
+    status = wifiMulti.run();
+
+    if ( status == WL_CONNECTED )
+      break;
+    else
+      delay(WIFI_MULTI_CONNECT_WAITING_MS);
+  }
+
+  if ( status == WL_CONNECTED )
+  {
+    LOGERROR1(F("WiFi connected after time: "), i);
+    LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
+    LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
+  }
+  else
+    LOGERROR(F("WiFi not connected"));
+
+  return status;
+}
+
 void heartBeatPrint(void)
 {
   static int num = 1;
@@ -294,76 +365,6 @@ void saveConfigData(void)
   {
     LOGERROR(F("failed"));
   }
-}
-
-uint8_t connectMultiWiFi(void)
-{
-#if ESP32
-  // For ESP32, this better be 0 to shorten the connect time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
-#else
-  // For ESP8266, this better be 2200 to enable connect the 1st time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
-#endif
-
-#define WIFI_MULTI_CONNECT_WAITING_MS           100L
-  
-  uint8_t status;
-
-  LOGERROR(F("ConnectMultiWiFi with :"));
-  
-  if ( (Router_SSID != "") && (Router_Pass != "") )
-  {
-    LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
-  }
-
-  for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
-  {
-    // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
-    {
-      LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
-    }
-  }
-  
-  LOGERROR(F("Connecting MultiWifi..."));
-
-  WiFi.mode(WIFI_STA);
-
-#if !USE_DHCP_IP    
-  #if USE_CONFIGURABLE_DNS  
-    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
-    WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
-  #else
-    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
-    WiFi.config(stationIP, gatewayIP, netMask);
-  #endif 
-#endif
-
-  int i = 0;
-  status = wifiMulti.run();
-  delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
-
-  while ( ( i++ < 20 ) && ( status != WL_CONNECTED ) )
-  {
-    status = wifiMulti.run();
-
-    if ( status == WL_CONNECTED )
-      break;
-    else
-      delay(WIFI_MULTI_CONNECT_WAITING_MS);
-  }
-
-  if ( status == WL_CONNECTED )
-  {
-    LOGERROR1(F("WiFi connected after time: "), i);
-    LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
-    LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
-  }
-  else
-    LOGERROR(F("WiFi not connected"));
-
-  return status;
 }
 
 void setup()

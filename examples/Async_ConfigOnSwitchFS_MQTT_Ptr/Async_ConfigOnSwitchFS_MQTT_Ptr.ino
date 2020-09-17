@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: Version: 1.1.1
+  Version: Version: 1.1.2
 
   Version Modified By   Date      Comments
   ------- -----------  ---------- -----------
@@ -21,6 +21,7 @@
                                    to sync with ESP_WiFiManager v1.0.11
   1.1.1    K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
                                    ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
+  1.1.2    K Hoang      17/09/2020 Fix bug in examples.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
   This example will open a Config Portal when there is no stored WiFi Credentials or when a button is pressed.
@@ -230,7 +231,7 @@ const char* CONFIG_FILE = "/ConfigMQTT.json";
 // Default configuration values for Adafruit IO MQTT
 // This actually works
 #define AIO_SERVER              "io.adafruit.com"
-#define AIO_SERVERPORT          1883 //1883, or 8883 for SSL
+#define AIO_SERVERPORT          "1883" //1883, or 8883 for SSL
 #define AIO_USERNAME            "private" //Adafruit IO
 #define AIO_KEY                 "private"
 
@@ -246,11 +247,12 @@ String MQTT_Pub_Topic   = "private/feeds/Temperature";
 // Variables to save custom parameters to...
 // I would like to use these instead of #defines
 #define custom_AIO_SERVER_LEN       20
+#define custom_AIO_PORT_LEN          5
 #define custom_AIO_USERNAME_LEN     20
 #define custom_AIO_KEY_LEN          40
 
 char custom_AIO_SERVER[custom_AIO_SERVER_LEN];
-int  custom_AIO_SERVERPORT;
+char custom_AIO_SERVERPORT[custom_AIO_PORT_LEN];
 char custom_AIO_USERNAME[custom_AIO_USERNAME_LEN];
 char custom_AIO_KEY[custom_AIO_KEY_LEN];
 
@@ -385,6 +387,76 @@ WiFiClient *client                    = NULL;
 
 Adafruit_MQTT_Client    *mqtt         = NULL;
 Adafruit_MQTT_Publish   *Temperature  = NULL;
+
+uint8_t connectMultiWiFi(void)
+{
+#if ESP32
+  // For ESP32, this better be 0 to shorten the connect time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
+#else
+  // For ESP8266, this better be 2200 to enable connect the 1st time
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
+#endif
+
+#define WIFI_MULTI_CONNECT_WAITING_MS           100L
+  
+  uint8_t status;
+
+  LOGERROR(F("ConnectMultiWiFi with :"));
+  
+  if ( (Router_SSID != "") && (Router_Pass != "") )
+  {
+    LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
+  }
+
+  for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+  {
+    // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+    {
+      LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
+    }
+  }
+  
+  LOGERROR(F("Connecting MultiWifi..."));
+
+  WiFi.mode(WIFI_STA);
+
+#if !USE_DHCP_IP    
+  #if USE_CONFIGURABLE_DNS  
+    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
+    WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
+  #else
+    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
+    WiFi.config(stationIP, gatewayIP, netMask);
+  #endif 
+#endif
+
+  int i = 0;
+  status = wifiMulti.run();
+  delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
+
+  while ( ( i++ < 20 ) && ( status != WL_CONNECTED ) )
+  {
+    status = wifiMulti.run();
+
+    if ( status == WL_CONNECTED )
+      break;
+    else
+      delay(WIFI_MULTI_CONNECT_WAITING_MS);
+  }
+
+  if ( status == WL_CONNECTED )
+  {
+    LOGERROR1(F("WiFi connected after time: "), i);
+    LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
+    LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
+  }
+  else
+    LOGERROR(F("WiFi not connected"));
+
+  return status;
+}
 
 void toggleLED()
 {
@@ -522,76 +594,6 @@ void saveConfigData(void)
   }
 }
 
-uint8_t connectMultiWiFi(void)
-{
-#if ESP32
-  // For ESP32, this better be 0 to shorten the connect time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
-#else
-  // For ESP8266, this better be 2200 to enable connect the 1st time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
-#endif
-
-#define WIFI_MULTI_CONNECT_WAITING_MS           100L
-  
-  uint8_t status;
-
-  LOGERROR(F("ConnectMultiWiFi with :"));
-  
-  if ( (Router_SSID != "") && (Router_Pass != "") )
-  {
-    LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
-  }
-
-  for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
-  {
-    // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
-    {
-      LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
-    }
-  }
-  
-  LOGERROR(F("Connecting MultiWifi..."));
-
-  WiFi.mode(WIFI_STA);
-
-#if !USE_DHCP_IP    
-  #if USE_CONFIGURABLE_DNS  
-    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
-    WiFi.config(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
-  #else
-    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
-    WiFi.config(stationIP, gatewayIP, netMask);
-  #endif 
-#endif
-
-  int i = 0;
-  status = wifiMulti.run();
-  delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
-
-  while ( ( i++ < 20 ) && ( status != WL_CONNECTED ) )
-  {
-    status = wifiMulti.run();
-
-    if ( status == WL_CONNECTED )
-      break;
-    else
-      delay(WIFI_MULTI_CONNECT_WAITING_MS);
-  }
-
-  if ( status == WL_CONNECTED )
-  {
-    LOGERROR1(F("WiFi connected after time: "), i);
-    LOGERROR3(F("SSID:"), WiFi.SSID(), F(",RSSI="), WiFi.RSSI());
-    LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
-  }
-  else
-    LOGERROR(F("WiFi not connected"));
-
-  return status;
-}
-
 void deleteOldInstances(void)
 {
   // Delete previous instances
@@ -626,7 +628,7 @@ void createNewInstances(void)
   if (!mqtt)
   {
     // Setup the MQTT client class by passing in the WiFi client and MQTT server and login details.
-    mqtt = new Adafruit_MQTT_Client(client, custom_AIO_SERVER, custom_AIO_SERVERPORT, custom_AIO_USERNAME, custom_AIO_KEY);
+    mqtt = new Adafruit_MQTT_Client(client, custom_AIO_SERVER, atoi(custom_AIO_SERVERPORT), custom_AIO_USERNAME, custom_AIO_KEY);
     
     Serial.print(F("Creating new MQTT object : "));
     
@@ -725,9 +727,8 @@ void wifi_manager()
   // AIO_SERVER
   ESPAsync_WMParameter AIO_SERVER_FIELD(AIO_SERVER_Label, "AIO SERVER", custom_AIO_SERVER, custom_AIO_SERVER_LEN + 1);
 
-  // AIO_SERVERPORT (because it is int, it needs to be converted to string)
-  String convertedValue = String(custom_AIO_SERVERPORT);
-  ESPAsync_WMParameter AIO_SERVERPORT_FIELD(AIO_SERVERPORT_Label, "AIO SERVER PORT", convertedValue.c_str(), convertedValue.length() + 1);
+  // AIO_SERVERPORT
+  ESPAsync_WMParameter AIO_SERVERPORT_FIELD(AIO_SERVERPORT_Label, "AIO SERVER PORT", custom_AIO_SERVERPORT, custom_AIO_PORT_LEN + 1);
 
   // AIO_USERNAME
   ESPAsync_WMParameter AIO_USERNAME_FIELD(AIO_USERNAME_Label, "AIO USERNAME", custom_AIO_USERNAME, custom_AIO_USERNAME_LEN + 1);
@@ -827,7 +828,7 @@ void wifi_manager()
   // Getting posted form values and overriding local variables parameters
   // Config file is written regardless the connection state
   strcpy(custom_AIO_SERVER, AIO_SERVER_FIELD.getValue());
-  custom_AIO_SERVERPORT = atoi(AIO_SERVERPORT_FIELD.getValue());
+  strcpy(custom_AIO_SERVERPORT, AIO_SERVERPORT_FIELD.getValue());
   strcpy(custom_AIO_USERNAME, AIO_USERNAME_FIELD.getValue());
   strcpy(custom_AIO_KEY, AIO_KEY_FIELD.getValue());
 
@@ -905,7 +906,7 @@ bool readConfigFile()
 
     if (json.containsKey(AIO_SERVERPORT_Label))
     {
-      custom_AIO_SERVERPORT = json[AIO_SERVERPORT_Label];
+      strcpy(custom_AIO_SERVERPORT, json[AIO_SERVERPORT_Label]);
     }
 
     if (json.containsKey(AIO_USERNAME_Label))
@@ -936,10 +937,10 @@ bool writeConfigFile()
 #endif
 
   // JSONify local configuration parameters
-  json[AIO_SERVER_Label] = custom_AIO_SERVER;
-  json[AIO_SERVERPORT_Label] = custom_AIO_SERVERPORT;
-  json[AIO_USERNAME_Label] = custom_AIO_USERNAME;
-  json[AIO_KEY_Label] = custom_AIO_KEY;
+  json[AIO_SERVER_Label]      = custom_AIO_SERVER;
+  json[AIO_SERVERPORT_Label]  = custom_AIO_SERVERPORT;
+  json[AIO_USERNAME_Label]    = custom_AIO_USERNAME;
+  json[AIO_KEY_Label]         = custom_AIO_KEY;
 
   // Open file for writing
   File f = FileFS.open(CONFIG_FILE, "w");
