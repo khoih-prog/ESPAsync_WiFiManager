@@ -1712,7 +1712,7 @@ void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
   
   request->send(response);
   
-  //stopConfigPortal = true; //signal ready to shutdown config portal		//KH crash if use this ???
+  stopConfigPortal = true; //signal ready to shutdown config portal
   
   LOGDEBUG(F("Sent server close page"));
 
