@@ -68,8 +68,8 @@ Thanks to this [ESPAsync_WiFiManager library](https://github.com/khoih-prog/ESPA
 
 ## Prerequisite
 
- 1. [`Arduino IDE 1.8.12+` for Arduino](https://www.arduino.cc/en/Main/Software)
- 2. [`ESP8266 Core 2.7.3+`](https://github.com/esp8266/Arduino) for ESP8266-based boards.
+ 1. [`Arduino IDE 1.8.13+` for Arduino](https://www.arduino.cc/en/Main/Software)
+ 2. [`ESP8266 Core 2.7.4+`](https://github.com/esp8266/Arduino) for ESP8266-based boards.
  3. [`ESP32 Core 1.0.4+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards
  4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards.
  5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
@@ -92,7 +92,7 @@ The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsy
 ### VS Code & PlatformIO:
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
-3. Install **ESPAsync_WiFiManager** library by using [Library Manager](https://docs.platformio.org/en/latest/librarymanager/). Search for ***ESPAsync_WiFiManager*** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
+3. Install **ESPAsync_WiFiManager** library by using [Library Manager](https://docs.platformio.org/en/latest/librarymanager/). Search for **ESPAsync_WiFiManager** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
 ---
@@ -107,11 +107,11 @@ The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsy
 // SSID and PW for Config Portal
 String ssid = "ESP_" + String(ESP_getChipId(), HEX);
 const char* password = "your_password";
-``` 
+```
 then connect WebBrowser to configurable ConfigPortal IP address, default is 192.168.4.1
 
-- Choose one of the access points scanned, enter password, click ***Save***.
-- ESP will restart, then try to connect to the WiFi netwotk using STA-only mode, ***without running the ConfigPortal WebServer and WiFi AP***. See [Accessing manager after connection](https://github.com/khoih-prog/ESP_WiFiManager/issues/15).
+- Choose one of the access points scanned, enter password, click **Save**.
+- ESP will restart, then try to connect to the WiFi netwotk using STA-only mode, **without running the ConfigPortal WebServer and WiFi AP**. See [Accessing manager after connection](https://github.com/khoih-prog/ESP_WiFiManager/issues/15).
 
 ---
 ---
@@ -121,6 +121,7 @@ then connect WebBrowser to configurable ConfigPortal IP address, default is 192.
 #### 1. Using default for every configurable parameter
 
 - Include in your sketch
+
 ```cpp
 #ifdef ESP32
   #include <esp_wifi.h>
@@ -747,6 +748,7 @@ ESPAsync_wifiManager.setConfigPortalChannel(0);
 Once WiFi network information is saved in the `ESP32 / ESP8266`, it will try to autoconnect to WiFi every time it is started, without requiring any function calls in the sketch.
 
 ---
+---
 
 ### Examples
 
@@ -773,6 +775,7 @@ Once WiFi network information is saved in the `ESP32 / ESP8266`, it will try to 
 ---
 
 ## So, how it works?
+
 In `ConfigPortal Mode`, it starts an access point called `ESP_XXXXXX`. Connect to it using the `configurable password` you can define in the code. For example, `your_password` (see examples):
 
 ```cpp
@@ -804,14 +807,14 @@ Select `Configuration` to enter this page where you can select an AP and specify
     <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/Images/Configuration_AIO_MQTT.png">
 </p>
 
-Enter your credentials, then click ***Save***. The WiFi Credentials will be saved and the board reboots to connect to the selected WiFi AP.
+Enter your credentials, then click **Save**. The WiFi Credentials will be saved and the board reboots to connect to the selected WiFi AP.
 
 <p align="center">
     <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/Images/Saved.png">
 </p>
 
 
-If you're already connected to a listed WiFi AP and don't want to change anything, just select ***Exit Portal*** from the `Main` page to reboot the board and connect to the previously-stored AP. The WiFi Credentials are still intact.
+If you're already connected to a listed WiFi AP and don't want to change anything, just select **Exit Portal** from the `Main` page to reboot the board and connect to the previously-stored AP. The WiFi Credentials are still intact.
 
 ---
 ---
@@ -819,6 +822,7 @@ If you're already connected to a listed WiFi AP and don't want to change anythin
 ## Documentation
 
 #### Password protect the configuration Access Point
+
 You can password protect the ConfigPortal AP.  Simply add an SSID as the first parameter and the password as a second parameter to `startConfigPortal`. See the above examples.
 
 A short password seems to have unpredictable results so use one that's around 8 characters or more in length.
@@ -831,6 +835,7 @@ ESPAsync_wifiManager.startConfigPortal( SSID , password )
 #### Callbacks
 
 ##### Save settings
+
 This gets called when custom parameters have been set **AND** a connection has been established. Use it to set a flag, so when all the configuration finishes, you can save the extra parameters somewhere.
 
 See [Async_ConfigOnSwitchFS Example](examples/Async_ConfigOnSwitchFS).
@@ -853,6 +858,7 @@ void saveConfigCallback ()
 ```
 
 #### ConfigPortal Timeout
+
 If you need to set a timeout so the `ESP32 / ESP8266` doesn't hang waiting to be configured for ever. 
 
 ```cpp
@@ -1664,7 +1670,7 @@ void wifi_manager()
   // Extra parameters to be configured
   // After connecting, parameter.getValue() will get you the configured value
   // Format: <ID> <Placeholder text> <default value> <length> <custom HTML> <label placement>
-  // (*** we are not using <custom HTML> and <label placement> ***)
+  // (** we are not using <custom HTML> and <label placement> **)
 
   // AIO_SERVER
   ESPAsync_WMParameter AIO_SERVER_FIELD(AIO_SERVER_Label, "AIO SERVER", custom_AIO_SERVER, custom_AIO_SERVER_LEN + 1);
@@ -2081,7 +2087,7 @@ void loop()
 
 ### Debug Termimal Output Samples
 
-1. This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr) on  ***ESP32 ESP32_DEV.***. Config Portal was requested by DRD to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
+1. This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr) on  **ESP32 ESP32_DEV.**. Config Portal was requested by DRD to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr using SPIFFS on ESP32_DEV
@@ -2148,7 +2154,7 @@ MQTT connection successful!
 TWWWW WTWWWW WWTW
 ```
 
-2. This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr) on  ***ESP8266 NodeMCU 1.0.***. Config Portal was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
+2. This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr) on  **ESP8266 NodeMCU 1.0.**. Config Portal was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr using LittleFS on ESP8266_NODEMCU
@@ -2215,7 +2221,7 @@ TWWWW WTWWW
 ```
 ---
 
-3. This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  ***ESP32 ESP32_DEV.***. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
+3. This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  **ESP32 ESP32_DEV.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
@@ -2270,7 +2276,7 @@ HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH
 ```
 ---
 
-4. This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  ***ESP8266_NODEMCU.***. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
+4. This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  **ESP8266_NODEMCU.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU
@@ -2326,7 +2332,7 @@ HHHHHHHHHH HHHHHHHHHH HHH
 
 ---
 
-5. This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  ***ESP8266_NODEMCU.***. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+5. This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
@@ -2402,6 +2408,7 @@ By going to http://192.168.2.186/edit or http://async-esp8266fs.local/edit, you 
 ---
 
 ### Debug
+
 Debug is enabled by default on Serial. To disable, add before `startConfigPortal()`
 
 ```cpp
@@ -2495,7 +2502,7 @@ If you want to contribute to this project:
 
 ### License and credits ###
 
-- The library is licensed under [MIT](https://github.com/khoih-prog/WebSockets2_Generic/blob/master/LICENSE)
+- The library is licensed under [MIT](https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/LICENSE)
 
 ---
 
