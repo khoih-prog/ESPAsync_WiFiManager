@@ -396,7 +396,7 @@ class ESPAsync_WiFiManager
     {
       return _CORS_Header;
     }
-#endif     
+#endif    
 
     //returns the list of Parameters
     ESPAsync_WMParameter** getParameters();
@@ -589,7 +589,3 @@ class ESPAsync_WiFiManager
       return false;
     }
 };
-
-
-#include "ESPAsync_WiFiManager-Impl.h"
-

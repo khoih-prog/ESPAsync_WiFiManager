@@ -13,15 +13,16 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: Version: 1.1.2
+  Version: 1.2.0
 
-  Version Modified By   Date      Comments
+  Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
-  1.0.11   K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
-                                   to sync with ESP_WiFiManager v1.0.11
-  1.1.1    K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
-                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
-  1.1.2    K Hoang      17/09/2020 Fix bug in examples.
+  1.0.11  K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
+                                  to sync with ESP_WiFiManager v1.0.11
+  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+                                  ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
+  1.1.2   K Hoang      17/09/2020 Fix bug in examples.
+  1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
    This example will open a configuration portal when no WiFi configuration has been previously entered or when a button is pushed.
@@ -277,7 +278,7 @@ bool initialConfig = false;
 // From v1.0.10 to permit disable/enable StaticIP configuration in Config Portal from sketch. Valid only if DHCP is used.
 // You'll loose the feature of dynamically changing from DHCP to static IP, or vice versa
 // You have to explicitly specify false to disable the feature.
-//#define USE_STATIC_IP_CONFIG_IN_CP          false
+#define USE_STATIC_IP_CONFIG_IN_CP          false
 
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)

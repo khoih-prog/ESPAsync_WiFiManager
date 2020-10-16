@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-  ESPAsync_WiFiManager-Impl.h
+  ESPAsync_WiFiManager.cpp
   For ESP8266 / ESP32 boards
 
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
@@ -25,8 +25,8 @@
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
  *****************************************************************************************************************************/
 
-#pragma once
-
+#include "ESPAsync_WiFiManager_Debug.h"
+#include "ESPAsync_WiFiManager.h"
 /////////////////////////////////////////////////////////////////////////////
 
 ESPAsync_WMParameter::ESPAsync_WMParameter(const char *custom)
@@ -2237,5 +2237,4 @@ String ESPAsync_WiFiManager::getStoredWiFiPass()
 #endif
 
 //////////////////////////////////////////
-
 

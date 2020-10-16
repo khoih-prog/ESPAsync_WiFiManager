@@ -13,15 +13,16 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: Version: 1.1.2
+  Version: 1.2.0
 
-  Version Modified By   Date      Comments
+  Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
-  1.0.11   K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
-                                   to sync with ESP_WiFiManager v1.0.11
-  1.1.1    K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
-                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
-  1.1.2    K Hoang      17/09/2020 Fix bug in examples.
+  1.0.11  K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
+                                  to sync with ESP_WiFiManager v1.0.11
+  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+                                  ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
+  1.1.2   K Hoang      17/09/2020 Fix bug in examples.
+  1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
    This example will open a configuration portal when the reset button is pressed twice.

@@ -28,6 +28,12 @@
 To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) and underlying Async libraries, please compare the more efficient [Async_ESP32_FSWebServer example](examples/Async_ESP32_FSWebServer) example with the complicated twin [ESP32_FSWebServer](https://github.com/khoih-prog/ESP_WiFiManager/tree/master/examples/ESP32_FSWebServer).
 
 ---
+---
+
+### Releases v1.2.0
+
+1. Restore cpp code besides Impl.h code to use in case of `multiple definition` linker error. See [`Change Implementation to seperate *.h and *.cpp file instead of *.h and *-Impl.h`](https://github.com/khoih-prog/ESP_WiFiManager/issues/38) and [`Support building in PlatformIO PR`](https://github.com/khoih-prog/ESP_WiFiManager/pull/20). Also have a look at [**HOWTO Fix Multiple Definitions Linker Error**](https://github.com/khoih-prog/ESPAsync_WiFiManager#HOWTO-Fix-Multiple-Definitions-Linker-Error)
+2. Fix bug [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16).
 
 ### Releases v1.1.2
 
@@ -96,6 +102,31 @@ The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsy
 3. Install **ESPAsync_WiFiManager** library by using [Library Manager](https://docs.platformio.org/en/latest/librarymanager/). Search for **ESPAsync_WiFiManager** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
 4. Use included [platformio.ini](platformio/platformio.ini) file from examples to ensure that all dependent libraries will installed automatically. Please visit documentation for the other options and examples at [Project Configuration File](https://docs.platformio.org/page/projectconf.html)
 
+---
+---
+
+### HOWTO Fix `Multiple Definitions` Linker Error
+
+The current library implementation, using xyz-Impl.h instead of standard xyz.cpp, possibly creates certain `Multiple Definitions` Linker error in certain use cases. Although it's simple to just modify several lines of code, either in the library or in the application, the library is adding 2 more source directories
+
+1. **scr_h** for new h-only files
+2. **src_cpp** for standard h/cpp files
+
+besides the standard **src** directory.
+
+To use the old standard cpp way, locate this library' directory, then just 
+
+1. **Delete the all the files in src directory.**
+2. **Copy all the files in src_cpp directory into src.**
+3. Close then reopen the application code in Arduino IDE, etc. to recompile from scratch.
+
+To re-use the new h-only way, just 
+
+1. **Delete the all the files in src directory.**
+2. **Copy the files in src_h directory into src.**
+3. Close then reopen the application code in Arduino IDE, etc. to recompile from scratch.
+
+---
 ---
 
 ## How It Works
@@ -2441,6 +2472,11 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ---
 ---
 
+### Releases v1.2.0
+
+1. Restore cpp code besides Impl.h code to use in case of `multiple definition` linker error. See [`Change Implementation to seperate *.h and *.cpp file instead of *.h and *-Impl.h`](https://github.com/khoih-prog/ESP_WiFiManager/issues/38) and [`Support building in PlatformIO PR`](https://github.com/khoih-prog/ESP_WiFiManager/pull/20). Also have a look at [**HOWTO Fix Multiple Definitions Linker Error**](https://github.com/khoih-prog/ESPAsync_WiFiManager#HOWTO-Fix-Multiple-Definitions-Linker-Error)
+2. Fix bug [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16).
+
 ### Releases v1.1.2
 
 1. Fix bug in examples.
@@ -2478,7 +2514,7 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
 2. Thanks to [Hristo Gochkov](https://github.com/me-no-dev) for great [ESPAsyncWebServer Library](https://github.com/me-no-dev/ESPAsyncWebServer)
 3. Thanks to good work of [Miguel Alexandre Wisintainer](https://github.com/tcpipchip) for working with, developing, debugging and testing.
 4. Thanks to [cancodr](https://github.com/cancodr) for requesting an enhancement in [Issue #29: Is it possible to use AsyncWebServer.h instead of WebServer.h?](https://github.com/khoih-prog/ESP_WiFiManager/issues/29), leading to this [ESPAsync_WiFiManager Library](https://github.com/khoih-prog/ESPAsync_WiFiManager).
-
+5. Thanks to [Marcel Stör](https://github.com/marcelstoer) for reporting [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16) bug which is fixed in v1.2.0.
 
 <table>
   <tr>
@@ -2488,6 +2524,9 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
     <td align="center"><a href="https://github.com/alanswx"><img src="https://github.com/alanswx.png" width="100px;" alt="alanswx"/><br /><sub><b>⭐️ Alan Steremberg</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/tcpipchip"><img src="https://github.com/tcpipchip.png" width="100px;" alt="tcpipchip"/><br /><sub><b>Miguel Wisintainer</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/cancodr"><img src="https://github.com/cancodr.png" width="100px;" alt="cancodr"/><br /><sub><b>cancodr</b></sub></a><br /></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/marcelstoer"><img src="https://github.com/marcelstoer.png" width="100px;" alt="marcelstoer"/><br /><sub><b>Marcel Stör</b></sub></a><br /></td>
   </tr> 
 </table>
 
