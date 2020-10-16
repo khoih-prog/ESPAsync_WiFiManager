@@ -5,7 +5,6 @@
 [![GitHub](https://img.shields.io/github/license/mashape/apistatus.svg)](https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/LICENSE)
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#Contributing)
 [![GitHub issues](https://img.shields.io/github/issues/khoih-prog/ESPAsync_WiFiManager.svg)](http://github.com/khoih-prog/ESPAsync_WiFiManager/issues)
-[![star this repo](https://githubbadges.com/star.svg?user=khoih-prog&repo=ESPAsync_WiFiManager&style=default)](https://github.com/khoih-prog/ESPAsync_WiFiManager)
 
 ---
 ---
