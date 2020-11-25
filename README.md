@@ -825,7 +825,7 @@ Once WiFi network information is saved in the `ESP32 / ESP8266`, it will try to 
 
 These illustrating steps is based on the example [Async_ConfigOnSwitchFS](https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ConfigOnSwitchFS)
 
-####  1. Determine the variables to be configured via Config Portal (CP)
+###  1. Determine the variables to be configured via Config Portal (CP)
 
 The application will:
 
@@ -865,9 +865,9 @@ int pinScl                          = PIN_D1;     // Pin D1 mapped to pin GPIO5 
 
 ---
 
-####  2. Initialize the variables to prepare for Config Portal (CP)
+###  2. Initialize the variables to prepare for Config Portal (CP)
 
-The example [Async_ConfigOnSwitchFS](https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ConfigOnSwitchFS) will open the CP whenever a SW press is detected in loop(). So the code to add vars will be there, just after the CP `ESPAsync_WiFiManager` class initialization to create `ESPAsync_wifiManager` object.
+The example [Async_ConfigOnSwitchFS](https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ConfigOnSwitchFS) will open the CP whenever a SW press is detected in loop(). So the code to add `dynamic variables` will be there, just after the CP `ESPAsync_WiFiManager` class initialization to create `ESPAsync_wifiManager` object.
 
 ```
 void loop()
@@ -972,7 +972,7 @@ where
 - labelPlacement => WFM_LABEL_AFTER   : to place label after
 ```
 
-where customhtml Code is:
+and customhtml Code is:
 
 ```
 char customhtml[24] = "type=\"checkbox\"";
@@ -985,7 +985,7 @@ if (sensorDht22)
 
 ---
 
-####  3. Add the variables to Config Portal (CP)
+###  3. Add the variables to Config Portal (CP)
 
 Adding those `ESPAsync_WMParameter` objects created in Step 2 using the function `addParameter()` of object `ESPAsync_wifiManager`
 
@@ -1012,7 +1012,7 @@ ESPAsync_wifiManager.addParameter(&p_pinScl);
 
 ---
 
-####  4. Save the variables configured in Config Portal (CP)
+###  4. Save the variables configured in Config Portal (CP)
 
 When the CP exits, we have to store the parameters' values that users input via CP to use later.
 
@@ -1048,7 +1048,7 @@ writeConfigFile();
 
 ---
 
-#### 5. Write to FS (SPIFFS, LittleFS, etc.) using JSON format
+### 5. Write to FS (SPIFFS, LittleFS, etc.) using JSON format
 
 First, you have to familiarize yourself with `ArduinoJson` library, its functions, the disruptive differences between `ArduinoJson version 5.x.x-` and `v6.0.0+`. The best documentation can be found at [The best JSON library for embedded C++](https://arduinojson.org/).
 
@@ -1147,7 +1147,13 @@ Now just open the file for writing, and abort if open-for-writing error:
 
 ```
 // Open file for writing
-  File f = FileFS.open(CONFIG_FILE, "w");
+File f = FileFS.open(CONFIG_FILE, "w");
+
+if (!f)
+{
+  Serial.println("Failed to open config file for writing");
+  return false;
+}
 ```
 
 
@@ -1172,7 +1178,7 @@ f.close();
 But **HOWTO use the saved data in the next startup** ???? That's in next step 6.
 
 
-#### 6. Read from FS using JSON format
+### 6. Read from FS using JSON format
 
 
 Now, you have familiarized yourself with ArduinoJson library, its functions. We'll discuss HOWTO read data from the CONFIG_FILE in Jsonified format, then HOWTO parse the to use.
@@ -1272,7 +1278,11 @@ File f = FileFS.open(CONFIG_FILE, "r");
 We'll inform and abort if the CONFIG_FILE can't be opened (file not found, can't be opened, etc.)
 
 ```
-Serial.println("Configuration file not found");
+if (!f)
+{
+  Serial.println("Configuration file not found");
+  return false;
+}
 ```
 
 ### 6.2 Open CONFIG_FILE to read
@@ -1311,13 +1321,13 @@ We first create the object with enough size
 DynamicJsonDocument json(1024);
 ```
 
-then populate it with data from buffer we read from CONFIG_FILE in step 6.2
+then populate it with data from buffer we read from CONFIG_FILE in step 6.2, pre-parse and check for error. All is done just by one command `deserializeJson()`
 
 ```
 auto deserializeError = deserializeJson(json, buf.get());
 ```
 
-also check if any data error in the process of writing, storing, reading back:
+Abort if there is any data error in the process of writing, storing, reading back. If OK, just nicely print out to the Debug Terminal
 
 ```
 if ( deserializeError )
