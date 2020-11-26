@@ -40,7 +40,7 @@
       "name": "ESP Async WebServer",
       "version": "^1.2.3",
       "platforms": ["espressif8266", "espressif32"]
-    },
+    }
   ],
   "frameworks": "*",
   "platforms": "espressif",
