@@ -3115,7 +3115,7 @@ By going to http://192.168.2.186/edit or http://async-esp8266fs.local/edit, you 
 
 ---
 
-6. This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](examples/Async_ESP32_FSWebServer_DRD)  on  **ESP32_DEV using newly-supported LittleFS.**. Config Portal was requested by DRD (also using **LittleFS**) to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+6. This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](examples/Async_ESP32_FSWebServer_DRD)  on  **ESP32_DEV using newly-supported LittleFS.**. Config Portal was requested by DRD (also using **LittleFS**) to input and save Credentials. The boards then connected to WiFi successfully.
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
