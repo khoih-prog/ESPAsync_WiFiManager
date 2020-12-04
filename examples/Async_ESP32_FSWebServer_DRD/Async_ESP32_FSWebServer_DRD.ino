@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.2.0
+  Version: 1.3.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -23,6 +23,7 @@
                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
   1.1.2   K Hoang      17/09/2020 Fix bug in examples.
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
+  1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
  *****************************************************************************************************************************/
 /*****************************************************************************************************************************
    Compare this efficient Async_ESP32_FSWebServer_DRD example with the so complicated twin ESP32_FSWebServer 
@@ -66,22 +67,32 @@ WiFiMulti wifiMulti;
 //#define FORMAT_FILESYSTEM true
 #define FORMAT_FILESYSTEM false
 
-#define USE_SPIFFS            true
+// LittleFS has higher priority than SPIFFS
+#define USE_LITTLEFS    true
+#define USE_SPIFFS      false
 
-#if USE_SPIFFS
+#if USE_LITTLEFS
+  // Use LittleFS
+  #include "FS.h"
+
+  // The library will be depreciated after being merged to future major Arduino esp32 core release 2.x
+  // At that time, just remove this library inclusion
+  #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+  
+  FS* filesystem =      &LITTLEFS;
+  #define FileFS        LITTLEFS
+  #define FS_Name       "LittleFS"
+#elif USE_SPIFFS
   #include <SPIFFS.h>
   FS* filesystem =                &SPIFFS;
   #define FileFS                  SPIFFS
   #define FS_Name                 "SPIFFS"
-  #define ESP_DRD_USE_SPIFFS      true
 #else
   // Use FFat
   #include <FFat.h>
   FS* filesystem =                &FFat;
   #define FileFS                  FFat
   #define FS_Name                 "FFat"
-  //#define ESP_DRD_USE_EEPROM    true
-  #define ESP_DRD_USE_SPIFFS      true
 #endif
 
 #define LED_BUILTIN       2
@@ -89,6 +100,24 @@ WiFiMulti wifiMulti;
 #define LED_OFF           LOW
 
 #include <SPIFFSEditor.h>
+
+// These defines must be put before #include <ESP_DoubleResetDetector.h>
+// to select where to store DoubleResetDetector's variable.
+// For ESP32, You must select one to be true (EEPROM or SPIFFS)
+// Otherwise, library will use default EEPROM storage
+#if USE_LITTLEFS
+  #define ESP_DRD_USE_LITTLEFS    true
+  #define ESP_DRD_USE_SPIFFS      false
+  #define ESP_DRD_USE_EEPROM      false
+#elif USE_SPIFFS
+  #define ESP_DRD_USE_LITTLEFS    false
+  #define ESP_DRD_USE_SPIFFS      true
+  #define ESP_DRD_USE_EEPROM      false
+#else
+  #define ESP_DRD_USE_LITTLEFS    false
+  #define ESP_DRD_USE_SPIFFS      false
+  #define ESP_DRD_USE_EEPROM      true
+#endif
 
 #define DOUBLERESETDETECTOR_DEBUG       true  //false
 
@@ -155,7 +184,7 @@ bool initialConfig = false;
 // From v1.0.10 to permit disable/enable StaticIP configuration in Config Portal from sketch. Valid only if DHCP is used.
 // You'll loose the feature of dynamically changing from DHCP to static IP, or vice versa
 // You have to explicitly specify false to disable the feature.
-//#define USE_STATIC_IP_CONFIG_IN_CP          false
+#define USE_STATIC_IP_CONFIG_IN_CP          false
 
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
@@ -177,8 +206,8 @@ bool initialConfig = false;
   #define USE_DHCP_IP     true
 #else
   // You can select DHCP or Static IP here
-  //#define USE_DHCP_IP     true
-  #define USE_DHCP_IP     false
+  #define USE_DHCP_IP     true
+  //#define USE_DHCP_IP     false
 #endif
 
 #if ( USE_DHCP_IP || ( defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP ) )
@@ -223,7 +252,7 @@ String http_password = "admin";
 String separatorLine = "===============================================================";
 
 // Function Prototypes
-uint8_t connectMultiWiFi(void);
+uint8_t connectMultiWiFi();
 
 //format bytes
 String formatBytes(size_t bytes)
@@ -252,7 +281,7 @@ void toggleLED()
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
-void heartBeatPrint(void)
+void heartBeatPrint()
 {
   static int num = 1;
 
@@ -272,7 +301,7 @@ void heartBeatPrint(void)
   }
 }
 
-void check_WiFi(void)
+void check_WiFi()
 {
   if ( (WiFi.status() != WL_CONNECTED) )
   {
@@ -281,7 +310,7 @@ void check_WiFi(void)
   }
 }  
 
-void check_status(void)
+void check_status()
 {
   static ulong checkstatus_timeout  = 0;
   static ulong LEDstatus_timeout    = 0;
@@ -317,7 +346,7 @@ void check_status(void)
   }
 }
 
-void loadConfigData(void)
+void loadConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
@@ -334,7 +363,7 @@ void loadConfigData(void)
   }
 }
     
-void saveConfigData(void)
+void saveConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "w");
   LOGERROR(F("SaveWiFiCfgFile "));
@@ -351,7 +380,7 @@ void saveConfigData(void)
   }
 }
 
-uint8_t connectMultiWiFi(void)
+uint8_t connectMultiWiFi()
 {
 #if ESP32
   // For ESP32, this better be 0 to shorten the connect time
@@ -421,7 +450,7 @@ uint8_t connectMultiWiFi(void)
   return status;
 }
 
-void setup(void)
+void setup()
 {
   //set led pin as output
   pinMode(LED_BUILTIN, OUTPUT);
@@ -429,8 +458,10 @@ void setup(void)
   Serial.begin(115200);
   while (!Serial);
 
-  Serial.print("\nStarting ESP32_FSWebServer_DRD using " + String(FS_Name));
+  Serial.print("\nStarting Async_ESP32_FSWebServer_DRD using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
+  Serial.println("ESPAsync_WiFiManager Version " + String(ESP_ASYNC_WIFIMANAGER_VERSION));
+  Serial.println("ESP_DoubleResetDetector Version " + String(ESP_DOUBLE_RESET_DETECTOR_VERSION));
 
   Serial.setDebugOutput(false);
 
@@ -631,8 +662,9 @@ void setup(void)
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
-  server.addHandler(new SPIFFSEditor(SPIFFS, http_username, http_password));
-  server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.htm");
+  server.addHandler(new SPIFFSEditor(FileFS, http_username, http_password));
+  server.serveStatic("/", FileFS, "/").setDefaultFile("index.htm");
+  
 
   server.onNotFound([](AsyncWebServerRequest * request)
   {
@@ -731,7 +763,7 @@ void setup(void)
   digitalWrite(LED_BUILTIN, LED_OFF);
 }
 
-void loop(void)
+void loop()
 {
   // Call the double reset detector loop method every so often,
   // so that it can recognise when the timeout expires.

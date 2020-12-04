@@ -29,6 +29,11 @@ To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/
 ---
 ---
 
+### Releases v1.3.0
+
+1. Add LittleFS support to ESP32-related examples to use [**LittleFS_esp32 Library**](https://github.com/lorol/LITTLEFS)
+2. Add Version String
+
 ### Releases v1.2.0
 
 1. Restore cpp code besides Impl.h code to use in case of `multiple definition` linker error. See [`Change Implementation to seperate *.h and *.cpp file instead of *.h and *-Impl.h`](https://github.com/khoih-prog/ESP_WiFiManager/issues/38) and [`Support building in PlatformIO PR`](https://github.com/khoih-prog/ESP_WiFiManager/pull/20). Also have a look at [**HOWTO Fix Multiple Definitions Linker Error**](https://github.com/khoih-prog/ESPAsync_WiFiManager#HOWTO-Fix-Multiple-Definitions-Linker-Error)
@@ -80,6 +85,8 @@ Thanks to this [ESPAsync_WiFiManager library](https://github.com/khoih-prog/ESPA
  4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards.
  5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
  6. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards
+ 7. [`ESP_DoubleResetDetector v1.1.0+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
+ 8. [`LittleFS_esp32 v1.0.5+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS.
  
 ---
 
@@ -96,6 +103,7 @@ The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsy
 4. Copy the whole `ESPAsync_WiFiManager-master` folder to Arduino libraries' directory such as `~/Arduino/libraries/`.
 
 ### VS Code & PlatformIO:
+
 1. Install [VS Code](https://code.visualstudio.com/)
 2. Install [PlatformIO](https://platformio.org/platformio-ide)
 3. Install [**ESPAsync_WiFiManager** library](https://platformio.org/lib/show/11065/ESPAsync_WiFiManager) by using [Library Manager](https://platformio.org/lib/show/11065/ESPAsync_WiFiManager/installation). Search for **ESPAsync_WiFiManager** in [Platform.io Author's Libraries](https://platformio.org/lib/search?query=author:%22Khoi%20Hoang%22)
@@ -202,9 +210,22 @@ then connect WebBrowser to configurable ConfigPortal IP address, default is 192.
   #include <WiFiMulti.h>
   WiFiMulti wifiMulti;
 
-  #define USE_SPIFFS      true
+  // LittleFS has higher priority than SPIFFS
+  #define USE_LITTLEFS    true
+  #define USE_SPIFFS      false
 
-  #if USE_SPIFFS
+  #if USE_LITTLEFS
+    // Use LittleFS
+    #include "FS.h"
+
+    // The library will be depreciated after being merged to future major Arduino esp32 core release 2.x
+    // At that time, just remove this library inclusion
+    #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+    
+    FS* filesystem =      &LITTLEFS;
+    #define FileFS        LITTLEFS
+    #define FS_Name       "LittleFS"
+  #elif USE_SPIFFS
     #include <SPIFFS.h>
     FS* filesystem =      &SPIFFS;
     #define FileFS        SPIFFS
@@ -326,9 +347,22 @@ DNSServer dnsServer;
   #include <WiFiMulti.h>
   WiFiMulti wifiMulti;
 
-  #define USE_SPIFFS      true
+  // LittleFS has higher priority than SPIFFS
+  #define USE_LITTLEFS    true
+  #define USE_SPIFFS      false
 
-  #if USE_SPIFFS
+  #if USE_LITTLEFS
+    // Use LittleFS
+    #include "FS.h"
+
+    // The library will be depreciated after being merged to future major Arduino esp32 core release 2.x
+    // At that time, just remove this library inclusion
+    #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+    
+    FS* filesystem =      &LITTLEFS;
+    #define FileFS        LITTLEFS
+    #define FS_Name       "LittleFS"
+  #elif USE_SPIFFS
     #include <SPIFFS.h>
     FS* filesystem =      &SPIFFS;
     #define FileFS        SPIFFS
@@ -1735,9 +1769,22 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #include <WiFiMulti.h>
   WiFiMulti wifiMulti;
 
-  #define USE_SPIFFS      true
+  // LittleFS has higher priority than SPIFFS
+  #define USE_LITTLEFS    true
+  #define USE_SPIFFS      false
 
-  #if USE_SPIFFS
+  #if USE_LITTLEFS
+    // Use LittleFS
+    #include "FS.h"
+
+    // The library will be depreciated after being merged to future major Arduino esp32 core release 2.x
+    // At that time, just remove this library inclusion
+    #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+    
+    FS* filesystem =      &LITTLEFS;
+    #define FileFS        LITTLEFS
+    #define FS_Name       "LittleFS"
+  #elif USE_SPIFFS
     #include <SPIFFS.h>
     FS* filesystem =      &SPIFFS;
     #define FileFS        SPIFFS
@@ -1798,10 +1845,16 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   // to select where to store DoubleResetDetector's variable.
   // For ESP32, You must select one to be true (EEPROM or SPIFFS)
   // Otherwise, library will use default EEPROM storage
-  #if USE_SPIFFS
+  #if USE_LITTLEFS
+    #define ESP_DRD_USE_LITTLEFS    true
+    #define ESP_DRD_USE_SPIFFS      false
+    #define ESP_DRD_USE_EEPROM      false
+  #elif USE_SPIFFS
+    #define ESP_DRD_USE_LITTLEFS    false
     #define ESP_DRD_USE_SPIFFS      true
     #define ESP_DRD_USE_EEPROM      false
   #else
+    #define ESP_DRD_USE_LITTLEFS    false
     #define ESP_DRD_USE_SPIFFS      false
     #define ESP_DRD_USE_EEPROM      true
   #endif
@@ -1998,7 +2051,7 @@ Adafruit_MQTT_Publish   *Temperature  = NULL;
 // Forward Declaration
 
 
-uint8_t connectMultiWiFi(void)
+uint8_t connectMultiWiFi()
 {
 #if ESP32
   // For ESP32, this better be 0 to shorten the connect time
@@ -2074,7 +2127,7 @@ void toggleLED()
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
-void heartBeatPrint(void)
+void heartBeatPrint()
 {
   static int num = 1;
 
@@ -2094,7 +2147,7 @@ void heartBeatPrint(void)
   }
 }
 
-void publishMQTT(void)
+void publishMQTT()
 {
     float some_number = 25.0 + (float) ( millis() % 100 ) /  100;
 
@@ -2114,7 +2167,7 @@ void publishMQTT(void)
     }
 }
 
-void check_WiFi(void)
+void check_WiFi()
 {
   if ( (WiFi.status() != WL_CONNECTED) )
   {
@@ -2123,7 +2176,7 @@ void check_WiFi(void)
   }
 }  
 
-void check_status(void)
+void check_status()
 {
   static ulong checkstatus_timeout  = 0;
   static ulong LEDstatus_timeout    = 0;
@@ -2170,7 +2223,7 @@ void check_status(void)
   }
 }
 
-void loadConfigData(void)
+void loadConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
@@ -2187,7 +2240,7 @@ void loadConfigData(void)
   }
 }
     
-void saveConfigData(void)
+void saveConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "w");
   LOGERROR(F("SaveWiFiCfgFile "));
@@ -2204,7 +2257,7 @@ void saveConfigData(void)
   }
 }
 
-void deleteOldInstances(void)
+void deleteOldInstances()
 {
   // Delete previous instances
   if (mqtt)
@@ -2224,7 +2277,7 @@ void deleteOldInstances(void)
   }  
 }
 
-void createNewInstances(void)
+void createNewInstances()
 {
   if (!client)
   {
@@ -2314,7 +2367,7 @@ void wifi_manager()
   // Extra parameters to be configured
   // After connecting, parameter.getValue() will get you the configured value
   // Format: <ID> <Placeholder text> <default value> <length> <custom HTML> <label placement>
-  // (** we are not using <custom HTML> and <label placement> **)
+  // (*** we are not using <custom HTML> and <label placement> ***)
 
   // AIO_SERVER
   ESPAsync_WMParameter AIO_SERVER_FIELD(AIO_SERVER_Label, "AIO SERVER", custom_AIO_SERVER, custom_AIO_SERVER_LEN + 1);
@@ -2626,6 +2679,8 @@ void setup()
 
   Serial.print("\nStarting Async_ConfigOnDRD_FS_MQTT_Ptr using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
+  Serial.println("ESPAsync_WiFiManager Version " + String(ESP_ASYNC_WIFIMANAGER_VERSION));
+  Serial.println("ESP_DoubleResetDetector Version " + String(ESP_DOUBLE_RESET_DETECTOR_VERSION));
 
   Serial.setDebugOutput(false);
 
@@ -2676,7 +2731,7 @@ void setup()
     wifi_manager();
   }
   else
-  {
+  {   
     // Load stored data, the addAP ready for MultiWiFi reconnection
     loadConfigData();
 
@@ -2708,7 +2763,7 @@ void setup()
     }
   }
 
-  digitalWrite(LED_BUILTIN, LED_OFF); // Turn led off as we are not in configuration mode.
+  digitalWrite(LED_BUILTIN, LED_OFF); // Turn led off as we are not in configuration mode.   
 }
 
 // Loop function
@@ -2735,6 +2790,8 @@ void loop()
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr using SPIFFS on ESP32_DEV
+ESPAsync_WiFiManager Version v1.3.0
+ESP_DoubleResetDetector Version v1.1.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":1883,"AIO_USERNAME_Label":"account","AIO_KEY_Label":"aio_token"}
 Config File successfully parsed
 SPIFFS Flag read = 0xd0d01234
@@ -2802,6 +2859,8 @@ TWWWW WTWWWW WWTW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr using LittleFS on ESP8266_NODEMCU
+ESPAsync_WiFiManager Version v1.3.0
+ESP_DoubleResetDetector Version v1.1.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":1883,"AIO_USERNAME_Label":"account","AIO_KEY_Label":"aio_token"}
 Config File successfully parsed
 LittleFS Flag read = 0xd0d01234
@@ -2869,6 +2928,8 @@ TWWWW WTWWW
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
+ESPAsync_WiFiManager Version v1.3.0
+ESP_DoubleResetDetector Version v1.1.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
 [WM] Set CORS Header to :  Your Access-Control-Allow-Origin
@@ -2924,6 +2985,8 @@ HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU
+ESPAsync_WiFiManager Version v1.3.0
+ESP_DoubleResetDetector Version v1.1.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
 [WM] Set CORS Header to :  Your Access-Control-Allow-Origin
@@ -2980,6 +3043,8 @@ HHHHHHHHHH HHHHHHHHHH HHH
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
+ESPAsync_WiFiManager Version v1.3.0
+ESP_DoubleResetDetector Version v1.1.0
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
 FS File: CanadaFlag_2.png, size: 8.12KB
@@ -3049,6 +3114,114 @@ By going to http://192.168.2.186/edit or http://async-esp8266fs.local/edit, you 
 </p>
 
 ---
+
+6. This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](examples/Async_ESP32_FSWebServer_DRD)  on  **ESP32_DEV using newly-supported LittleFS.**. Config Portal was requested by DRD (also using **LittleFS**) to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+
+```
+Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
+ESPAsync_WiFiManager Version v1.3.0
+ESP_DoubleResetDetector Version v1.1.0
+FS File: /CanadaFlag_1.png, size: 40.25KB
+FS File: /CanadaFlag_2.png, size: 8.12KB
+FS File: /CanadaFlag_3.jpg, size: 10.89KB
+FS File: /Credentials.txt, size: 192B
+FS File: /drd.dat, size: 4B
+FS File: /edit.htm.gz, size: 4.02KB
+FS File: /favicon.ico, size: 1.12KB
+FS File: /graphs.js.gz, size: 1.92KB
+FS File: /index.htm, size: 3.63KB
+FS File: /wifi_cred.dat, size: 192B
+
+[WM] RFC925 Hostname = AsyncESP32-FSWebServer
+[WM] setAPStaticIPConfig
+[WM] Set CORS Header to :  Your Access-Control-Allow-Origin
+Stored: SSID = HueNet1, Pass = 12345678
+[WM] * Add SSID =  HueNet1 , PW =  12345678
+Got stored Credentials. Timeout 120s for Config Portal
+LittleFS Flag read = 0xd0d04321
+No doubleResetDetected
+Saving config file...
+Saving config file OK
+[WM] LoadWiFiCfgFile 
+[WM] OK
+[WM] * Add SSID =  HueNet1 , PW =  12345678
+[WM] * Add SSID =  HueNet2 , PW =  12345678
+ConnectMultiWiFi in setup
+[WM] ConnectMultiWiFi with :
+[WM] * Flash-stored Router_SSID =  HueNet1 , Router_Pass =  12345678
+[WM] * Additional SSID =  HueNet1 , PW =  12345678
+[WM] * Additional SSID =  HueNet2 , PW =  12345678
+[WM] Connecting MultiWifi...
+[WM] WiFi connected after time:  1
+[WM] SSID: HueNet1 ,RSSI= -39
+[WM] Channel: 2 ,IP address: 192.168.2.101
+After waiting 3.75 secs more in setup(), connection result is connected. Local IP: 192.168.2.101
+HTTP server started @ 192.168.2.101
+===============================================================
+Open http://async-esp32fs.local/edit to see the file browser
+Using username = admin and password = admin
+===============================================================
+[WM] freeing allocated params!
+HStop doubleResetDetecting
+Saving config file...
+Saving config file OK
+HHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH
+...
+Starting ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
+ESPAsync_WiFiManager Version v1.3.0
+ESP_DoubleResetDetector Version v1.1.0
+FS File: /CanadaFlag_1.png, size: 40.25KB
+FS File: /CanadaFlag_2.png, size: 8.12KB
+FS File: /CanadaFlag_3.jpg, size: 10.89KB
+FS File: /Credentials.txt, size: 192B
+FS File: /drd.dat, size: 4B
+FS File: /edit.htm.gz, size: 4.02KB
+FS File: /favicon.ico, size: 1.12KB
+FS File: /graphs.js.gz, size: 1.92KB
+FS File: /index.htm, size: 3.63KB
+FS File: /wifi_cred.dat, size: 192B
+
+[WM] RFC925 Hostname = AsyncESP32-FSWebServer
+[WM] setAPStaticIPConfig
+[WM] Set CORS Header to :  Your Access-Control-Allow-Origin
+Stored: SSID = HueNet1, Pass = 12345678
+[WM] * Add SSID =  HueNet1 , PW =  87654321
+Got stored Credentials. Timeout 120s for Config Portal
+LittleFS Flag read = 0xd0d01234
+doubleResetDetected
+Saving config file...
+Saving config file OK
+Open Config Portal without Timeout: Double Reset Detected
+[WM] WiFi.waitForConnectResult Done
+[WM] SET AP
+[WM] 
+Configuring AP SSID = ESP_9ABF498
+[WM] AP PWD = your_password
+[WM] AP Channel = 8
+[WM] Custom AP IP/GW/Subnet =  192.168.100.1 192.168.100.1 255.255.255.0
+[WM] AP IP address = 192.168.100.1
+[WM] HTTP server started
+[WM] ESPAsync_WiFiManager::startConfigPortal : Enter loop
+[WM] Can't use Custom STA IP/GW/Subnet
+[WM] Connected after waiting (s) : 1.50
+[WM] Local ip = 192.168.2.101
+[WM] Timed out connection result: WL_CONNECTED
+WiFi connected...yeey :)
+[WM] * Add SSID =  HueNet1 , PW =  12345678
+[WM] * Add SSID =  HueNet2 , PW =  12345678
+[WM] SaveWiFiCfgFile 
+[WM] OK
+After waiting 0.00 secs more in setup(), connection result is connected. Local IP: 192.168.2.101
+HTTP server started @ 192.168.2.101
+===============================================================
+Open http://async-esp32fs.local/edit to see the file browser
+Using username = admin and password = admin
+===============================================================
+[WM] freeing allocated params!
+HH
+```
+
+---
 ---
 
 ### Debug
@@ -3083,6 +3256,11 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 
 ---
 ---
+
+### Releases v1.3.0
+
+1. Add LittleFS support to ESP32-related examples to use [**LittleFS_esp32 Library**](https://github.com/lorol/LITTLEFS)
+2. Add Version String
 
 ### Releases v1.2.0
 
@@ -3120,6 +3298,8 @@ This library is based on, modified, bug-fixed and improved from:
 
 to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) instead of (ESP8266)WebServer.
 
+---
+
 ### Contributions and Thanks
 
 1. Based on and modified from [Tzapu](https://github.com/tzapu/WiFiManager), [KenTaylor's version]( https://github.com/kentaylor/WiFiManager), [`Alan Steremberg's ESPAsyncWiFiManager`](https://github.com/alanswx/ESPAsyncWiFiManager) and [`Khoi Hoang's ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager).
@@ -3143,6 +3323,8 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
     <td align="center"><a href="https://github.com/thewhiterabbit"><img src="https://github.com/thewhiterabbit.png" width="100px;" alt="thewhiterabbit"/><br /><sub><b>Vague Rabbit</b></sub></a><br /></td>
   </tr> 
 </table>
+
+---
 
 ### Contributing
 

@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.2.0
+  Version: 1.3.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -23,6 +23,7 @@
                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
   1.1.2   K Hoang      17/09/2020 Fix bug in examples.
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
+  1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
  *****************************************************************************************************************************/
 #if !( defined(ESP8266) ||  defined(ESP32) )
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
@@ -49,9 +50,22 @@
   #include <WiFiMulti.h>
   WiFiMulti wifiMulti;
 
-  #define USE_SPIFFS      true
+  // LittleFS has higher priority than SPIFFS
+  #define USE_LITTLEFS    true
+  #define USE_SPIFFS      false
 
-  #if USE_SPIFFS
+  #if USE_LITTLEFS
+    // Use LittleFS
+    #include "FS.h"
+
+    // The library will be depreciated after being merged to future major Arduino esp32 core release 2.x
+    // At that time, just remove this library inclusion
+    #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+    
+    FS* filesystem =      &LITTLEFS;
+    #define FileFS        LITTLEFS
+    #define FS_Name       "LittleFS"
+  #elif USE_SPIFFS
     #include <SPIFFS.h>
     FS* filesystem =      &SPIFFS;
     #define FileFS        SPIFFS
@@ -237,7 +251,7 @@ char blynk_token  [BLYNK_TOKEN_LEN]         = "YOUR_BLYNK_TOKEN";
 char mqtt_server  [MQTT_SERVER_MAX_LEN];
 char mqtt_port    [MQTT_SERVER_PORT_LEN]    = "8080";
 
-uint8_t connectMultiWiFi(void)
+uint8_t connectMultiWiFi()
 {
 #if ESP32
   // For ESP32, this better be 0 to shorten the connect time
@@ -311,13 +325,13 @@ uint8_t connectMultiWiFi(void)
 bool shouldSaveConfig = false;
 
 //callback notifying us of the need to save config
-void saveConfigCallback(void)
+void saveConfigCallback()
 {
   Serial.println("Should save config");
   shouldSaveConfig = true;
 }
 
-bool loadFileFSConfigFile(void)
+bool loadFileFSConfigFile()
 {
   //clean FS, for testing
   //FileFS.format();
@@ -425,7 +439,7 @@ bool loadFileFSConfigFile(void)
   return true;
 }
 
-bool saveFileFSConfigFile(void)
+bool saveFileFSConfigFile()
 {
   Serial.println("Saving config");
 
@@ -472,7 +486,7 @@ void toggleLED()
   digitalWrite(PIN_LED, !digitalRead(PIN_LED));
 }
 
-void heartBeatPrint(void)
+void heartBeatPrint()
 {
   static int num = 1;
 
@@ -492,7 +506,7 @@ void heartBeatPrint(void)
   }
 }
 
-void check_WiFi(void)
+void check_WiFi()
 {
   if ( (WiFi.status() != WL_CONNECTED) )
   {
@@ -501,7 +515,7 @@ void check_WiFi(void)
   }
 }  
 
-void check_status(void)
+void check_status()
 {
   static ulong checkstatus_timeout  = 0;
   static ulong LEDstatus_timeout    = 0;
@@ -537,7 +551,7 @@ void check_status(void)
   }
 }
 
-void loadConfigData(void)
+void loadConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
@@ -554,7 +568,7 @@ void loadConfigData(void)
   }
 }
     
-void saveConfigData(void)
+void saveConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "w");
   LOGERROR(F("SaveWiFiCfgFile "));
@@ -579,6 +593,7 @@ void setup()
   
   Serial.print("\nStarting Async_AutoConnectWithFSParams using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
+  Serial.println("ESPAsync_WiFiManager Version " + String(ESP_ASYNC_WIFIMANAGER_VERSION));
 
   if (FORMAT_FILESYSTEM) 
     FileFS.format();
