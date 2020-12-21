@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.3.0
+  Version: 1.4.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -24,11 +24,12 @@
   1.1.2   K Hoang      17/09/2020 Fix bug in examples.
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
   1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
+  1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
  *****************************************************************************************************************************/
 
 #pragma once
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "v1.3.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.0"
 
 #include "ESPAsync_WiFiManager_Debug.h"
 
@@ -66,6 +67,30 @@
   #include <esp_wifi.h>
   #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 #endif
+
+typedef struct
+{
+  IPAddress _ap_static_ip;
+  IPAddress _ap_static_gw;
+  IPAddress _ap_static_sn;
+
+}  WiFi_AP_IPConfig;
+
+// Thanks to @Amorphous for the feature and code
+// (https://community.blynk.cc/t/esp-wifimanager-for-esp32-and-esp8266/42257/13)
+// To enable to configure from sketch
+#if !defined(USE_CONFIGURABLE_DNS)
+  #define USE_CONFIGURABLE_DNS        false
+#endif
+
+typedef struct
+{
+  IPAddress _sta_static_ip;
+  IPAddress _sta_static_gw;
+  IPAddress _sta_static_sn;
+  IPAddress _sta_static_dns1;
+  IPAddress _sta_static_dns2;
+}  WiFi_STA_IPConfig;
 
 #define WFM_LABEL_BEFORE 1
 #define WFM_LABEL_AFTER 2
@@ -174,13 +199,6 @@ const char WM_HTTP_AVAILABLE_PAGES[] PROGMEM = "<h3>Available Pages</h3><table c
 
 #define WIFI_MANAGER_MAX_PARAMS 20
 
-// Thanks to @Amorphous for the feature and code
-// (https://community.blynk.cc/t/esp-wifimanager-for-esp32-and-esp8266/42257/13)
-// To enable to configure from sketch
-#ifndef USE_CONFIGURABLE_DNS
-  #define USE_CONFIGURABLE_DNS      true
-#endif
-
 // To permit autoConnect() to use STA static IP or DHCP IP.
 #ifndef AUTOCONNECT_NO_INVALIDATE
   #define AUTOCONNECT_NO_INVALIDATE true
@@ -188,17 +206,38 @@ const char WM_HTTP_AVAILABLE_PAGES[] PROGMEM = "<h3>Available Pages</h3><table c
 
 /////////////////////////////////////////////////////////////////////////////
 
+typedef struct
+{
+  const char *_id;
+  const char *_placeholder;
+  char       *_value;
+  int         _length;
+  int         _labelPlacement;
+
+}  WMParam_Data;
+
+
 class ESPAsync_WMParameter 
 {
   public:
   
     ESPAsync_WMParameter(const char *custom);
-    ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
-    ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
-    ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
-
+    //ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
+    //ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
+    ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, 
+                          const char *custom = "", int labelPlacement = WFM_LABEL_BEFORE);
+                          
+    // KH, using struct                      
+    ESPAsync_WMParameter(WMParam_Data WMParam_data);                      
+    //////
+    
     ~ESPAsync_WMParameter();
-
+    
+    // Using Struct
+    void setWMParam_Data(WMParam_Data WMParam_data);
+    void getWMParam_Data(WMParam_Data &WMParam_data);
+    //////
+ 
     const char *getID();
     const char *getValue();
     const char *getPlaceholder();
@@ -208,11 +247,16 @@ class ESPAsync_WMParameter
     
   private:
   
+#if 1
+    WMParam_Data _WMParam_data;
+#else    
     const char *_id;
     const char *_placeholder;
     char       *_value;
     int         _length;
     int         _labelPlacement;
+#endif
+    
     const char *_customHTML;
 
     void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
@@ -302,8 +346,19 @@ class ESPAsync_WiFiManager
     
     //sets a custom ip /gateway /subnet configuration
     void          setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    
+    // KH, new using struct
+    void          setAPStaticIPConfig(WiFi_AP_IPConfig  WM_AP_IPconfig);
+    void          getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig);
+    //////
+    
     //sets config for a static IP
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    
+    // KH, new using struct
+    void          setSTAStaticIPConfig(WiFi_STA_IPConfig  WM_STA_IPconfig);
+    void          getSTAStaticIPConfig(WiFi_STA_IPConfig  &WM_STA_IPconfig);
+    //////
 
 #if USE_CONFIGURABLE_DNS
     void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn,
@@ -501,17 +556,9 @@ class ESPAsync_WiFiManager
     int _WiFiAPChannel = 1;
     //////
 
-    IPAddress     _ap_static_ip;
-    IPAddress     _ap_static_gw;
-    IPAddress     _ap_static_sn;
-    IPAddress     _sta_static_ip = IPAddress(0, 0, 0, 0);
-    IPAddress     _sta_static_gw;
-    IPAddress     _sta_static_sn;
-
-#if USE_CONFIGURABLE_DNS
-    IPAddress     _sta_static_dns1;
-    IPAddress     _sta_static_dns2;
-#endif
+    WiFi_AP_IPConfig  _WiFi_AP_IPconfig;
+    
+    WiFi_STA_IPConfig _WiFi_STA_IPconfig = { IPAddress(0, 0, 0, 0) };
 
     int           _paramsCount              = 0;
     int           _minimumQuality           = -1;

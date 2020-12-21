@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-  ESPAsync_WiFiManager.cpp
+  ESPAsync_WiFiManager-Impl.h
   For ESP8266 / ESP32 boards
 
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.3.0
+  Version: 1.4.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -24,31 +24,22 @@
   1.1.2   K Hoang      17/09/2020 Fix bug in examples.
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
   1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
+  1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
  *****************************************************************************************************************************/
 
-#include "ESPAsync_WiFiManager_Debug.h"
 #include "ESPAsync_WiFiManager.h"
+
 /////////////////////////////////////////////////////////////////////////////
 
 ESPAsync_WMParameter::ESPAsync_WMParameter(const char *custom)
 {
-  _id = NULL;
-  _placeholder = NULL;
-  _length = 0;
-  _value = NULL;
-  _labelPlacement = WFM_LABEL_BEFORE;
+  _WMParam_data._id = NULL;
+  _WMParam_data._placeholder = NULL;
+  _WMParam_data._length = 0;
+  _WMParam_data._value = NULL;
+  _WMParam_data._labelPlacement = WFM_LABEL_BEFORE;
 
   _customHTML = custom;
-}
-
-ESPAsync_WMParameter::ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length)
-{
-  init(id, placeholder, defaultValue, length, "", WFM_LABEL_BEFORE);
-}
-
-ESPAsync_WMParameter::ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom)
-{
-  init(id, placeholder, defaultValue, length, custom, WFM_LABEL_BEFORE);
 }
 
 ESPAsync_WMParameter::ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement)
@@ -56,57 +47,81 @@ ESPAsync_WMParameter::ESPAsync_WMParameter(const char *id, const char *placehold
   init(id, placeholder, defaultValue, length, custom, labelPlacement);
 }
 
+// KH, using struct                      
+ESPAsync_WMParameter::ESPAsync_WMParameter(WMParam_Data WMParam_data)
+{
+  init(WMParam_data._id, WMParam_data._placeholder, WMParam_data._value, WMParam_data._length, "", WMParam_data._labelPlacement);
+}                  
+//////
+
 void ESPAsync_WMParameter::init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement)
 {
-  _id = id;
-  _placeholder = placeholder;
-  _length = length;
-  _labelPlacement = labelPlacement;
+  _WMParam_data._id = id;
+  _WMParam_data._placeholder = placeholder;
+  _WMParam_data._length = length;
+  _WMParam_data._labelPlacement = labelPlacement;
 
-  _value = new char[_length + 1];
+  _WMParam_data._value = new char[_WMParam_data._length + 1];
 
-  if (_value != NULL)
+  if (_WMParam_data._value != NULL)
   {
-    memset(_value, 0, _length + 1);
+    memset(_WMParam_data._value, 0, _WMParam_data._length + 1);
 
     if (defaultValue != NULL)
     {
-      strncpy(_value, defaultValue, _length);
+      strncpy(_WMParam_data._value, defaultValue, _WMParam_data._length);
     }
   }
+  
   _customHTML = custom;
 }
 
 ESPAsync_WMParameter::~ESPAsync_WMParameter()
 {
-  if (_value != NULL)
+  if (_WMParam_data._value != NULL)
   {
-    delete[] _value;
+    delete[] _WMParam_data._value;
   }
 }
 
+// Using Struct to get/set whole data at once
+void ESPAsync_WMParameter::setWMParam_Data(WMParam_Data WMParam_data)
+{
+  LOGINFO(F("setWMParam_Data"));
+  
+  memcpy(&_WMParam_data, &WMParam_data, sizeof(_WMParam_data));
+}
+
+void ESPAsync_WMParameter::getWMParam_Data(WMParam_Data &WMParam_data)
+{
+  LOGINFO(F("getWMParam_Data"));
+  
+  memcpy(&WMParam_data, &_WMParam_data, sizeof(WMParam_data));
+}
+//////
+
 const char* ESPAsync_WMParameter::getValue()
 {
-  return _value;
+  return _WMParam_data._value;
 }
 
 const char* ESPAsync_WMParameter::getID()
 {
-  return _id;
+  return _WMParam_data._id;
 }
 const char* ESPAsync_WMParameter::getPlaceholder()
 {
-  return _placeholder;
+  return _WMParam_data._placeholder;
 }
 
 int ESPAsync_WMParameter::getValueLength()
 {
-  return _length;
+  return _WMParam_data._length;
 }
 
 int ESPAsync_WMParameter::getLabelPlacement()
 {
-  return _labelPlacement;
+  return _WMParam_data._labelPlacement;
 }
 const char* ESPAsync_WMParameter::getCustomHTML()
 {
@@ -161,7 +176,6 @@ char* ESPAsync_WiFiManager::getRFC952_hostname(const char* iHostname)
 //////////////////////////////////////////
 
 ESPAsync_WiFiManager::ESPAsync_WiFiManager(AsyncWebServer * webserver, DNSServer *dnsserver, const char *iHostname)
-//ESPAsync_WiFiManager::ESPAsync_WiFiManager(const char *iHostname)
 {
 
   server    = webserver;
@@ -353,11 +367,11 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   //////
   
   //optional soft ip config
-  if (_ap_static_ip)
+  if (_WiFi_AP_IPconfig._ap_static_ip)
   {
-    LOGWARN3(F("Custom AP IP/GW/Subnet = "), _ap_static_ip, _ap_static_gw, _ap_static_sn);
+    LOGWARN3(F("Custom AP IP/GW/Subnet = "), _WiFi_AP_IPconfig._ap_static_ip, _WiFi_AP_IPconfig._ap_static_gw, _WiFi_AP_IPconfig._ap_static_sn);
     
-    WiFi.softAPConfig(_ap_static_ip, _ap_static_gw, _ap_static_sn);
+    WiFi.softAPConfig(_WiFi_AP_IPconfig._ap_static_ip, _WiFi_AP_IPconfig._ap_static_gw, _WiFi_AP_IPconfig._ap_static_sn);
   }
 
   delay(500); // Without delay I've seen the IP address blank
@@ -828,28 +842,6 @@ boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const 
 
       LOGERROR(F("Connecting to new AP"));
 
-#if 0
-
-      // New Mod from v1.1.0
-      int wifiConnected = reconnectWifi();
-          
-      if ( wifiConnected == WL_CONNECTED )
-      {
-        //notify that configuration has changed and any optional parameters should be saved
-        if (_savecallback != NULL)
-        {
-          //todo: check if any custom parameters actually exist, and check if they really changed maybe
-          _savecallback();
-        }
-        
-        break;
-      }
-      
-      WiFi.mode(WIFI_AP); // Dual mode becomes flaky if not connected to a WiFi network.
-      //////
-
-#else
-
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED)
       {  
@@ -868,8 +860,6 @@ boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const 
         break;
       }
       
-#endif
-
       if (_shouldBreakAfterConfig)
       {
         //flag set to exit after config after trying to connect
@@ -919,28 +909,28 @@ boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const 
 void ESPAsync_WiFiManager::setWifiStaticIP(void)
 { 
 #if USE_CONFIGURABLE_DNS
-  if (_sta_static_ip)
+  if (_WiFi_STA_IPconfig._sta_static_ip)
   {
     LOGWARN(F("Custom STA IP/GW/Subnet"));
    
     //***** Added section for DNS config option *****
-    if (_sta_static_dns1 && _sta_static_dns2) 
+    if (_WiFi_STA_IPconfig._sta_static_dns1 && _WiFi_STA_IPconfig._sta_static_dns2) 
     { 
       LOGWARN(F("DNS1 and DNS2 set"));
  
-      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns1, _sta_static_dns2);
+      WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn, _WiFi_STA_IPconfig._sta_static_dns1, _WiFi_STA_IPconfig._sta_static_dns2);
     }
-    else if (_sta_static_dns1) 
+    else if (_WiFi_STA_IPconfig._sta_static_dns1) 
     {
       LOGWARN(F("Only DNS1 set"));
      
-      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn, _sta_static_dns1);
+      WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn, _WiFi_STA_IPconfig._sta_static_dns1);
     }
     else 
     {
       LOGWARN(F("No DNS server set"));
   
-      WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
+      WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn);
     }
     //***** End added section for DNS config option *****
 
@@ -952,9 +942,9 @@ void ESPAsync_WiFiManager::setWifiStaticIP(void)
   }
 #else
   // check if we've got static_ip settings, if we do, use those.
-  if (_sta_static_ip)
+  if (_WiFi_STA_IPconfig._sta_static_ip)
   {
-    WiFi.config(_sta_static_ip, _sta_static_gw, _sta_static_sn);
+    WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn);
     
     LOGWARN1(F("Custom STA IP/GW/Subnet : "), WiFi.localIP());
   }
@@ -1222,9 +1212,28 @@ int ESPAsync_WiFiManager::setConfigPortalChannel(int channel)
 void ESPAsync_WiFiManager::setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
 {
   LOGINFO(F("setAPStaticIPConfig"));
-  _ap_static_ip = ip;
-  _ap_static_gw = gw;
-  _ap_static_sn = sn;
+  _WiFi_AP_IPconfig._ap_static_ip = ip;
+  _WiFi_AP_IPconfig._ap_static_gw = gw;
+  _WiFi_AP_IPconfig._ap_static_sn = sn;
+}
+
+//////////////////////////////////////////
+
+// KH, new using struct
+void ESPAsync_WiFiManager::setAPStaticIPConfig(WiFi_AP_IPConfig  WM_AP_IPconfig)
+{
+  LOGINFO(F("setAPStaticIPConfig"));
+  
+  memcpy(&_WiFi_AP_IPconfig, &WM_AP_IPconfig, sizeof(_WiFi_AP_IPconfig));
+}
+
+//////////////////////////////////////////
+
+void ESPAsync_WiFiManager::getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig)
+{
+  LOGINFO(F("getAPStaticIPConfig"));
+  
+  memcpy(&WM_AP_IPconfig, &_WiFi_AP_IPconfig, sizeof(WM_AP_IPconfig));
 }
 
 //////////////////////////////////////////
@@ -1232,10 +1241,29 @@ void ESPAsync_WiFiManager::setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAdd
 void ESPAsync_WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
 {
   LOGINFO(F("setSTAStaticIPConfig"));
-  _sta_static_ip = ip;
-  _sta_static_gw = gw;
-  _sta_static_sn = sn;
+  _WiFi_STA_IPconfig._sta_static_ip = ip;
+  _WiFi_STA_IPconfig._sta_static_gw = gw;
+  _WiFi_STA_IPconfig._sta_static_sn = sn;
 }
+
+//////////////////////////////////////////
+
+void ESPAsync_WiFiManager::setSTAStaticIPConfig(WiFi_STA_IPConfig WM_STA_IPconfig)
+{
+  LOGINFO(F("setSTAStaticIPConfig"));
+  
+  memcpy(&_WiFi_STA_IPconfig, &WM_STA_IPconfig, sizeof(_WiFi_STA_IPconfig));
+}
+
+//////////////////////////////////////////
+
+void ESPAsync_WiFiManager::getSTAStaticIPConfig(WiFi_STA_IPConfig &WM_STA_IPconfig)
+{
+  LOGINFO(F("getSTAStaticIPConfig"));
+  
+  memcpy(&WM_STA_IPconfig, &_WiFi_STA_IPconfig, sizeof(WM_STA_IPconfig));
+}
+
 
 //////////////////////////////////////////
 
@@ -1243,11 +1271,11 @@ void ESPAsync_WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAd
 void ESPAsync_WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns_address_1, IPAddress dns_address_2)
 {
   LOGINFO(F("setSTAStaticIPConfig for USE_CONFIGURABLE_DNS"));
-  _sta_static_ip = ip;
-  _sta_static_gw = gw;
-  _sta_static_sn = sn;
-  _sta_static_dns1 = dns_address_1; //***** Added argument *****
-  _sta_static_dns2 = dns_address_2; //***** Added argument *****
+  _WiFi_STA_IPconfig._sta_static_ip = ip;
+  _WiFi_STA_IPconfig._sta_static_gw = gw;
+  _WiFi_STA_IPconfig._sta_static_sn = sn;
+  _WiFi_STA_IPconfig._sta_static_dns1 = dns_address_1; //***** Added argument *****
+  _WiFi_STA_IPconfig._sta_static_dns2 = dns_address_2; //***** Added argument *****
 }
 #endif
 
@@ -1465,7 +1493,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
     page += "<br/>";
   }
 
-  LOGDEBUG1(F("Static IP ="), _sta_static_ip.toString());
+  LOGDEBUG1(F("Static IP ="), _WiFi_STA_IPconfig._sta_static_ip.toString());
   
   // KH, Comment out to permit changing from DHCP to static IP, or vice versa
   // and add staticIP label in CP
@@ -1475,7 +1503,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
   // You have to explicitly specify false to disable the feature.
 
 #if !USE_STATIC_IP_CONFIG_IN_CP
-  if (_sta_static_ip)
+  if (_WiFi_STA_IPconfig._sta_static_ip)
 #endif  
   {
     page += FPSTR(WM_FLDSET_START);
@@ -1486,7 +1514,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
     item.replace("{n}", "ip");
     item.replace("{p}", "Static IP");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_ip.toString());
+    item.replace("{v}", _WiFi_STA_IPconfig._sta_static_ip.toString());
 
     page += item;
 
@@ -1496,7 +1524,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
     item.replace("{n}", "gw");
     item.replace("{p}", "Gateway IP");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_gw.toString());
+    item.replace("{v}", _WiFi_STA_IPconfig._sta_static_gw.toString());
 
     page += item;
 
@@ -1506,7 +1534,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
     item.replace("{n}", "sn");
     item.replace("{p}", "Subnet");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_sn.toString());
+    item.replace("{v}", _WiFi_STA_IPconfig._sta_static_sn.toString());
 
   #if USE_CONFIGURABLE_DNS
     //***** Added for DNS address options *****
@@ -1518,7 +1546,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
     item.replace("{n}", "dns1");
     item.replace("{p}", "DNS1 IP");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_dns1.toString());
+    item.replace("{v}", _WiFi_STA_IPconfig._sta_static_dns1.toString());
 
     page += item;
 
@@ -1528,7 +1556,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
     item.replace("{n}", "dns2");
     item.replace("{p}", "DNS2 IP");
     item.replace("{l}", "15");
-    item.replace("{v}", _sta_static_dns2.toString());
+    item.replace("{v}", _WiFi_STA_IPconfig._sta_static_dns2.toString());
     //***** End added for DNS address options *****
   #endif
 
@@ -1587,7 +1615,7 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
     String value = request->arg(_params[i]->getID()).c_str();
     
     //store it in array
-    value.toCharArray(_params[i]->_value, _params[i]->_length);
+    value.toCharArray(_params[i]->_WMParam_data._value, _params[i]->_WMParam_data._length);
     
     LOGDEBUG2(F("Parameter and value :"), _params[i]->getID(), value);
   }
@@ -1595,25 +1623,25 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   if (request->hasArg("ip"))
   {
     String ip = request->arg("ip");
-    optionalIPFromString(&_sta_static_ip, ip.c_str());
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_ip, ip.c_str());
     
-    LOGDEBUG1(F("New Static IP ="), _sta_static_ip.toString());
+    LOGDEBUG1(F("New Static IP ="), _WiFi_STA_IPconfig._sta_static_ip.toString());
   }
 
   if (request->hasArg("gw"))
   {
     String gw = request->arg("gw");
-    optionalIPFromString(&_sta_static_gw, gw.c_str());
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_gw, gw.c_str());
     
-    LOGDEBUG1(F("New Static Gateway ="), _sta_static_gw.toString());
+    LOGDEBUG1(F("New Static Gateway ="), _WiFi_STA_IPconfig._sta_static_gw.toString());
   }
 
   if (request->hasArg("sn"))
   {
     String sn = request->arg("sn");
-    optionalIPFromString(&_sta_static_sn, sn.c_str());
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_sn, sn.c_str());
     
-    LOGDEBUG1(F("New Static Netmask ="), _sta_static_sn.toString());
+    LOGDEBUG1(F("New Static Netmask ="), _WiFi_STA_IPconfig._sta_static_sn.toString());
   }
 
 #if USE_CONFIGURABLE_DNS
@@ -1621,17 +1649,17 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   if (request->hasArg("dns1"))
   {
     String dns1 = request->arg("dns1");
-    optionalIPFromString(&_sta_static_dns1, dns1.c_str());
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_dns1, dns1.c_str());
     
-    LOGDEBUG1(F("New Static DNS1 ="), _sta_static_dns1.toString());
+    LOGDEBUG1(F("New Static DNS1 ="), _WiFi_STA_IPconfig._sta_static_dns1.toString());
   }
 
   if (request->hasArg("dns2"))
   {
     String dns2 = request->arg("dns2");
-    optionalIPFromString(&_sta_static_dns2, dns2.c_str());
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_dns2, dns2.c_str());
     
-    LOGDEBUG1(F("New Static DNS2 ="), _sta_static_dns2.toString());
+    LOGDEBUG1(F("New Static DNS2 ="), _WiFi_STA_IPconfig._sta_static_dns2.toString());
   }
   //*****  End added for DNS Options *****
 #endif
@@ -2238,4 +2266,5 @@ String ESPAsync_WiFiManager::getStoredWiFiPass()
 #endif
 
 //////////////////////////////////////////
+
 

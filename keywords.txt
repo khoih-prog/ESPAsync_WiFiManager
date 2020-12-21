@@ -8,6 +8,10 @@
 
 ESPAsync_WiFiManager	KEYWORD1
 ESPAsync_WMParameter KEYWORD1
+
+WiFi_AP_IPConfig
+WiFi_STA_IPConfig
+
 WiFiResult  KEYWORD1
 wifi_ssid_count_t KEYWORD1
 
@@ -33,7 +37,9 @@ setDebugOutput	KEYWORD2
 setMinimumSignalQuality KEYWORD2
 setConfigPortalChannel  KEYWORD2
 setAPStaticIPConfig	KEYWORD2
+getAPStaticIPConfig KEYWORD2
 setSTAStaticIPConfig KEYWORD2
+getSTAStaticIPConfig  KEYWORD2
 setAPCallback	KEYWORD2
 setSaveConfigCallback KEYWORD2
 addParameter KEYWORD2

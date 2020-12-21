@@ -1,5 +1,5 @@
 /****************************************************************************************************************************
-  Async_ConfigOnDRD_FS_MQTT_Ptr.ino
+  Async_ConfigOnDRD_FS_MQTT_Ptr_Complex.ino
   For ESP8266 / ESP32 boards
 
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
@@ -195,19 +195,6 @@ DoubleResetDetector* drd = NULL;
 
 const char* CONFIG_FILE = "/ConfigMQTT.json";
 
-// Default configuration values for Adafruit IO MQTT
-// This actually works
-#define AIO_SERVER              "io.adafruit.com"
-#define AIO_SERVERPORT          "1883" //1883, or 8883 for SSL
-#define AIO_USERNAME            "private" //Adafruit IO
-#define AIO_KEY                 "private"
-
-// Labels for custom parameters in WiFi manager
-#define AIO_SERVER_Label             "AIO_SERVER_Label"
-#define AIO_SERVERPORT_Label         "AIO_SERVERPORT_Label"
-#define AIO_USERNAME_Label           "AIO_USERNAME_Label"
-#define AIO_KEY_Label                "AIO_KEY_Label"
-
 // Just dummy topics. To be updated later when got valid data from FS or Config Portal
 String MQTT_Pub_Topic   = "private/feeds/Temperature";
 
@@ -299,34 +286,34 @@ bool initialConfig = false;
 
 // Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
 #if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
-// Force DHCP to be true
-#if defined(USE_DHCP_IP)
-#undef USE_DHCP_IP
-#endif
-#define USE_DHCP_IP     true
+  // Force DHCP to be true
+  #if defined(USE_DHCP_IP)
+    #undef USE_DHCP_IP
+  #endif
+  #define USE_DHCP_IP     true
 #else
-// You can select DHCP or Static IP here
-//#define USE_DHCP_IP     true
-#define USE_DHCP_IP     false
+  // You can select DHCP or Static IP here
+  //#define USE_DHCP_IP     true
+  #define USE_DHCP_IP     false
 #endif
 
 #if ( USE_DHCP_IP || ( defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP ) )
-// Use DHCP
-#warning Using DHCP IP
-IPAddress stationIP   = IPAddress(0, 0, 0, 0);
-IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
-IPAddress netMask     = IPAddress(255, 255, 255, 0);
+  // Use DHCP
+  #warning Using DHCP IP
+  IPAddress stationIP   = IPAddress(0, 0, 0, 0);
+  IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
+  IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #else
-// Use static IP
-#warning Using static IP
-#ifdef ESP32
-IPAddress stationIP   = IPAddress(192, 168, 2, 232);
-#else
-IPAddress stationIP   = IPAddress(192, 168, 2, 186);
-#endif
-
-IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
-IPAddress netMask     = IPAddress(255, 255, 255, 0);
+  // Use static IP
+  #warning Using static IP
+  #ifdef ESP32
+    IPAddress stationIP   = IPAddress(192, 168, 2, 232);
+  #else
+    IPAddress stationIP   = IPAddress(192, 168, 2, 186);
+  #endif
+  
+  IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
+  IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #endif
 
 #define USE_CONFIGURABLE_DNS      true
@@ -339,6 +326,69 @@ IPAddress APStaticGW  = IPAddress(192, 168, 100, 1);
 IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 
 #include <ESPAsync_WiFiManager.h>              //https://github.com/khoih-prog/ESPAsync_WiFiManager
+
+////////////////
+// Create WMParam_Data
+/* Defined in library
+typedef struct
+{
+  const char *_id;
+  const char *_placeholder;
+  char       *_value;
+  int         _length;
+  int         _labelPlacement;
+
+}  WMParam_Data;
+*/
+
+#include <map>
+
+// Used as index in mapping from String => WMParam_Data or ESPAsync_WMParameter*
+#define SERVER_STRING           "Server"
+#define SERVERPORT_STRING       "ServerPort"
+#define USERNAME_STRING         "UserName"
+#define KEY_STRING              "Key"
+
+std::map<String, WMParam_Data> AIO_SERVER_TOTAL_DATA = 
+{
+  { SERVER_STRING,
+    {
+      "AIO_SERVER_Label",     "AIO SERVER",      custom_AIO_SERVER,    custom_AIO_SERVER_LEN + 1,   WFM_LABEL_BEFORE
+    }
+  },
+  { SERVERPORT_STRING,
+    {
+      "AIO_SERVERPORT_Label", "AIO SERVER PORT", custom_AIO_SERVERPORT, custom_AIO_PORT_LEN + 1,    WFM_LABEL_BEFORE
+    }
+  },
+  { USERNAME_STRING,
+    {
+      "AIO_USERNAME_Label",   "AIO USERNAME",    custom_AIO_USERNAME,  custom_AIO_USERNAME_LEN + 1, WFM_LABEL_BEFORE
+    }
+  },
+  { KEY_STRING,
+    {
+      "AIO_KEY_Label",        "AIO KEY",         custom_AIO_KEY,        custom_AIO_KEY_LEN + 1,     WFM_LABEL_BEFORE
+    }
+  }
+};
+
+#define NUMBER_PARAMETERS     (sizeof(AIO_SERVER_TOTAL_DATA) / sizeof(WMParam_Data) )
+
+ESPAsync_WMParameter *AIO_SERVER_DATA_FIELD;
+ESPAsync_WMParameter *AIO_SERVERPORT_DATA_FIELD;
+ESPAsync_WMParameter *AIO_USERNAME_DATA_FIELD;
+ESPAsync_WMParameter *AIO_KEY_DATA_FIELD;
+
+std::map<String, ESPAsync_WMParameter*> DATA_FIELD = 
+{
+  { SERVER_STRING,     AIO_SERVER_DATA_FIELD },
+  { SERVERPORT_STRING, AIO_SERVERPORT_DATA_FIELD },
+  { USERNAME_STRING,   AIO_USERNAME_DATA_FIELD },
+  { KEY_STRING,        AIO_KEY_DATA_FIELD }
+};
+
+///////////////
 
 #define HTTP_PORT           80
 
@@ -501,7 +551,7 @@ void heartBeatPrint()
   else
     Serial.print(F("N"));        // N means not connected to WiFi
 
-  if (num == 40)
+  if (num == 80)
   {
     Serial.println();
     num = 1;
@@ -755,23 +805,27 @@ void wifi_manager()
   // (*** we are not using <custom HTML> and <label placement> ***)
 
   // AIO_SERVER
-  ESPAsync_WMParameter AIO_SERVER_FIELD(AIO_SERVER_Label, "AIO SERVER", custom_AIO_SERVER, custom_AIO_SERVER_LEN + 1);
-
+  ESPAsync_WMParameter AIO_SERVER_FIELD(AIO_SERVER_TOTAL_DATA["Server"]); 
+  DATA_FIELD["Server"] = &AIO_SERVER_FIELD;
+  
   // AIO_SERVERPORT
-  ESPAsync_WMParameter AIO_SERVERPORT_FIELD(AIO_SERVERPORT_Label, "AIO SERVER PORT", custom_AIO_SERVERPORT, custom_AIO_PORT_LEN + 1);
+  ESPAsync_WMParameter AIO_SERVERPORT_FIELD(AIO_SERVER_TOTAL_DATA["ServerPort"]); 
+  DATA_FIELD["ServerPort"] = &AIO_SERVERPORT_FIELD;
 
   // AIO_USERNAME
-  ESPAsync_WMParameter AIO_USERNAME_FIELD(AIO_USERNAME_Label, "AIO USERNAME", custom_AIO_USERNAME, custom_AIO_USERNAME_LEN + 1);
+  ESPAsync_WMParameter AIO_USERNAME_FIELD(AIO_SERVER_TOTAL_DATA["UserName"]); 
+  DATA_FIELD["UserName"] = &AIO_USERNAME_FIELD;
 
   // AIO_KEY
-  ESPAsync_WMParameter AIO_KEY_FIELD(AIO_KEY_Label, "AIO KEY", custom_AIO_KEY, custom_AIO_KEY_LEN + 1);
-
+  ESPAsync_WMParameter AIO_KEY_FIELD(AIO_SERVER_TOTAL_DATA["Key"]); 
+  DATA_FIELD["Key"] = &AIO_KEY_FIELD;
+   
   // add all parameters here
   // order of adding is not important
-  ESPAsync_wifiManager.addParameter(&AIO_SERVER_FIELD);
-  ESPAsync_wifiManager.addParameter(&AIO_SERVERPORT_FIELD);
-  ESPAsync_wifiManager.addParameter(&AIO_USERNAME_FIELD);
-  ESPAsync_wifiManager.addParameter(&AIO_KEY_FIELD);
+  for (auto &data_field : DATA_FIELD) 
+  {           
+    ESPAsync_wifiManager.addParameter(data_field.second); 
+  }
 
   // Sets timeout in seconds until configuration portal gets turned off.
   // If not specified device will remain in configuration mode until
@@ -861,10 +915,10 @@ void wifi_manager()
 
   // Getting posted form values and overriding local variables parameters
   // Config file is written regardless the connection state
-  strcpy(custom_AIO_SERVER, AIO_SERVER_FIELD.getValue());
-  strcpy(custom_AIO_SERVERPORT, AIO_SERVERPORT_FIELD.getValue());
-  strcpy(custom_AIO_USERNAME, AIO_USERNAME_FIELD.getValue());
-  strcpy(custom_AIO_KEY, AIO_KEY_FIELD.getValue());
+  for (auto &aio_data : AIO_SERVER_TOTAL_DATA) 
+  {              
+    strcpy(aio_data.second._value, DATA_FIELD[aio_data.first]->getValue());
+  }
  
   // Writing JSON config file to flash for next boot
   writeConfigFile();
@@ -873,7 +927,8 @@ void wifi_manager()
 
   deleteOldInstances();
 
-  MQTT_Pub_Topic = String(custom_AIO_USERNAME) + "/feeds/Temperature";
+  MQTT_Pub_Topic = String(AIO_SERVER_TOTAL_DATA["UserName"]._value) + "/feeds/Temperature";
+  
   createNewInstances();
 }
 
@@ -933,27 +988,15 @@ bool readConfigFile()
 
     // Parse all config file parameters, override
     // local config variables with parsed values
-    if (json.containsKey(AIO_SERVER_Label))
-    {
-      strcpy(custom_AIO_SERVER, json[AIO_SERVER_Label]);
-    }
-
-    if (json.containsKey(AIO_SERVERPORT_Label))
-    {
-      strcpy(custom_AIO_SERVERPORT, json[AIO_SERVERPORT_Label]);
-    }
-
-    if (json.containsKey(AIO_USERNAME_Label))
-    {
-      strcpy(custom_AIO_USERNAME, json[AIO_USERNAME_Label]);
-    }
-
-    if (json.containsKey(AIO_KEY_Label))
-    {
-      strcpy(custom_AIO_KEY, json[AIO_KEY_Label]);
-    }
+    for (auto &aio_data : AIO_SERVER_TOTAL_DATA) 
+    {           
+      if (json.containsKey(aio_data.second._id))
+      {
+        strcpy(aio_data.second._value, json[aio_data.second._id]);
+      }
+    }   
   }
-  
+
   Serial.println(F("\nConfig File successfully parsed"));
   
   return true;
@@ -971,10 +1014,10 @@ bool writeConfigFile()
 #endif
 
   // JSONify local configuration parameters
-  json[AIO_SERVER_Label]      = custom_AIO_SERVER;
-  json[AIO_SERVERPORT_Label]  = custom_AIO_SERVERPORT;
-  json[AIO_USERNAME_Label]    = custom_AIO_USERNAME;
-  json[AIO_KEY_Label]         = custom_AIO_KEY;
+  for (auto &aio_data : AIO_SERVER_TOTAL_DATA) 
+  {           
+    json[aio_data.second._id] = aio_data.second._value;
+  } 
 
   // Open file for writing
   File f = FileFS.open(CONFIG_FILE, "w");
@@ -1068,7 +1111,7 @@ void setup()
 
   delay(200);
 
-  Serial.print("\nStarting Async_ConfigOnDRD_FS_MQTT_Ptr using " + String(FS_Name));
+  Serial.print("\nStarting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
   Serial.println("ESP_DoubleResetDetector Version " + String(ESP_DOUBLE_RESET_DETECTOR_VERSION));
