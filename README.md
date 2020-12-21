@@ -1925,7 +1925,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
  1. [Async_AutoConnect_ESP32_minimal](examples/Async_AutoConnect_ESP32_minimal)
  2. [Async_AutoConnect_ESP8266_minimal](examples/Async_AutoConnect_ESP8266_minimal)
  3. [Async_ConfigOnDRD_ESP32_minimal](examples/Async_ConfigOnDRD_ESP32_minimal) 
- 4. [Async_ConfigOnDRD_ESP8266_minimal](examples/)
+ 4. [Async_ConfigOnDRD_ESP8266_minimal](examples/Async_ConfigOnDRD_ESP8266_minimal)
 
 
 ---
