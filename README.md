@@ -13,6 +13,7 @@
 
 * [Why do we need this ESPAsync_WiFiManager library](#why-do-we-need-this-async-espasync_wifimanager-library)
 * [Changelog](#changelog)
+  * [Releases v1.4.1](#releases-v141)
   * [Major Releases v1.4.0](#major-releases-v140)
   * [Releases v1.3.0](#releases-v130)
   * [Releases v1.2.0](#releases-v120)
@@ -155,6 +156,11 @@ To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/
 ---
 
 ## Changelog
+
+### Releases v1.4.1
+
+1. Fix bug.
+2. Fix compiler warnings.
 
 ### Major Releases v1.4.0
 
@@ -3087,7 +3093,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 Config File not found
 Can't read Config File, using default values
@@ -3106,7 +3112,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 Config File not found
 Can't read Config File, using default values
@@ -3194,7 +3200,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3234,7 +3240,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3324,7 +3330,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3383,7 +3389,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3443,7 +3449,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -3521,7 +3527,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.0
+ESPAsync_WiFiManager v1.4.1
 ESP_DoubleResetDetector Version v1.1.0
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -3660,6 +3666,11 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ---
 
 ## Releases
+
+### Releases v1.4.1
+
+1. Fix bug.
+2. Fix compiler warnings.
 
 ### Major Releases v1.4.0
 

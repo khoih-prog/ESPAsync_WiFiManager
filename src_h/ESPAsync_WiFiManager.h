@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.0
+  Version: 1.4.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -25,11 +25,12 @@
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
   1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
+  1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
  *****************************************************************************************************************************/
 
 #pragma once
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.1"
 
 #include "ESPAsync_WiFiManager_Debug.h"
 
@@ -106,12 +107,12 @@ typedef struct
 
 #ifndef TIME_BETWEEN_MODAL_SCANS
   // Default to 30s
-  #define TIME_BETWEEN_MODAL_SCANS          30000
+  #define TIME_BETWEEN_MODAL_SCANS          30000UL
 #endif
 
 #ifndef TIME_BETWEEN_MODELESS_SCANS
   // Default to 60s
-  #define TIME_BETWEEN_MODELESS_SCANS       60000
+  #define TIME_BETWEEN_MODELESS_SCANS       60000UL
 #endif
 
 //KH
@@ -558,7 +559,8 @@ class ESPAsync_WiFiManager
 
     WiFi_AP_IPConfig  _WiFi_AP_IPconfig;
     
-    WiFi_STA_IPConfig _WiFi_STA_IPconfig = { IPAddress(0, 0, 0, 0) };
+    WiFi_STA_IPConfig _WiFi_STA_IPconfig = { IPAddress(0, 0, 0, 0), IPAddress(192, 168, 2, 1), IPAddress(255, 255, 255, 0),
+                                             IPAddress(192, 168, 2, 1), IPAddress(8, 8, 8, 8) };
 
     int           _paramsCount              = 0;
     int           _minimumQuality           = -1;

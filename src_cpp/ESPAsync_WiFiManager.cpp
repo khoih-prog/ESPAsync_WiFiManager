@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.0
+  Version: 1.4.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -25,6 +25,7 @@
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
   1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
+  1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
  *****************************************************************************************************************************/
 
 #include "ESPAsync_WiFiManager.h"
@@ -570,9 +571,9 @@ void ESPAsync_WiFiManager::scan()
           wifiSSIDs[i].duplicate=false;
 
 #if defined(ESP8266)
-          bool res=WiFi.getNetworkInfo(i, wifiSSIDs[i].SSID, wifiSSIDs[i].encryptionType, wifiSSIDs[i].RSSI, wifiSSIDs[i].BSSID, wifiSSIDs[i].channel, wifiSSIDs[i].isHidden);
+          WiFi.getNetworkInfo(i, wifiSSIDs[i].SSID, wifiSSIDs[i].encryptionType, wifiSSIDs[i].RSSI, wifiSSIDs[i].BSSID, wifiSSIDs[i].channel, wifiSSIDs[i].isHidden);
 #else
-          bool res=WiFi.getNetworkInfo(i, wifiSSIDs[i].SSID, wifiSSIDs[i].encryptionType, wifiSSIDs[i].RSSI, wifiSSIDs[i].BSSID, wifiSSIDs[i].channel);
+          WiFi.getNetworkInfo(i, wifiSSIDs[i].SSID, wifiSSIDs[i].encryptionType, wifiSSIDs[i].RSSI, wifiSSIDs[i].BSSID, wifiSSIDs[i].channel);
  #endif
         }
 
@@ -981,7 +982,7 @@ int ESPAsync_WiFiManager::reconnectWifi(void)
 
 int ESPAsync_WiFiManager::connectWifi(String ssid, String pass)
 {
-  // Add option if didn't input/update SSID/PW => Use the previous saved Credentials. \
+  // Add option if didn't input/update SSID/PW => Use the previous saved Credentials.
   // But update the Static/DHCP options if changed.
   if ( (ssid != "") || ( (ssid == "") && (WiFi_SSID() != "") ) )
   {  
@@ -2191,7 +2192,7 @@ int ESPAsync_WiFiManager::getRSSIasQuality(int RSSI)
 // Is this an IP?
 boolean ESPAsync_WiFiManager::isIp(String str)
 {
-  for (int i = 0; i < str.length(); i++)
+  for (unsigned int i = 0; i < str.length(); i++)
   {
     int c = str.charAt(i);
 
@@ -2266,5 +2267,4 @@ String ESPAsync_WiFiManager::getStoredWiFiPass()
 #endif
 
 //////////////////////////////////////////
-
 

@@ -49,10 +49,10 @@
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
 
 // Default is 30s, using 20s now
-#define TIME_BETWEEN_MODAL_SCANS          20000
+#define TIME_BETWEEN_MODAL_SCANS          20000UL
 
 // Default is 60s, using 30s now
-#define TIME_BETWEEN_MODELESS_SCANS       30000
+#define TIME_BETWEEN_MODELESS_SCANS       30000UL
 
 //For ESP32, To use ESP32 Dev Module, QIO, Flash 4MB/80MHz, Upload 921600
 
