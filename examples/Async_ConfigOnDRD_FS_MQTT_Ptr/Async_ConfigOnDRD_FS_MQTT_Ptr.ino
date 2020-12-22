@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.0
+  Version: 1.4.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -25,6 +25,7 @@
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
   1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
+  1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
   This example will open a Config Portal when there is no stored WiFi Credentials or when a DRD is detected.
@@ -47,10 +48,10 @@
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
 
 // Default is 30s, using 20s now
-#define TIME_BETWEEN_MODAL_SCANS          20000
+#define TIME_BETWEEN_MODAL_SCANS          20000UL
 
 // Default is 60s, using 30s now
-#define TIME_BETWEEN_MODELESS_SCANS       30000
+#define TIME_BETWEEN_MODELESS_SCANS       30000UL
 
 #include <FS.h>
 
@@ -593,10 +594,10 @@ void loadConfigData()
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
 
-  memset(&WM_config,   sizeof(WM_config), 0);
+  memset(&WM_config,       0, sizeof(WM_config));
 
   // New in v1.4.0
-  memset(&WM_STA_IPconfig, sizeof(WM_STA_IPconfig), 0);
+  memset(&WM_STA_IPconfig, 0, sizeof(WM_STA_IPconfig));
   //////
     
   if (file)
