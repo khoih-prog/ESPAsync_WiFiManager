@@ -26,6 +26,7 @@
   * [Use Arduino Library Manager](#use-arduino-library-manager)
   * [Manual Install](#manual-install)
   * [VS Code & PlatformIO](#vs-code--platformio)
+* [Note for Platform IO using ESP32 LittleFS](#note-for-platform-io-using-esp32-littlefs)
 * [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
 * [HOWTO Use analogRead() with ESP32 running WiFi and/or BlueTooth (BT/BLE)](#howto-use-analogread-with-esp32-running-wifi-andor-bluetooth-btble)
   * [1. ESP32 has 2 ADCs, named ADC1 and ADC2](#1--esp32-has-2-adcs-named-adc1-and-adc2)
@@ -261,6 +262,27 @@ The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsy
 
 ---
 ---
+
+### Note for Platform IO using ESP32 LittleFS
+
+In Platform IO, to fix the error when using [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS) for ESP32-based boards with ESP32 core v1.0.4- (ESP-IDF v3.2-), uncomment the following line
+
+from
+
+```
+//#define CONFIG_LITTLEFS_FOR_IDF_3_2   /* For old IDF - like in release 1.0.4 */
+```
+
+to
+
+```
+#define CONFIG_LITTLEFS_FOR_IDF_3_2   /* For old IDF - like in release 1.0.4 */
+```
+
+It's advisable to use the latest [`LittleFS_esp32 v1.0.5+`](https://github.com/lorol/LITTLEFS) to avoid the issue.
+
+Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) 
+
 
 ### HOWTO Fix `Multiple Definitions` Linker Error
 
@@ -3739,6 +3761,7 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
 5. Thanks to [Marcel Stör](https://github.com/marcelstoer) for reporting [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16) bug which is fixed in v1.2.0.
 6. Thanks to [Vague Rabbit](https://github.com/thewhiterabbit) for requesting, collarborating in creating the [**HOWTO Add Dynamic Parameters**](#howto-add-dynamic-parameters).
 7. Thanks to [krupis](https://github.com/krupis) for reporting [ESP32 static IP not saved after restarting the device](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/19) bug which is fixed in v1.4.0.
+8. Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) to fix PIO error in using ESP32 LittleFS with old [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS)
 
 <table>
   <tr>
@@ -3753,6 +3776,7 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
     <td align="center"><a href="https://github.com/marcelstoer"><img src="https://github.com/marcelstoer.png" width="100px;" alt="marcelstoer"/><br /><sub><b>Marcel Stör</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/thewhiterabbit"><img src="https://github.com/thewhiterabbit.png" width="100px;" alt="thewhiterabbit"/><br /><sub><b>Vague Rabbit</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/krupis"><img src="https://github.com/krupis.png" width="100px;" alt="krupis"/><br /><sub><b>krupis</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/solroshan"><img src="https://github.com/solroshan.png" width="100px;" alt="solroshan"/><br /><sub><b>Roshan</b></sub></a><br /></td>
   </tr> 
 </table>
 
