@@ -283,6 +283,7 @@ It's advisable to use the latest [`LittleFS_esp32 v1.0.5+`](https://github.com/l
 
 Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) 
 
+---
 
 ### HOWTO Fix `Multiple Definitions` Linker Error
 
