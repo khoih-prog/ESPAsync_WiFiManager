@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.1
+  Version: 1.4.2
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -26,6 +26,7 @@
   1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
+  1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
    This example will open a configuration portal when the reset button is pressed twice.
@@ -507,7 +508,7 @@ void check_status()
   }
 }
 
-void loadConfigData()
+bool loadConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
@@ -532,10 +533,14 @@ void loadConfigData()
     // New in v1.4.0
     displayIPConfigStruct(WM_STA_IPconfig);
     //////
+
+    return true;
   }
   else
   {
     LOGERROR(F("failed"));
+
+    return false;
   }
 }
     
@@ -570,10 +575,12 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
 
+  delay(200);
+
   Serial.print("\nStarting Async_ConfigOnDoubleReset with DoubleResetDetect using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
-  Serial.println("ESP_DoubleResetDetector Version " + String(ESP_DOUBLE_RESET_DETECTOR_VERSION));
+  Serial.println(ESP_DOUBLE_RESET_DETECTOR_VERSION);
 
   Serial.setDebugOutput(false);
 
@@ -641,22 +648,32 @@ void setup()
   Router_Pass = ESPAsync_wifiManager.WiFi_Pass();
 
   //Remove this line if you do not want to see WiFi password printed
-  Serial.println("Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
+  Serial.println("ESP Self-Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
 
   // SSID to uppercase
   ssid.toUpperCase();
 
-  // From v1.1.1, Don't permit NULL password
+  bool configDataLoaded = false;
+
+  // From v1.1.0, Don't permit NULL password
   if ( (Router_SSID != "") && (Router_Pass != "") )
   {
     LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
     wifiMulti.addAP(Router_SSID.c_str(), Router_Pass.c_str());
     
     ESPAsync_wifiManager.setConfigPortalTimeout(120); //If no access point name has been previously entered disable timeout.
-    Serial.println(F("Got stored Credentials. Timeout 120s for Config Portal"));
+    Serial.println(F("Got ESP Self-Stored Credentials. Timeout 120s for Config Portal"));
+  }
+  else if (loadConfigData())
+  {
+    configDataLoaded = true;
+    
+    ESPAsync_wifiManager.setConfigPortalTimeout(120); //If no access point name has been previously entered disable timeout.
+    Serial.println(F("Got stored Credentials. Timeout 120s for Config Portal")); 
   }
   else
   {
+    // Enter CP only if no stored SSID on flash and file 
     Serial.println(F("Open Config Portal without Timeout: No stored Credentials."));
     initialConfig = true;
   }
@@ -682,7 +699,7 @@ void setup()
 
     // Starts an access point
     if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
-      Serial.println("Not connected to WiFi but continuing anyway.");
+      Serial.println(F("Not connected to WiFi but continuing anyway."));
     else
     {
       Serial.println(F("WiFi connected...yeey :)"));
@@ -729,7 +746,8 @@ void setup()
   if (!initialConfig)
   {
     // Load stored data, the addAP ready for MultiWiFi reconnection
-    loadConfigData();
+    if (!configDataLoaded)
+      loadConfigData();
 
     for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
     {

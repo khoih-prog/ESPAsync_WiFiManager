@@ -20,7 +20,7 @@ void setup()
   //ESPAsync_wifiManager.resetSettings();   //reset saved settings
   //ESPAsync_wifiManager.setAPStaticIPConfig(IPAddress(192,168,186,1), IPAddress(192,168,186,1), IPAddress(255,255,255,0));
   ESPAsync_wifiManager.autoConnect("AutoConnectAP");
-  if (WiFi.status() == WL_CONNECTED) { Serial.print("Connected. Local IP: "); Serial.println(WiFi.localIP()); }
+  if (WiFi.status() == WL_CONNECTED) { Serial.print(F("Connected. Local IP: ")); Serial.println(WiFi.localIP()); }
   else { Serial.println(ESPAsync_wifiManager.getStatus(WiFi.status())); }
 }
 

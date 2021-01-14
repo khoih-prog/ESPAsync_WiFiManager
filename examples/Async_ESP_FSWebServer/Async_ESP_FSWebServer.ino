@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.1
+  Version: 1.4.2
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -26,6 +26,7 @@
   1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
+  1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
  *****************************************************************************************************************************/
 /*****************************************************************************************************************************
    Compare this efficient Async_ESP_FSWebServer example with the so complicated twin ESP32_FSWebServer 
@@ -390,9 +391,9 @@ void heartBeatPrint()
   static int num = 1;
 
   if (WiFi.status() == WL_CONNECTED)
-    Serial.print("H");        // H means connected to WiFi
+    Serial.print(F("H"));        // H means connected to WiFi
   else
-    Serial.print("F");        // F means not connected to WiFi
+    Serial.print(F("F"));        // F means not connected to WiFi
 
   if (num == 80)
   {
@@ -401,7 +402,7 @@ void heartBeatPrint()
   }
   else if (num++ % 10 == 0)
   {
-    Serial.print(" ");
+    Serial.print(F(" "));
   }
 }
 
@@ -409,7 +410,7 @@ void check_WiFi()
 {
   if ( (WiFi.status() != WL_CONNECTED) )
   {
-    Serial.println("\nWiFi lost. Call connectMultiWiFi in loop");
+    Serial.println(F("\nWiFi lost. Call connectMultiWiFi in loop"));
     connectMultiWiFi();
   }
 }  
@@ -450,7 +451,7 @@ void check_status()
   }
 }
 
-void loadConfigData()
+bool loadConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
@@ -475,10 +476,14 @@ void loadConfigData()
     // New in v1.4.0
     displayIPConfigStruct(WM_STA_IPconfig);
     //////
+
+    return true;
   }
   else
   {
     LOGERROR(F("failed"));
+
+    return false;
   }
 }
     
@@ -512,6 +517,8 @@ void setup()
   Serial.begin(115200);
   while (!Serial);
 
+  delay(200);
+
   Serial.print("\nStarting Async_ESP_FSWebServer using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
@@ -533,7 +540,7 @@ void setup()
   }
     
   Dir dir = FileFS.openDir("/");
-  Serial.println("Opening / directory");
+  Serial.println(F("Opening / directory"));
   
   while (dir.next()) 
   {
@@ -595,55 +602,60 @@ void setup()
   // SSID to uppercase
   ssid.toUpperCase();
 
-  // From v1.1.0, Don't permit NULL password
-  if ( (Router_SSID == "") || (Router_Pass == "") )
+  bool configDataLoaded = loadConfigData();
+
+  if (!configDataLoaded)
   {
-    Serial.println("We haven't got any access point credentials, so get them now");
-
-    initialConfig = true;
-
-    // Starts an access point
-    if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
-      Serial.println("Not connected to WiFi but continuing anyway.");
-    else
-      Serial.println("WiFi connected...yeey :)");
-
-    // Stored  for later usage, from v1.1.0, but clear first
-    memset(&WM_config, 0, sizeof(WM_config));
-    
-    for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
+    // From v1.1.0, Don't permit NULL password
+    if ( (Router_SSID == "") || (Router_Pass == "") )
     {
-      String tempSSID = ESPAsync_wifiManager.getSSID(i);
-      String tempPW   = ESPAsync_wifiManager.getPW(i);
+      Serial.println(F("We haven't got any access point credentials, so get them now"));
   
-      if (strlen(tempSSID.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1)
-        strcpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str());
+      initialConfig = true;
+  
+      // Starts an access point
+      if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
+        Serial.println(F("Not connected to WiFi but continuing anyway."));
       else
-        strncpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1);
-
-      if (strlen(tempPW.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1)
-        strcpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str());
-      else
-        strncpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1);  
-
-      // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-      if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+        Serial.println(F("WiFi connected...yeey :)"));
+  
+      // Stored  for later usage, from v1.1.0, but clear first
+      memset(&WM_config, 0, sizeof(WM_config));
+      
+      for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
       {
-        LOGERROR3(F("* Add SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
-        wifiMulti.addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
-      }
-    }
-
-    // New in v1.4.0
-    ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
-    displayIPConfigStruct(WM_STA_IPconfig);
-    //////
+        String tempSSID = ESPAsync_wifiManager.getSSID(i);
+        String tempPW   = ESPAsync_wifiManager.getPW(i);
     
-    saveConfigData();
-  }
-  else
-  {
-    wifiMulti.addAP(Router_SSID.c_str(), Router_Pass.c_str());
+        if (strlen(tempSSID.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1)
+          strcpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str());
+        else
+          strncpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1);
+  
+        if (strlen(tempPW.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1)
+          strcpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str());
+        else
+          strncpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1);  
+  
+        // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
+        if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+        {
+          LOGERROR3(F("* Add SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
+          wifiMulti.addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
+        }
+      }
+  
+      // New in v1.4.0
+      ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
+      displayIPConfigStruct(WM_STA_IPconfig);
+      //////
+      
+      saveConfigData();
+    }
+    else
+    {
+      wifiMulti.addAP(Router_SSID.c_str(), Router_Pass.c_str());
+    }
   }
 
   startedAt = millis();
@@ -651,7 +663,8 @@ void setup()
   if (!initialConfig)
   {
     // Load stored data, the addAP ready for MultiWiFi reconnection
-    loadConfigData();
+    if (!configDataLoaded)
+      loadConfigData();
 
     for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
     {
@@ -665,19 +678,19 @@ void setup()
 
     if ( WiFi.status() != WL_CONNECTED ) 
     {
-      Serial.println("ConnectMultiWiFi in setup");
+      Serial.println(F("ConnectMultiWiFi in setup"));
      
       connectMultiWiFi();
     }
   }
 
-  Serial.print("After waiting ");
+  Serial.print(F("After waiting "));
   Serial.print((float) (millis() - startedAt) / 1000L);
-  Serial.print(" secs more in setup(), connection result is ");
+  Serial.print(F(" secs more in setup(), connection result is "));
 
   if (WiFi.status() == WL_CONNECTED)
   {
-    Serial.print("connected. Local IP: ");
+    Serial.print(F("connected. Local IP: "));
     Serial.println(WiFi.localIP());
   }
   else
@@ -706,24 +719,24 @@ void setup()
 
   server.onNotFound([](AsyncWebServerRequest * request) 
   {
-    Serial.print("NOT_FOUND: ");
+    Serial.print(F("NOT_FOUND: "));
     
     if (request->method() == HTTP_GET)
-      Serial.print("GET");
+      Serial.print(F("GET"));
     else if (request->method() == HTTP_POST)
-      Serial.print("POST");
+      Serial.print(F("POST"));
     else if (request->method() == HTTP_DELETE)
-      Serial.print("DELETE");
+      Serial.print(F("DELETE"));
     else if (request->method() == HTTP_PUT)
-      Serial.print("PUT");
+      Serial.print(F("PUT"));
     else if (request->method() == HTTP_PATCH)
-      Serial.print("PATCH");
+      Serial.print(F("PATCH"));
     else if (request->method() == HTTP_HEAD)
-      Serial.print("HEAD");
+      Serial.print(F("HEAD"));
     else if (request->method() == HTTP_OPTIONS)
-      Serial.print("OPTIONS");
+      Serial.print(F("OPTIONS"));
     else
-      Serial.print("UNKNOWN");
+      Serial.print(F("UNKNOWN"));
     Serial.println(" http://" + request->host() + request->url());
 
     if (request->contentLength()) 
@@ -766,6 +779,8 @@ void setup()
   
   server.onFileUpload([](AsyncWebServerRequest * request, const String & filename, size_t index, uint8_t *data, size_t len, bool final) 
   {
+    (void) request;
+    
     if (!index)
       Serial.println("UploadStart: " + filename);
       
@@ -777,6 +792,8 @@ void setup()
   
   server.onRequestBody([](AsyncWebServerRequest * request, uint8_t *data, size_t len, size_t index, size_t total) 
   {
+    (void) request;
+    
     if (!index)
       Serial.println("BodyStart: " + total);
       
@@ -788,7 +805,7 @@ void setup()
   
   server.begin();
 
-  Serial.print("HTTP server started @ ");
+  Serial.print(F("HTTP server started @ "));
   Serial.println(WiFi.localIP());
   
   Serial.println(separatorLine);

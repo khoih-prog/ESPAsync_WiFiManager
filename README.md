@@ -13,6 +13,7 @@
 
 * [Why do we need this ESPAsync_WiFiManager library](#why-do-we-need-this-async-espasync_wifimanager-library)
 * [Changelog](#changelog)
+  * [Releases v1.4.2](#releases-v142)
   * [Releases v1.4.1](#releases-v141)
   * [Major Releases v1.4.0](#major-releases-v140)
   * [Releases v1.3.0](#releases-v130)
@@ -158,6 +159,11 @@ To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/
 
 ## Changelog
 
+### Releases v1.4.2
+
+1. Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+2. Fix compiler warnings.
+
 ### Releases v1.4.1
 
 1. Fix bug.
@@ -236,7 +242,7 @@ Thanks to this [ESPAsync_WiFiManager library](https://github.com/khoih-prog/ESPA
  4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards.
  5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
  6. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards
- 7. [`ESP_DoubleResetDetector v1.1.0+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
+ 7. [`ESP_DoubleResetDetector v1.1.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
  8. [`LittleFS_esp32 v1.0.5+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS.
  
 ---
@@ -1738,7 +1744,7 @@ void loop()
   // is configuration portal requested?
   if ((digitalRead(TRIGGER_PIN) == LOW) || (digitalRead(TRIGGER_PIN2) == LOW))
   {
-    Serial.println("\nConfiguration portal requested.");
+    Serial.println(F("\nConfiguration portal requested."));
     digitalWrite(LED_BUILTIN, LED_ON); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
 
     //Local intialization. Once its business is done, there is no need to keep it around
@@ -1753,14 +1759,16 @@ void loop()
 
     //set custom ip for portal
     //ESPAsync_wifiManager.setAPStaticIPConfig(IPAddress(192, 168, 100, 1), IPAddress(192, 168, 100, 1), IPAddress(255, 255, 255, 0));
-    ESPAsync_wifiManager.setAPStaticIPConfig(WM_AP_IPconfig);
 
 #if !USE_DHCP_IP    
-    // Set (static IP, Gateway, Subnetmask, DNS1 and DNS2) or (IP, Gateway, Subnetmask). New in v1.0.5
-    // New in v1.4.0
-    ESPAsync_wifiManager.setSTAStaticIPConfig(WM_STA_IPconfig);
-    //////
-#endif 
+  #if USE_CONFIGURABLE_DNS  
+    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
+    ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask, dns1IP, dns2IP);  
+  #else
+    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
+    ESPAsync_wifiManager.setSTAStaticIPConfig(stationIP, gatewayIP, netMask);
+  #endif 
+#endif       
 
   // New from v1.1.1
 #if USING_CORS_FEATURE
@@ -1769,30 +1777,46 @@ void loop()
 
     //Check if there is stored WiFi router/password credentials.
     //If not found, device will remain in configuration mode until switched off via webserver.
-    Serial.print("Opening configuration portal. ");
+    Serial.println(F("Opening configuration portal. "));
+    
     Router_SSID = ESPAsync_wifiManager.WiFi_SSID();
     Router_Pass = ESPAsync_wifiManager.WiFi_Pass();
-    
+
+    //Remove this line if you do not want to see WiFi password printed
+    Serial.println("ESP Self-Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
+   
     // From v1.1.0, Don't permit NULL password
     if ( (Router_SSID != "") && (Router_Pass != "") )
     {
+      LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
+      wifiMulti.addAP(Router_SSID.c_str(), Router_Pass.c_str());
+      
       ESPAsync_wifiManager.setConfigPortalTimeout(120); //If no access point name has been previously entered disable timeout.
-      Serial.println("Got stored Credentials. Timeout 120s");
+      Serial.println(F("Got ESP Self-Stored Credentials. Timeout 120s for Config Portal"));
+    }
+    else if (loadConfigData())
+    {      
+      ESPAsync_wifiManager.setConfigPortalTimeout(120); //If no access point name has been previously entered disable timeout.
+      Serial.println(F("Got stored Credentials. Timeout 120s for Config Portal")); 
     }
     else
-      Serial.println("No stored Credentials. No timeout");
+    {
+      // Enter CP only if no stored SSID on flash and file 
+      Serial.println(F("Open Config Portal without Timeout: No stored Credentials."));
+      initialConfig = true;
+    }
 
     //Starts an access point
     //and goes into a blocking loop awaiting configuration
     if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
     {
-      Serial.println("Not connected to WiFi but continuing anyway.");
+      Serial.println(F("Not connected to WiFi but continuing anyway."));
     }
     else
     {
       //if you get here you have connected to the WiFi
-      Serial.println("connected...yeey :)");
-      Serial.print("Local IP: ");
+      Serial.println(F("connected...yeey :)"));
+      Serial.print(F("Local IP: "));
       Serial.println(WiFi.localIP());
     }
 
@@ -1826,11 +1850,6 @@ void loop()
         }
       }
     
-      // New in v1.4.0
-      ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
-      displayIPConfigStruct(WM_STA_IPconfig);
-      //////
-      
       saveConfigData();
     }
 
@@ -1973,10 +1992,10 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
 
 // Default is 30s, using 20s now
-#define TIME_BETWEEN_MODAL_SCANS          20000
+#define TIME_BETWEEN_MODAL_SCANS          20000UL
 
 // Default is 60s, using 30s now
-#define TIME_BETWEEN_MODELESS_SCANS       30000
+#define TIME_BETWEEN_MODELESS_SCANS       30000UL
 
 #include <FS.h>
 
@@ -2514,15 +2533,15 @@ void check_status()
   }
 }
 
-void loadConfigData()
+bool loadConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
 
-  memset(&WM_config,   sizeof(WM_config), 0);
+  memset(&WM_config,       0, sizeof(WM_config));
 
   // New in v1.4.0
-  memset(&WM_STA_IPconfig, sizeof(WM_STA_IPconfig), 0);
+  memset(&WM_STA_IPconfig, 0, sizeof(WM_STA_IPconfig));
   //////
     
   if (file)
@@ -2539,10 +2558,14 @@ void loadConfigData()
     // New in v1.4.0
     displayIPConfigStruct(WM_STA_IPconfig);
     //////
+
+    return true;
   }
   else
   {
     LOGERROR(F("failed"));
+
+    return false;
   }
 }
     
@@ -2997,7 +3020,7 @@ void setup()
   Serial.print("\nStarting Async_ConfigOnDRD_FS_MQTT_Ptr using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
-  Serial.println("ESP_DoubleResetDetector Version " + String(ESP_DOUBLE_RESET_DETECTOR_VERSION));
+  Serial.println(ESP_DOUBLE_RESET_DETECTOR_VERSION);
 
   Serial.setDebugOutput(false);
 
@@ -3116,8 +3139,8 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
 LittleFS Flag read = 0xd0d01234
@@ -3135,8 +3158,8 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
 LittleFS Flag read = 0xd0d04321
@@ -3223,8 +3246,8 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
 LittleFS Flag read = 0xd0d04321
@@ -3263,8 +3286,8 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
 LittleFS Flag read = 0xd0d01234
@@ -3353,8 +3376,8 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
 [WM] Set CORS Header to :  Your Access-Control-Allow-Origin
@@ -3412,8 +3435,8 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
 [WM] Set CORS Header to :  Your Access-Control-Allow-Origin
@@ -3472,8 +3495,8 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
 FS File: CanadaFlag_2.png, size: 8.12KB
@@ -3550,8 +3573,8 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.4.1
-ESP_DoubleResetDetector Version v1.1.0
+ESPAsync_WiFiManager v1.4.2
+ESP_DoubleResetDetector v1.1.1
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
 FS File: /CanadaFlag_3.jpg, size: 10.89KB
@@ -3690,6 +3713,11 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 
 ## Releases
 
+### Releases v1.4.2
+
+1. Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+2. Fix compiler warnings.
+
 ### Releases v1.4.1
 
 1. Fix bug.
@@ -3763,6 +3791,7 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
 6. Thanks to [Vague Rabbit](https://github.com/thewhiterabbit) for requesting, collarborating in creating the [**HOWTO Add Dynamic Parameters**](#howto-add-dynamic-parameters).
 7. Thanks to [krupis](https://github.com/krupis) for reporting [ESP32 static IP not saved after restarting the device](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/19) bug which is fixed in v1.4.0.
 8. Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) to fix PIO error in using ESP32 LittleFS with old [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS)
+9. Thanks to [Manuel Capilla](https://github.com/molillo) for reporting [ESP8266 Clear SSID and Pass](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/33) bug which is fixed and leading to v1.4.2.
 
 <table>
   <tr>
@@ -3778,6 +3807,8 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
     <td align="center"><a href="https://github.com/thewhiterabbit"><img src="https://github.com/thewhiterabbit.png" width="100px;" alt="thewhiterabbit"/><br /><sub><b>Vague Rabbit</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/krupis"><img src="https://github.com/krupis.png" width="100px;" alt="krupis"/><br /><sub><b>krupis</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/solroshan"><img src="https://github.com/solroshan.png" width="100px;" alt="solroshan"/><br /><sub><b>Roshan</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/molillo"><img src="https://github.com/molillo.png" width="100px;" alt="molillo"/><br /><sub><b>
+Manuel Capilla</b></sub></a><br /></td>
   </tr> 
 </table>
 
