@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.2
+  Version: 1.4.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,6 +27,7 @@
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
    This example will open a configuration portal when no WiFi configuration has been previously entered or when a button is pushed.
@@ -43,6 +44,8 @@
 #if !( defined(ESP8266) || defined(ESP32) )
   #error This code is intended to run only on the ESP8266 and ESP32 boards ! Please check your Tools->Board setting.
 #endif
+
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.4.3"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -295,7 +298,7 @@ bool initialConfig = false;
 // From v1.0.10 to permit disable/enable StaticIP configuration in Config Portal from sketch. Valid only if DHCP is used.
 // You'll loose the feature of dynamically changing from DHCP to static IP, or vice versa
 // You have to explicitly specify false to disable the feature.
-#define USE_STATIC_IP_CONFIG_IN_CP          false
+//#define USE_STATIC_IP_CONFIG_IN_CP          false
 
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
@@ -318,11 +321,11 @@ bool initialConfig = false;
   #define USE_DHCP_IP     true
 #else
   // You can select DHCP or Static IP here
-  //#define USE_DHCP_IP     true
-  #define USE_DHCP_IP     false
+  #define USE_DHCP_IP     true
+  //#define USE_DHCP_IP     false
 #endif
 
-#if ( USE_DHCP_IP || ( defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP ) )
+#if ( USE_DHCP_IP )
   // Use DHCP
   #warning Using DHCP IP
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
@@ -607,6 +610,8 @@ void saveConfigData()
   {
     file.write((uint8_t*) &WM_config,   sizeof(WM_config));
 
+    displayIPConfigStruct(WM_STA_IPconfig);
+
     // New in v1.4.0
     file.write((uint8_t*) &WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
     //////
@@ -636,6 +641,12 @@ void setup()
   Serial.print("\nStarting Async_ConfigOnSwitch using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
+
+  if ( ESP_ASYNC_WIFIMANAGER_VERSION < ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET )
+  {
+    Serial.print("Warning. Must use this example on Version later than : ");
+    Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET);
+  }
 
   Serial.setDebugOutput(false);
 
@@ -785,7 +796,6 @@ void setup()
 
     // New in v1.4.0
     ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
-    displayIPConfigStruct(WM_STA_IPconfig);
     //////
     
     saveConfigData();
@@ -942,6 +952,10 @@ void loop()
           wifiMulti.addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
         }
       }
+
+      // New in v1.4.0
+      ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
+      //////
     
       saveConfigData();
     }

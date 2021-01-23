@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.2
+  Version: 1.4.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,6 +27,7 @@
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
  *****************************************************************************************************************************/
 /*****************************************************************************************************************************
    Compare this efficient Async_ESP32_FSWebServer_DRD example with the so complicated twin ESP32_FSWebServer 
@@ -47,6 +48,8 @@
 #if !defined(ESP32)
   #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
+
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.4.3"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -180,7 +183,7 @@ bool initialConfig = false;
   #define USE_DHCP_IP     false
 #endif
 
-#if ( USE_DHCP_IP || ( defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP ) )
+#if ( USE_DHCP_IP )
   // Use DHCP
   #warning Using DHCP IP
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
@@ -272,10 +275,10 @@ void initSTAIPConfigStruct(WiFi_STA_IPConfig &in_WM_STA_IPconfig)
 
 void displayIPConfigStruct(WiFi_STA_IPConfig in_WM_STA_IPconfig)
 {
-  LOGERROR3(F("stationIP ="), in_WM_STA_IPconfig._sta_static_ip, ", gatewayIP =", in_WM_STA_IPconfig._sta_static_gw);
+  LOGERROR3(F("stationIP ="), in_WM_STA_IPconfig._sta_static_ip, F(", gatewayIP ="), in_WM_STA_IPconfig._sta_static_gw);
   LOGERROR1(F("netMask ="), in_WM_STA_IPconfig._sta_static_sn);
 #if USE_CONFIGURABLE_DNS
-  LOGERROR3(F("dns1IP ="), in_WM_STA_IPconfig._sta_static_dns1, ", dns2IP =", in_WM_STA_IPconfig._sta_static_dns2);
+  LOGERROR3(F("dns1IP ="), in_WM_STA_IPconfig._sta_static_dns1, F(", dns2IP ="), in_WM_STA_IPconfig._sta_static_dns2);
 #endif
 }
 
@@ -496,6 +499,8 @@ void saveConfigData()
   {
     file.write((uint8_t*) &WM_config,   sizeof(WM_config));
 
+    displayIPConfigStruct(WM_STA_IPconfig);
+
     // New in v1.4.0
     file.write((uint8_t*) &WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
     //////
@@ -520,6 +525,12 @@ void setup()
   Serial.print("\nStarting Async_ESP32_FSWebServer using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
+
+  if ( ESP_ASYNC_WIFIMANAGER_VERSION < ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET )
+  {
+    Serial.print("Warning. Must use this example on Version later than : ");
+    Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET);
+  }
 
   Serial.setDebugOutput(false);
 
@@ -591,7 +602,7 @@ void setup()
   Router_Pass = ESPAsync_wifiManager.WiFi_Pass();
 
   //Remove this line if you do not want to see WiFi password printed
-  Serial.println("Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
+  Serial.println("ESP Self-Stored: SSID = " + Router_SSID + ", Pass = " + Router_Pass);
 
   // SSID to uppercase
   ssid.toUpperCase();
@@ -641,7 +652,6 @@ void setup()
   
       // New in v1.4.0
       ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
-      displayIPConfigStruct(WM_STA_IPconfig);
       //////
       
       saveConfigData();

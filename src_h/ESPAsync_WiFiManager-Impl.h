@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.2
+  Version: 1.4.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,6 +27,7 @@
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
  *****************************************************************************************************************************/
 
 #pragma once
@@ -390,7 +391,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   server->on("/r",        std::bind(&ESPAsync_WiFiManager::handleReset,       this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/state",    std::bind(&ESPAsync_WiFiManager::handleState,       this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
-  server->on("/fwlink",   std::bind(&ESPAsync_WiFiManager::handleRoot,        this,std::placeholders::_1)).setFilter(ON_AP_FILTER);  
+  server->on("/fwlink",   std::bind(&ESPAsync_WiFiManager::handleRoot,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);  
   server->onNotFound (std::bind(&ESPAsync_WiFiManager::handleNotFound,        this, std::placeholders::_1));
   
   server->begin(); // Web server start
@@ -400,7 +401,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
 
 //////////////////////////////////////////
 
-boolean ESPAsync_WiFiManager::autoConnect()
+bool ESPAsync_WiFiManager::autoConnect()
 {
 #ifdef ESP8266
   String ssid = "ESP_" + String(ESP.getChipId());
@@ -421,7 +422,7 @@ boolean ESPAsync_WiFiManager::autoConnect()
 
 //////////////////////////////////////////
 
-boolean ESPAsync_WiFiManager::autoConnect(char const *apName, char const *apPassword)
+bool ESPAsync_WiFiManager::autoConnect(char const *apName, char const *apPassword)
 {
 #if AUTOCONNECT_NO_INVALIDATE
   LOGINFO(F("\nAutoConnect using previously saved SSID/PW, but keep previous settings"));
@@ -744,7 +745,7 @@ void ESPAsync_WiFiManager::safeLoop()
 
 ///////////////////////////////////////////////////////////
 
-boolean  ESPAsync_WiFiManager::startConfigPortal()
+bool  ESPAsync_WiFiManager::startConfigPortal()
 {
 #ifdef ESP8266
   String ssid = "ESP_" + String(ESP.getChipId());
@@ -758,7 +759,7 @@ boolean  ESPAsync_WiFiManager::startConfigPortal()
 
 //////////////////////////////////////////
 
-boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *apPassword)
+bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *apPassword)
 {
   //setup AP
   int connRes = WiFi.waitForConnectResult();
@@ -908,7 +909,7 @@ boolean  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const 
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::setWifiStaticIP(void)
+void ESPAsync_WiFiManager::setWifiStaticIP()
 { 
 #if USE_CONFIGURABLE_DNS
   if (_WiFi_STA_IPconfig._sta_static_ip)
@@ -956,7 +957,7 @@ void ESPAsync_WiFiManager::setWifiStaticIP(void)
 //////////////////////////////////////////
 
 // New from v1.1.1
-int ESPAsync_WiFiManager::reconnectWifi(void)
+int ESPAsync_WiFiManager::reconnectWifi()
 {
   int connectResult;
   
@@ -1071,7 +1072,7 @@ wl_status_t ESPAsync_WiFiManager::waitForConnectResult()
   {
     LOGERROR(F("Waiting WiFi connection with time out"));
     unsigned long start = millis();
-    boolean keepConnecting = true;
+    bool keepConnecting = true;
     
     wl_status_t status;
 
@@ -1188,7 +1189,7 @@ void ESPAsync_WiFiManager::setConnectTimeout(unsigned long seconds)
   _connectTimeout = seconds * 1000;
 }
 
-void ESPAsync_WiFiManager::setDebugOutput(boolean debug)
+void ESPAsync_WiFiManager::setDebugOutput(bool debug)
 {
   _debug = debug;
 }
@@ -1290,7 +1291,7 @@ void ESPAsync_WiFiManager::setMinimumSignalQuality(int quality)
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::setBreakAfterConfig(boolean shouldBreak)
+void ESPAsync_WiFiManager::setBreakAfterConfig(bool shouldBreak)
 {
   _shouldBreakAfterConfig = shouldBreak;
 }
@@ -1337,7 +1338,7 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
 
   if (captivePortal(request))
   {
-    // If caprive portal redirect instead of displaying the error page.
+    // If captive portal redirect instead of displaying the error page.
     return;
   }
 
@@ -1968,7 +1969,7 @@ void ESPAsync_WiFiManager::handleNotFound(AsyncWebServerRequest *request)
 {
   if (captivePortal(request))
   {
-    // If caprive portal redirect instead of displaying the error page.
+    // If captive portal redirect instead of displaying the error page.
     return;
   }
 
@@ -2002,11 +2003,12 @@ void ESPAsync_WiFiManager::handleNotFound(AsyncWebServerRequest *request)
    Redirect to captive portal if we got a request for another domain.
    Return true in that case so the page handler do not try to handle the request again.
 */
-boolean ESPAsync_WiFiManager::captivePortal(AsyncWebServerRequest *request)
+bool ESPAsync_WiFiManager::captivePortal(AsyncWebServerRequest *request)
 {
   if (!isIp(request->host()))
   {
     LOGDEBUG(F("Request redirected to captive portal"));
+    LOGDEBUG1(F("Location http://"), toStringIp(request->client()->localIP()));
     
     AsyncWebServerResponse *response = request->beginResponse(302, "text/plain", "");
     response->addHeader("Location", String("http://") + toStringIp(request->client()->localIP()));
@@ -2014,6 +2016,8 @@ boolean ESPAsync_WiFiManager::captivePortal(AsyncWebServerRequest *request)
        
     return true;
   }
+  
+  LOGDEBUG1(F("request host IP ="), request->host());
   
   return false;
 }
@@ -2029,7 +2033,7 @@ void ESPAsync_WiFiManager::setAPCallback(void(*func)(ESPAsync_WiFiManager* myWiF
 //////////////////////////////////////////
 
 // start up save config callback
-void ESPAsync_WiFiManager::setSaveConfigCallback(void(*func)(void))
+void ESPAsync_WiFiManager::setSaveConfigCallback(void(*func)())
 {
   _savecallback = func;
 }
@@ -2044,7 +2048,7 @@ void ESPAsync_WiFiManager::setCustomHeadElement(const char* element) {
 //////////////////////////////////////////
 
 // if this is true, remove duplicated Access Points - defaut true
-void ESPAsync_WiFiManager::setRemoveDuplicateAPs(boolean removeDuplicates)
+void ESPAsync_WiFiManager::setRemoveDuplicateAPs(bool removeDuplicates)
 {
   _removeDuplicateAPs = removeDuplicates;
 }
@@ -2191,7 +2195,7 @@ int ESPAsync_WiFiManager::getRSSIasQuality(int RSSI)
 //////////////////////////////////////////
 
 // Is this an IP?
-boolean ESPAsync_WiFiManager::isIp(String str)
+bool ESPAsync_WiFiManager::isIp(String str)
 {
   for (unsigned int i = 0; i < str.length(); i++)
   {

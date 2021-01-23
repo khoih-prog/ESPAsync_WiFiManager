@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.2
+  Version: 1.4.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,11 +27,12 @@
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
  *****************************************************************************************************************************/
 
 #pragma once
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.2"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.3"
 
 #include "ESPAsync_WiFiManager_Debug.h"
 

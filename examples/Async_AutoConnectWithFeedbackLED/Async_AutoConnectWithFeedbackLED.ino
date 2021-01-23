@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.2
+  Version: 1.4.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,10 +27,13 @@
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
  *****************************************************************************************************************************/
 #if !( defined(ESP8266) ||  defined(ESP32) )
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
+
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.4.3"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -200,7 +203,7 @@ String AP_PASS;
   #define USE_DHCP_IP     false
 #endif
 
-#if ( USE_DHCP_IP || ( defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP ) )
+#if ( USE_DHCP_IP )
   // Use DHCP
   #warning Using DHCP IP
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
@@ -498,6 +501,8 @@ void saveConfigData()
   {
     file.write((uint8_t*) &WM_config,   sizeof(WM_config));
 
+    displayIPConfigStruct(WM_STA_IPconfig);
+
     // New in v1.4.0
     file.write((uint8_t*) &WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
     //////
@@ -525,6 +530,12 @@ void setup()
   Serial.print("\nStarting Async_AutoConnectWithFeedBackLED using " + String(FS_Name));
   Serial.println(" on " + String(ARDUINO_BOARD));
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
+
+  if ( ESP_ASYNC_WIFIMANAGER_VERSION < ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET )
+  {
+    Serial.print("Warning. Must use this example on Version later than : ");
+    Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET);
+  }
 
   if (FORMAT_FILESYSTEM) 
     FileFS.format();
@@ -672,7 +683,6 @@ void setup()
 
     // New in v1.4.0
     ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
-    displayIPConfigStruct(WM_STA_IPconfig);
     //////
     
     saveConfigData();

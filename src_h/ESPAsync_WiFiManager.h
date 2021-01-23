@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.2
+  Version: 1.4.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,11 +27,12 @@
   1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
+  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
  *****************************************************************************************************************************/
 
 #pragma once
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.2"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.3"
 
 #include "ESPAsync_WiFiManager_Debug.h"
 
@@ -311,13 +312,13 @@ class ESPAsync_WiFiManager
     String        infoAsString();
 
     // Can use with STA staticIP now
-    boolean       autoConnect();
-    boolean       autoConnect(char const *apName, char const *apPassword = NULL);
+    bool          autoConnect();
+    bool          autoConnect(char const *apName, char const *apPassword = NULL);
     //////
 
     // If you want to start the config portal
-    boolean       startConfigPortal();
-    boolean       startConfigPortal(char const *apName, char const *apPassword = NULL);
+    bool          startConfigPortal();
+    bool          startConfigPortal(char const *apName, char const *apPassword = NULL);
     void startConfigPortalModeless(char const *apName, char const *apPassword);
 
 
@@ -338,7 +339,7 @@ class ESPAsync_WiFiManager
     void          setConnectTimeout(unsigned long seconds);
 
 
-    void          setDebugOutput(boolean debug);
+    void          setDebugOutput(bool debug);
     //defaults to not showing anything under 8% signal quality if called
     void          setMinimumSignalQuality(int quality = 8);
     
@@ -370,7 +371,7 @@ class ESPAsync_WiFiManager
     //called when AP mode and config portal is started
     void          setAPCallback(void(*func)(ESPAsync_WiFiManager*));
     //called when settings have been changed and connection was successful
-    void          setSaveConfigCallback(void(*func)(void));
+    void          setSaveConfigCallback(void(*func)());
 
 #if USE_DYNAMIC_PARAMS
     //adds a custom parameter
@@ -381,7 +382,7 @@ class ESPAsync_WiFiManager
 #endif
 
     //if this is set, it will exit after config, even if connection is unsucessful.
-    void          setBreakAfterConfig(boolean shouldBreak);
+    void          setBreakAfterConfig(bool shouldBreak);
     
     //if this is set, try WPS setup when starting (this will delay config portal for up to 2 mins)
     //TODO
@@ -389,33 +390,33 @@ class ESPAsync_WiFiManager
     void          setCustomHeadElement(const char* element);
     
     //if this is true, remove duplicated Access Points - defaut true
-    void          setRemoveDuplicateAPs(boolean removeDuplicates);
+    void          setRemoveDuplicateAPs(bool removeDuplicates);
     
     //Scan for WiFiNetworks in range and sort by signal strength
     //space for indices array allocated on the heap and should be freed when no longer required
     int           scanWifiNetworks(int **indicesptr);
 
     // return SSID of router in STA mode got from config portal. NULL if no user's input //KH
-    String				getSSID(void) 
+    String				getSSID() 
     {
       return _ssid;
     }
 
     // return password of router in STA mode got from config portal. NULL if no user's input //KH
-    String				getPW(void) 
+    String				getPW() 
     {
       return _pass;
     }
     
     // New from v1.1.0
     // return SSID of router in STA mode got from config portal. NULL if no user's input //KH
-    String				getSSID1(void) 
+    String				getSSID1() 
     {
       return _ssid1;
     }
 
     // return password of router in STA mode got from config portal. NULL if no user's input //KH
-    String				getPW1(void) 
+    String				getPW1() 
     {
       return _pass1;
     }
@@ -452,7 +453,7 @@ class ESPAsync_WiFiManager
       LOGWARN1(F("Set CORS Header to : "), _CORS_Header);
     }
     
-    const char* getCORSHeader(void)
+    const char* getCORSHeader()
     {
       return _CORS_Header;
     }
@@ -471,7 +472,7 @@ class ESPAsync_WiFiManager
     String getStoredWiFiPass();
 #endif
 
-    String WiFi_SSID(void)
+    String WiFi_SSID()
     {
 #ifdef ESP8266
       return WiFi.SSID();
@@ -480,7 +481,7 @@ class ESPAsync_WiFiManager
 #endif
     }
 
-    String WiFi_Pass(void)
+    String WiFi_Pass()
     {
 #ifdef ESP8266
       return WiFi.psk();
@@ -489,7 +490,7 @@ class ESPAsync_WiFiManager
 #endif
     }
 
-    void setHostname(void)
+    void setHostname()
     {
       if (RFC952_hostname[0] != 0)
       {
@@ -509,10 +510,10 @@ class ESPAsync_WiFiManager
 
     AsyncWebServer *server;
 
-    boolean         _modeless;
+    bool            _modeless;
     int             scannow;
     int             shouldscan;
-    boolean         needInfo = true;
+    bool            needInfo = true;
     String          pager;
     wl_status_t     wifiStatus;
 
@@ -548,7 +549,7 @@ class ESPAsync_WiFiManager
     
     WiFiResult          *wifiSSIDs;
     wifi_ssid_count_t   wifiSSIDCount;
-    boolean             wifiSSIDscan;
+    bool                wifiSSIDscan;
     
     // To enable dynamic/random channel
     // default to channel 1
@@ -565,9 +566,9 @@ class ESPAsync_WiFiManager
 
     int           _paramsCount              = 0;
     int           _minimumQuality           = -1;
-    boolean       _removeDuplicateAPs       = true;
-    boolean       _shouldBreakAfterConfig   = false;
-    boolean       _tryWPS                   = false;
+    bool          _removeDuplicateAPs       = true;
+    bool          _shouldBreakAfterConfig   = false;
+    bool          _tryWPS                   = false;
 
     const char*   _customHeadElement        = "";
 
@@ -579,10 +580,10 @@ class ESPAsync_WiFiManager
 #endif   
     //////
 
-    void          setWifiStaticIP(void);
+    void          setWifiStaticIP();
     
     // New v1.1.0
-    int           reconnectWifi(void);
+    int           reconnectWifi();
     //////
     
     int           connectWifi(String ssid = "", String pass = "");
@@ -600,7 +601,7 @@ class ESPAsync_WiFiManager
     void          handleState(AsyncWebServerRequest *request);
     void          handleReset(AsyncWebServerRequest *request);
     void          handleNotFound(AsyncWebServerRequest *request);
-    boolean       captivePortal(AsyncWebServerRequest *request);   
+    bool          captivePortal(AsyncWebServerRequest *request);   
     
     void          reportStatus(String &page);
 
@@ -609,16 +610,16 @@ class ESPAsync_WiFiManager
 
     //helpers
     int           getRSSIasQuality(int RSSI);
-    boolean       isIp(String str);
+    bool          isIp(String str);
     String        toStringIp(IPAddress ip);
 
-    boolean       connect;
-    boolean       stopConfigPortal = false;
+    bool          connect;
+    bool          stopConfigPortal = false;
     
-    boolean       _debug = false;     //true;
+    bool          _debug = false;     //true;
     
     void(*_apcallback)(ESPAsync_WiFiManager*) = NULL;
-    void(*_savecallback)(void)                = NULL;
+    void(*_savecallback)()                = NULL;
 
 #if USE_DYNAMIC_PARAMS
     int                     _max_params;
