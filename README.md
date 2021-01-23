@@ -163,7 +163,7 @@ To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/
 ### Releases v1.4.3
 
 1. Fix examples' bug not saving Static IP in certain cases.
-2. Add feture to warn if using examples with old library versions
+2. Add feature to warn if using examples with old library versions
 
 ### Releases v1.4.2
 
@@ -3731,7 +3731,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ### Releases v1.4.3
 
 1. Fix examples' bug not saving Static IP in certain cases.
-2. Add feture to warn if using examples with old library versions
+2. Add feature to warn if using examples with old library versions
 
 ### Releases v1.4.2
 
