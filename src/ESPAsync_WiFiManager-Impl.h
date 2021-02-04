@@ -622,7 +622,7 @@ void ESPAsync_WiFiManager::scan()
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword, bool shouldConnectWiFi = true) 
+void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword, bool shouldConnectWiFi) 
 {
   _modeless     = true;
   _apName       = apName;
