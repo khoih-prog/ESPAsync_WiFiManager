@@ -319,7 +319,7 @@ class ESPAsync_WiFiManager
     // If you want to start the config portal
     bool          startConfigPortal();
     bool          startConfigPortal(char const *apName, char const *apPassword = NULL);
-    void startConfigPortalModeless(char const *apName, char const *apPassword);
+    void startConfigPortalModeless(char const *apName, char const *apPassword, bool shouldConnectWiFi = true);
 
 
     // get the AP name of the config portal, so it can be used in the callback
