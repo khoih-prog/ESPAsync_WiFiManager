@@ -622,7 +622,7 @@ void ESPAsync_WiFiManager::scan()
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword) 
+void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword, bool shouldConnectWiFi) 
 {
   _modeless     = true;
   _apName       = apName;
@@ -633,7 +633,7 @@ void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char co
   LOGDEBUG("SET AP STA");
 
   // try to connect
-  if (connectWifi("", "") == WL_CONNECTED)   
+  if (shouldConnectWiFi && connectWifi("", "") == WL_CONNECTED)   
   {
     LOGDEBUG1(F("IP Address:"), WiFi.localIP());
        
