@@ -622,7 +622,7 @@ void ESPAsync_WiFiManager::scan()
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword) 
+void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword, bool shouldConnectWiFi) 
 {
   _modeless     = true;
   _apName       = apName;
@@ -633,15 +633,17 @@ void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char co
   LOGDEBUG("SET AP STA");
 
   // try to connect
-  if (connectWifi("", "") == WL_CONNECTED)   
-  {
-    LOGDEBUG1(F("IP Address:"), WiFi.localIP());
-       
- 	  if ( _savecallback != NULL) 
-	  {
-	    //todo: check if any custom parameters actually exist, and check if they really changed maybe
-	    _savecallback();
-	  }
+  if (shouldConnectWiFi) {
+    if (connectWifi("", "") == WL_CONNECTED)   
+    {
+        LOGDEBUG1(F("IP Address:"), WiFi.localIP());
+        
+        if ( _savecallback != NULL) 
+        {
+            //todo: check if any custom parameters actually exist, and check if they really changed maybe
+            _savecallback();
+        }
+    }
   }
 
   if ( _apcallback != NULL) 
