@@ -633,7 +633,7 @@ void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char co
   LOGDEBUG("SET AP STA");
 
   // try to connect
-  if (connectWifi("", "") == WL_CONNECTED)   
+  if (shouldConnectWiFi && connectWifi("", "") == WL_CONNECTED)   
   {
     LOGDEBUG1(F("IP Address:"), WiFi.localIP());
        
