@@ -633,18 +633,16 @@ void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char co
   LOGDEBUG("SET AP STA");
 
   // try to connect
-  if (shouldConnectWiFi) {
-    if (connectWifi("", "") == WL_CONNECTED)   
+if (shouldConnectWiFi && connectWifi("", "") == WL_CONNECTED)   
+{
+    LOGDEBUG1(F("IP Address:"), WiFi.localIP());
+    
+    if ( _savecallback != NULL) 
     {
-        LOGDEBUG1(F("IP Address:"), WiFi.localIP());
-        
-        if ( _savecallback != NULL) 
-        {
-            //todo: check if any custom parameters actually exist, and check if they really changed maybe
-            _savecallback();
-        }
+        //todo: check if any custom parameters actually exist, and check if they really changed maybe
+        _savecallback();
     }
-  }
+}
 
   if ( _apcallback != NULL) 
   {
