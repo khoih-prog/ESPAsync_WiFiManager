@@ -3803,15 +3803,16 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
 
 ### Contributions and Thanks
 
-1. Based on and modified from [Tzapu](https://github.com/tzapu/WiFiManager), [KenTaylor's version]( https://github.com/kentaylor/WiFiManager), [`Alan Steremberg's ESPAsyncWiFiManager`](https://github.com/alanswx/ESPAsyncWiFiManager) and [`Khoi Hoang's ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager).
-2. Thanks to [Hristo Gochkov](https://github.com/me-no-dev) for great [ESPAsyncWebServer Library](https://github.com/me-no-dev/ESPAsyncWebServer)
-3. Thanks to good work of [Miguel Alexandre Wisintainer](https://github.com/tcpipchip) for working with, developing, debugging and testing.
-4. Thanks to [cancodr](https://github.com/cancodr) for requesting an enhancement in [Issue #29: Is it possible to use AsyncWebServer.h instead of WebServer.h?](https://github.com/khoih-prog/ESP_WiFiManager/issues/29), leading to this [ESPAsync_WiFiManager Library](https://github.com/khoih-prog/ESPAsync_WiFiManager).
-5. Thanks to [Marcel Stör](https://github.com/marcelstoer) for reporting [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16) bug which is fixed in v1.2.0.
-6. Thanks to [Vague Rabbit](https://github.com/thewhiterabbit) for requesting, collarborating in creating the [**HOWTO Add Dynamic Parameters**](#howto-add-dynamic-parameters).
-7. Thanks to [krupis](https://github.com/krupis) for reporting [ESP32 static IP not saved after restarting the device](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/19) bug which is fixed in v1.4.0.
-8. Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) to fix PIO error in using ESP32 LittleFS with old [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS)
-9. Thanks to [Manuel Capilla](https://github.com/molillo) for reporting [ESP8266 Clear SSID and Pass](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/33) bug which is fixed and leading to v1.4.2.
+ 1. Based on and modified from [Tzapu](https://github.com/tzapu/WiFiManager), [KenTaylor's version]( https://github.com/kentaylor/WiFiManager), [`Alan Steremberg's ESPAsyncWiFiManager`](https://github.com/alanswx/ESPAsyncWiFiManager) and [`Khoi Hoang's ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager).
+ 2. Thanks to [Hristo Gochkov](https://github.com/me-no-dev) for great [ESPAsyncWebServer Library](https://github.com/me-no-dev/ESPAsyncWebServer)
+ 3. Thanks to good work of [Miguel Alexandre Wisintainer](https://github.com/tcpipchip) for working with, developing, debugging and testing.
+ 4. Thanks to [cancodr](https://github.com/cancodr) for requesting an enhancement in [Issue #29: Is it possible to use AsyncWebServer.h instead of WebServer.h?](https://github.com/khoih-prog/ESP_WiFiManager/issues/29), leading to this [ESPAsync_WiFiManager Library](https://github.com/khoih-prog/ESPAsync_WiFiManager).
+ 5. Thanks to [Marcel Stör](https://github.com/marcelstoer) for reporting [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16) bug which is fixed in v1.2.0.
+ 6. Thanks to [Vague Rabbit](https://github.com/thewhiterabbit) for requesting, collarborating in creating the [**HOWTO Add Dynamic Parameters**](#howto-add-dynamic-parameters).
+ 7. Thanks to [krupis](https://github.com/krupis) for reporting [ESP32 static IP not saved after restarting the device](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/19) bug which is fixed in v1.4.0.
+ 8. Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) to fix PIO error in using ESP32 LittleFS with old [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS)
+ 9. Thanks to [Manuel Capilla](https://github.com/molillo) for reporting [ESP8266 Clear SSID and Pass](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/33) bug which is fixed and leading to v1.4.2.
+10. Thanks to [David Gunzinger](https://github.com/pfy) for creating merged PR [It should be possible to start the ConfigPortal without connecting to WiFI #38](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/38).
 
 <table>
   <tr>
@@ -3827,8 +3828,8 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
     <td align="center"><a href="https://github.com/thewhiterabbit"><img src="https://github.com/thewhiterabbit.png" width="100px;" alt="thewhiterabbit"/><br /><sub><b>Vague Rabbit</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/krupis"><img src="https://github.com/krupis.png" width="100px;" alt="krupis"/><br /><sub><b>krupis</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/solroshan"><img src="https://github.com/solroshan.png" width="100px;" alt="solroshan"/><br /><sub><b>Roshan</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/molillo"><img src="https://github.com/molillo.png" width="100px;" alt="molillo"/><br /><sub><b>
-Manuel Capilla</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/molillo"><img src="https://github.com/molillo.png" width="100px;" alt="molillo"/><br /><sub><b>Manuel Capilla</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/pfy"><img src="https://github.com/pfy.png" width="100px;" alt="pfy"/><br /><sub><b>David Gunzinger</b></sub></a><br /></td>
   </tr> 
 </table>
 
