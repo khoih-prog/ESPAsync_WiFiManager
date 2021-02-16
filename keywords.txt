@@ -62,14 +62,6 @@ WiFi_SSID KEYWORD2
 WiFi_Pass KEYWORD2
 setHostname	KEYWORD2
 
-scan  KEYWORD2
-scanModal KEYWORD2
-loop  KEYWORD2
-safeLoop  KEYWORD2
-criticalLoop  KEYWORD2
-infoAsString  KEYWORD2
-startConfigPortalModeless
-
 #######################################
 # Constants (LITERAL1)
 #######################################

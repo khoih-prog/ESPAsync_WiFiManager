@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.3
+  Version: 1.5.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -28,6 +28,7 @@
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
   1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
+  1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
   This example will open a Config Portal when there is no stored WiFi Credentials or when a DRD is detected.
@@ -46,16 +47,10 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.4.3"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.5.0"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
-
-// Default is 30s, using 20s now
-#define TIME_BETWEEN_MODAL_SCANS          20000UL
-
-// Default is 60s, using 30s now
-#define TIME_BETWEEN_MODELESS_SCANS       30000UL
 
 #include <FS.h>
 
@@ -347,9 +342,6 @@ IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 
 #define HTTP_PORT           80
 
-AsyncWebServer webServer(HTTP_PORT);
-DNSServer dnsServer;
-
 // Create an ESP32 WiFiClient class to connect to the MQTT server
 WiFiClient *client                    = NULL;
 
@@ -428,14 +420,19 @@ void configWiFi(WiFi_STA_IPConfig in_WM_STA_IPconfig)
 uint8_t connectMultiWiFi()
 {
 #if ESP32
-  // For ESP32, this better be 0 to shorten the connect time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       0
+  // For ESP32, this better be 0 to shorten the connect time. 
+  // For ESP32-S2, must be > 500
+  #if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
+    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           500L
+  #else
+    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           0L
+  #endif
 #else
   // For ESP8266, this better be 2200 to enable connect the 1st time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS       2200L
+  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS             2200L
 #endif
 
-#define WIFI_MULTI_CONNECT_WAITING_MS           100L
+#define WIFI_MULTI_CONNECT_WAITING_MS                   100L
   
   uint8_t status;
 
@@ -726,7 +723,18 @@ void wifi_manager()
   digitalWrite(LED_BUILTIN, LED_ON); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
 
   //Local intialization. Once its business is done, there is no need to keep it around
-  ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "ConfigOnSwichFS-MQTT");
+  // Use this to default DHCP hostname to ESP8266-XXXXXX or ESP32-XXXXXX
+  //ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer);
+  // Use this to personalize DHCP hostname (RFC952 conformed)
+  AsyncWebServer webServer(HTTP_PORT);
+
+#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )   
+  ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "ConfigOnDRD-FS-MQTT");
+#else
+  DNSServer dnsServer;
+  
+  ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "ConfigOnDRD-FS-MQTT");
+#endif
 
   //Check if there is stored WiFi router/password credentials.
   //If not found, device will remain in configuration mode until switched off via webserver.
@@ -757,8 +765,6 @@ void wifi_manager()
       Serial.println(F("No stored Credentials."));
     }
   }
-
-  //Local intialization. Once its business is done, there is no need to keep it around
 
   // Extra parameters to be configured
   // After connecting, parameter.getValue() will get you the configured value
@@ -1078,12 +1084,12 @@ void setup()
 
   delay(200);
 
-  Serial.print("\nStarting Async_ConfigOnDRD_FS_MQTT_Ptr using " + String(FS_Name));
-  Serial.println(" on " + String(ARDUINO_BOARD));
+  Serial.print(F("\nStarting Async_ConfigOnDRD_FS_MQTT_Ptr using ")); Serial.print(FS_Name);
+  Serial.print(F(" on ")); Serial.println(ARDUINO_BOARD);
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
   Serial.println(ESP_DOUBLE_RESET_DETECTOR_VERSION);
 
-  if ( ESP_ASYNC_WIFIMANAGER_VERSION < ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET )
+  if ( String(ESP_ASYNC_WIFIMANAGER_VERSION) < ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET )
   {
     Serial.print("Warning. Must use this example on Version later than : ");
     Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET);

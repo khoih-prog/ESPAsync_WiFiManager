@@ -1,6 +1,6 @@
 /****************************************************************************************************************************
   ESPAsync_WiFiManager.h
-  For ESP8266 / ESP32 boards
+  For ESP8266 / ESP32 (including ESP32-S2) boards
 
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
   configuration and reconfiguration of WiFi credentials using a Captive Portal.
@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.4.3
+  Version: 1.5.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -28,13 +28,25 @@
   1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
   1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
+  1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
  *****************************************************************************************************************************/
 
 #pragma once
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.4.3"
+#ifndef ESPAsync_WiFiManager_h
+#define ESPAsync_WiFiManager_h
+
+#if !( defined(ESP8266) ||  defined(ESP32) )
+  #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
+#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
+  #warning Using ESP32_S2. You have to follow library instructions to install esp32-s2 core and WebServer Patch
+#endif
+
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.5.0"
 
 #include "ESPAsync_WiFiManager_Debug.h"
+
+#define HTTP_PORT               80
 
 //KH, for ESP32
 #ifdef ESP8266
@@ -107,16 +119,6 @@ typedef struct
   #define USING_CORS_FEATURE     false
 #endif
 
-#ifndef TIME_BETWEEN_MODAL_SCANS
-  // Default to 30s
-  #define TIME_BETWEEN_MODAL_SCANS          30000UL
-#endif
-
-#ifndef TIME_BETWEEN_MODELESS_SCANS
-  // Default to 60s
-  #define TIME_BETWEEN_MODELESS_SCANS       60000UL
-#endif
-
 //KH
 // Mofidy HTTP_HEAD to WM_HTTP_HEAD_START to avoid conflict in Arduino esp8266 core 2.6.0+
 const char WM_HTTP_200[] PROGMEM            = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
@@ -131,7 +133,7 @@ const char WM_HTTP_SCRIPT[] PROGMEM = "<script>function c(l){document.getElement
 // To permit disable or configure NTP from sketch
 #ifndef USE_ESP_WIFIMANAGER_NTP
   // To enable NTP config
-  #define USE_ESP_WIFIMANAGER_NTP     true
+  #define USE_ESP_WIFIMANAGER_NTP     false //true
 #endif
 
 #if USE_ESP_WIFIMANAGER_NTP
@@ -250,15 +252,7 @@ class ESPAsync_WMParameter
     
   private:
   
-#if 1
     WMParam_Data _WMParam_data;
-#else    
-    const char *_id;
-    const char *_placeholder;
-    char       *_value;
-    int         _length;
-    int         _labelPlacement;
-#endif
     
     const char *_customHTML;
 
@@ -304,13 +298,6 @@ class ESPAsync_WiFiManager
 
     ~ESPAsync_WiFiManager();
     
-    void          scan();
-    String        scanModal();
-    void          loop();
-    void          safeLoop();
-    void          criticalLoop();
-    String        infoAsString();
-
     // Can use with STA staticIP now
     bool          autoConnect();
     bool          autoConnect(char const *apName, char const *apPassword = NULL);
@@ -494,28 +481,24 @@ class ESPAsync_WiFiManager
     {
       if (RFC952_hostname[0] != 0)
       {
-#ifdef ESP8266
+#if ESP8266      
         WiFi.hostname(RFC952_hostname);
-#else		//ESP32
+#else
+
+  #if !( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
         // See https://github.com/espressif/arduino-esp32/issues/2537
         WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         WiFi.setHostname(RFC952_hostname);
-#endif
+  #endif      
+#endif        
       }
     }
 
   private:
-  
+   
     DNSServer      *dnsServer;
 
     AsyncWebServer *server;
-
-    bool            _modeless;
-    int             scannow;
-    int             shouldscan;
-    bool            needInfo = true;
-    String          pager;
-    wl_status_t     wifiStatus;
 
 #define RFC952_HOSTNAME_MAXLEN      24
     char RFC952_hostname[RFC952_HOSTNAME_MAXLEN + 1];
@@ -546,11 +529,7 @@ class ESPAsync_WiFiManager
 
     int                 numberOfNetworks;
     int                 *networkIndices;
-    
-    WiFiResult          *wifiSSIDs;
-    wifi_ssid_count_t   wifiSSIDCount;
-    bool                wifiSSIDscan;
-    
+       
     // To enable dynamic/random channel
     // default to channel 1
     #define MIN_WIFI_CHANNEL      1
@@ -646,4 +625,8 @@ class ESPAsync_WiFiManager
 
 
 #include "ESPAsync_WiFiManager-Impl.h"
+
+#endif    // ESPAsync_WiFiManager_h
+
+
 
