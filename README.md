@@ -16,7 +16,7 @@
   * [Why Async is better](#why-async-is-better)
   * [Currently supported Boards](#currently-supported-boards)
 * [Changelog](#changelog)
-  * [Releases v1.6.0](#major-releases-v160)
+  * [Releases v1.6.0](#releases-v160)
   * [Major Releases v1.5.0](#major-releases-v150)
   * [Releases v1.4.3](#releases-v143)
   * [Releases v1.4.2](#releases-v142)
