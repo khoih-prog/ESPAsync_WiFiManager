@@ -5,7 +5,7 @@
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
   configuration and reconfiguration of WiFi credentials using a Captive Portal.
 
-  Modified from 
+  Modified from
   1. Tzapu               (https://github.com/tzapu/WiFiManager)
   2. Ken Taylor          (https://github.com/kentaylor)
   3. Alan Steremberg     (https://github.com/alanswx/ESPAsyncWiFiManager)
@@ -13,13 +13,13 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.5.0
+  Version: 1.6.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
   1.0.11  K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                   to sync with ESP_WiFiManager v1.0.11
-  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with
                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
   1.1.2   K Hoang      17/09/2020 Fix bug in examples.
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
@@ -29,6 +29,7 @@
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
   1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
   1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
+  1.6.0   K Hoang      25/02/2021 Fix WiFi Scanning bug.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
    This example will open a configuration portal when the reset button is pressed twice.
@@ -58,13 +59,13 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.5.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.6.0"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
-#define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
+#define _ESPASYNC_WIFIMGR_LOGLEVEL_    4
 
 #include <FS.h>
-  
+
 //Ported to ESP32
 #ifdef ESP32
   #include <esp_wifi.h>
@@ -164,9 +165,9 @@
     #define ESP_DRD_USE_SPIFFS      false
     #define ESP_DRD_USE_EEPROM      true
   #endif
-  
+
 #else //ESP8266
-  
+
   // For DRD
   // These defines must be put before #include <ESP_DoubleResetDetector.h>
   // to select where to store DoubleResetDetector's variable.
@@ -179,7 +180,7 @@
     #define ESP_DRD_USE_LITTLEFS    false
     #define ESP_DRD_USE_SPIFFS      true
   #endif
-    
+  
   #define ESP_DRD_USE_EEPROM      false
   #define ESP8266_DRD_USE_RTC     false
 #endif
@@ -203,7 +204,8 @@ const int PIN_LED = 2; // D4 on NodeMCU and WeMos. GPIO2/ADC12 of ESP32. Control
 
 // SSID and PW for Config Portal
 String ssid = "ESP_" + String(ESP_getChipId(), HEX);
-const char* password = "your_password";
+String password;
+//const char* password = "your_password";
 
 // SSID and PW for your Router
 String Router_SSID;
@@ -272,34 +274,34 @@ bool initialConfig = false;
 // Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
 #if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
 // Force DHCP to be true
-  #if defined(USE_DHCP_IP)
-    #undef USE_DHCP_IP
-  #endif
-  #define USE_DHCP_IP     true
+#if defined(USE_DHCP_IP)
+#undef USE_DHCP_IP
+#endif
+#define USE_DHCP_IP     true
 #else
-  // You can select DHCP or Static IP here
-  //#define USE_DHCP_IP     true
-  #define USE_DHCP_IP     false
+// You can select DHCP or Static IP here
+//#define USE_DHCP_IP     true
+#define USE_DHCP_IP     false
 #endif
 
 #if ( USE_DHCP_IP )
-  // Use DHCP
-  #warning Using DHCP IP
-  IPAddress stationIP   = IPAddress(0, 0, 0, 0);
-  IPAddress gatewayIP   = IPAddress(192, 168, 1, 1);
-  IPAddress netMask     = IPAddress(255, 255, 255, 0);
+// Use DHCP
+#warning Using DHCP IP
+IPAddress stationIP   = IPAddress(0, 0, 0, 0);
+IPAddress gatewayIP   = IPAddress(192, 168, 1, 1);
+IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #else
-  // Use static IP
-  #warning Using static IP
-  
-  #ifdef ESP32
-    IPAddress stationIP   = IPAddress(192, 168, 2, 232);
-  #else
-    IPAddress stationIP   = IPAddress(192, 168, 2, 186);
-  #endif
-  
-  IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
-  IPAddress netMask     = IPAddress(255, 255, 255, 0);
+// Use static IP
+#warning Using static IP
+
+#ifdef ESP32
+IPAddress stationIP   = IPAddress(192, 168, 2, 232);
+#else
+IPAddress stationIP   = IPAddress(192, 168, 2, 186);
+#endif
+
+IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
+IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #endif
 
 #define USE_CONFIGURABLE_DNS      true
@@ -318,25 +320,25 @@ IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 ///////////////////////////////////////////
 // New in v1.4.0
 /******************************************
- * // Defined in ESPAsync_WiFiManager.h
-typedef struct
-{
+   // Defined in ESPAsync_WiFiManager.h
+  typedef struct
+  {
   IPAddress _ap_static_ip;
   IPAddress _ap_static_gw;
   IPAddress _ap_static_sn;
 
-}  WiFi_AP_IPConfig;
+  }  WiFi_AP_IPConfig;
 
-typedef struct
-{
+  typedef struct
+  {
   IPAddress _sta_static_ip;
   IPAddress _sta_static_gw;
   IPAddress _sta_static_sn;
-#if USE_CONFIGURABLE_DNS  
+  #if USE_CONFIGURABLE_DNS
   IPAddress _sta_static_dns1;
   IPAddress _sta_static_dns2;
-#endif
-}  WiFi_STA_IPConfig;
+  #endif
+  }  WiFi_STA_IPConfig;
 ******************************************/
 
 WiFi_AP_IPConfig  WM_AP_IPconfig;
@@ -354,7 +356,7 @@ void initSTAIPConfigStruct(WiFi_STA_IPConfig &in_WM_STA_IPconfig)
   in_WM_STA_IPconfig._sta_static_ip   = stationIP;
   in_WM_STA_IPconfig._sta_static_gw   = gatewayIP;
   in_WM_STA_IPconfig._sta_static_sn   = netMask;
-#if USE_CONFIGURABLE_DNS  
+#if USE_CONFIGURABLE_DNS
   in_WM_STA_IPconfig._sta_static_dns1 = dns1IP;
   in_WM_STA_IPconfig._sta_static_dns2 = dns2IP;
 #endif
@@ -371,13 +373,13 @@ void displayIPConfigStruct(WiFi_STA_IPConfig in_WM_STA_IPconfig)
 
 void configWiFi(WiFi_STA_IPConfig in_WM_STA_IPconfig)
 {
-  #if USE_CONFIGURABLE_DNS  
-    // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
-    WiFi.config(in_WM_STA_IPconfig._sta_static_ip, in_WM_STA_IPconfig._sta_static_gw, in_WM_STA_IPconfig._sta_static_sn, in_WM_STA_IPconfig._sta_static_dns1, in_WM_STA_IPconfig._sta_static_dns2);  
-  #else
-    // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
-    WiFi.config(in_WM_STA_IPconfig._sta_static_ip, in_WM_STA_IPconfig._sta_static_gw, in_WM_STA_IPconfig._sta_static_sn);
-  #endif 
+#if USE_CONFIGURABLE_DNS
+  // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
+  WiFi.config(in_WM_STA_IPconfig._sta_static_ip, in_WM_STA_IPconfig._sta_static_gw, in_WM_STA_IPconfig._sta_static_sn, in_WM_STA_IPconfig._sta_static_dns1, in_WM_STA_IPconfig._sta_static_dns2);
+#else
+  // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
+  WiFi.config(in_WM_STA_IPconfig._sta_static_ip, in_WM_STA_IPconfig._sta_static_gw, in_WM_STA_IPconfig._sta_static_sn);
+#endif
 }
 
 ///////////////////////////////////////////
@@ -385,24 +387,24 @@ void configWiFi(WiFi_STA_IPConfig in_WM_STA_IPconfig)
 uint8_t connectMultiWiFi()
 {
 #if ESP32
-  // For ESP32, this better be 0 to shorten the connect time. 
+  // For ESP32, this better be 0 to shorten the connect time.
   // For ESP32-S2, must be > 500
-  #if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
-    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           500L
-  #else
-    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           0L
-  #endif
+#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS           500L
+#else
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS           0L
+#endif
 #else
   // For ESP8266, this better be 2200 to enable connect the 1st time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS             2200L
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS             2200L
 #endif
 
 #define WIFI_MULTI_CONNECT_WAITING_MS                   100L
-  
+
   uint8_t status;
 
   LOGERROR(F("ConnectMultiWiFi with :"));
-  
+
   if ( (Router_SSID != "") && (Router_Pass != "") )
   {
     LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
@@ -416,7 +418,7 @@ uint8_t connectMultiWiFi()
       LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
     }
   }
-  
+
   LOGERROR(F("Connecting MultiWifi..."));
 
   WiFi.mode(WIFI_STA);
@@ -480,7 +482,7 @@ void check_WiFi()
     Serial.println(F("\nWiFi lost. Call connectMultiWiFi in loop"));
     connectMultiWiFi();
   }
-}  
+}
 
 void check_status()
 {
@@ -493,7 +495,7 @@ void check_status()
 #define HEARTBEAT_INTERVAL    10000L
 
   current_millis = millis();
-  
+
   // Check WiFi every WIFICHECK_INTERVAL (1) seconds.
   if ((current_millis > checkwifi_timeout) || (checkwifi_timeout == 0))
   {
@@ -519,7 +521,7 @@ bool loadConfigData()
   // New in v1.4.0
   memset(&WM_STA_IPconfig, 0, sizeof(WM_STA_IPconfig));
   //////
-    
+
   if (file)
   {
     file.readBytes((char *) &WM_config,   sizeof(WM_config));
@@ -527,7 +529,7 @@ bool loadConfigData()
     // New in v1.4.0
     file.readBytes((char *) &WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
     //////
-    
+
     file.close();
     LOGERROR(F("OK"));
 
@@ -544,7 +546,7 @@ bool loadConfigData()
     return false;
   }
 }
-    
+
 void saveConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "w");
@@ -559,7 +561,7 @@ void saveConfigData()
     // New in v1.4.0
     file.write((uint8_t*) &WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
     //////
-    
+
     file.close();
     LOGERROR(F("OK"));
   }
@@ -593,7 +595,7 @@ void setup()
 
   Serial.setDebugOutput(false);
 
-  if (FORMAT_FILESYSTEM) 
+  if (FORMAT_FILESYSTEM)
     FileFS.format();
 
   // Format FileFS if not yet
@@ -601,11 +603,11 @@ void setup()
   if (!FileFS.begin(true))
 #else
   if (!FileFS.begin())
-#endif  
+#endif
   {
     Serial.print(FS_Name);
     Serial.println(F(" failed! AutoFormatting."));
-    
+
 #ifdef ESP8266
     FileFS.format();
 #endif
@@ -626,11 +628,11 @@ void setup()
   // Use this to personalize DHCP hostname (RFC952 conformed)
   AsyncWebServer webServer(HTTP_PORT);
 
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )   
+#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "AsyncConfigOnDoubleReset");
 #else
   DNSServer dnsServer;
-  
+
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "AsyncConfigOnDoubleReset");
 #endif
 
@@ -646,11 +648,11 @@ void setup()
   ESPAsync_wifiManager.setConfigPortalChannel(0);
   //////
 
-#if !USE_DHCP_IP    
-    // Set (static IP, Gateway, Subnetmask, DNS1 and DNS2) or (IP, Gateway, Subnetmask). New in v1.0.5
-    // New in v1.4.0
-    ESPAsync_wifiManager.setSTAStaticIPConfig(WM_STA_IPconfig);
-    //////
+#if !USE_DHCP_IP
+  // Set (static IP, Gateway, Subnetmask, DNS1 and DNS2) or (IP, Gateway, Subnetmask). New in v1.0.5
+  // New in v1.4.0
+  ESPAsync_wifiManager.setSTAStaticIPConfig(WM_STA_IPconfig);
+  //////
 #endif
 
   // New from v1.1.1
@@ -669,6 +671,7 @@ void setup()
 
   // SSID to uppercase
   ssid.toUpperCase();
+  password   = "My" + ssid;
 
   bool configDataLoaded = false;
 
@@ -677,20 +680,20 @@ void setup()
   {
     LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass);
     wifiMulti.addAP(Router_SSID.c_str(), Router_Pass.c_str());
-    
+
     ESPAsync_wifiManager.setConfigPortalTimeout(120); //If no access point name has been previously entered disable timeout.
     Serial.println(F("Got ESP Self-Stored Credentials. Timeout 120s for Config Portal"));
   }
   else if (loadConfigData())
   {
     configDataLoaded = true;
-    
+
     ESPAsync_wifiManager.setConfigPortalTimeout(120); //If no access point name has been previously entered disable timeout.
-    Serial.println(F("Got stored Credentials. Timeout 120s for Config Portal")); 
+    Serial.println(F("Got stored Credentials. Timeout 120s for Config Portal"));
   }
   else
   {
-    // Enter CP only if no stored SSID on flash and file 
+    // Enter CP only if no stored SSID on flash and file
     Serial.println(F("Open Config Portal without Timeout: No stored Credentials."));
     initialConfig = true;
   }
@@ -715,7 +718,7 @@ void setup()
     //ESPAsync_wifiManager.setConfigPortalTimeout(600);
 
     // Starts an access point
-    if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
+    if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password.c_str()))
       Serial.println(F("Not connected to WiFi but continuing anyway."));
     else
     {
@@ -724,12 +727,12 @@ void setup()
 
     // Stored  for later usage, from v1.1.0, but clear first
     memset(&WM_config, 0, sizeof(WM_config));
-    
+
     for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
     {
       String tempSSID = ESPAsync_wifiManager.getSSID(i);
       String tempPW   = ESPAsync_wifiManager.getPW(i);
-  
+
       if (strlen(tempSSID.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_ssid) - 1)
         strcpy(WM_config.WiFi_Creds[i].wifi_ssid, tempSSID.c_str());
       else
@@ -738,7 +741,7 @@ void setup()
       if (strlen(tempPW.c_str()) < sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1)
         strcpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str());
       else
-        strncpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1);  
+        strncpy(WM_config.WiFi_Creds[i].wifi_pw, tempPW.c_str(), sizeof(WM_config.WiFi_Creds[i].wifi_pw) - 1);
 
       // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
       if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
@@ -751,7 +754,7 @@ void setup()
     // New in v1.4.0
     ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
     //////
-    
+
     saveConfigData();
   }
 
@@ -775,10 +778,10 @@ void setup()
       }
     }
 
-    if ( WiFi.status() != WL_CONNECTED ) 
+    if ( WiFi.status() != WL_CONNECTED )
     {
       Serial.println(F("ConnectMultiWiFi in setup"));
-     
+
       connectMultiWiFi();
     }
   }
