@@ -16,6 +16,7 @@
   * [Why Async is better](#why-async-is-better)
   * [Currently supported Boards](#currently-supported-boards)
 * [Changelog](#changelog)
+  * [Releases v1.6.0](#major-releases-v160)
   * [Major Releases v1.5.0](#major-releases-v150)
   * [Releases v1.4.3](#releases-v143)
   * [Releases v1.4.2](#releases-v142)
@@ -193,13 +194,17 @@ To appreciate the power of the [ESPAsyncWebServer](https://github.com/me-no-dev/
 
 This [**ESPAsync_WiFiManager_Lite** library](https://github.com/khoih-prog/ESPAsync_WiFiManager_Lite) currently supports these following boards:
 
- 1. **ESP32 (including ESP32-S2)**
+ 1. **ESP32 including ESP32-S2 (ESP32-S2 Saola, AI-Thinker ESP-12K, etc.)**
  2. **ESP8266**
  
 ---
 ---
 
 ## Changelog
+
+### Releases v1.6.0
+
+1. Fix WiFi Scanning bug.
 
 ### Major Releases v1.5.0
 
@@ -274,13 +279,13 @@ This [**ESPAsync_WiFiManager_Lite** library](https://github.com/khoih-prog/ESPAs
 
  1. [`Arduino IDE 1.8.13+` for Arduino](https://www.arduino.cc/en/Main/Software)
  2. [`ESP8266 Core 2.7.4+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
- 3. [`ESP32 Core 1.0.4+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [Latest stable release ![Release Version](https://img.shields.io/github/release/espressif/arduino-esp32.svg?style=plastic)
- 4. [`ESP32S2 Core 1.0.4+`](https://github.com/espressif/arduino-esp32/tree/esp32s2) for ESP32S2-based boards.
+ 3. [`ESP32 Core 1.0.5+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
+ 4. [`ESP32S2 Core 1.0.4+`](https://github.com/espressif/arduino-esp32/tree/esp32s2) for ESP32-S2-based boards.
  5. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards.
  6. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
  7. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
  8. [`ESP_DoubleResetDetector v1.1.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
- 9.  [`LittleFS_esp32 v1.0.5+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS. [![GitHub release](https://img.shields.io/github/release/lorol/LITTLEFS.svg)](https://github.com/lorol/LITTLEFS/releases)
+ 9.  [`LittleFS_esp32 v1.0.5+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32).
  
 ---
 
@@ -2124,7 +2129,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.5.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.6.0"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -3289,7 +3294,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3308,7 +3313,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3396,7 +3401,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3436,7 +3441,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3526,7 +3531,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3585,7 +3590,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3645,7 +3650,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -3723,7 +3728,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.5.0
+ESPAsync_WiFiManager v1.6.0
 ESP_DoubleResetDetector v1.1.1
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -3863,6 +3868,10 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 
 ## Releases
 
+### Releases v1.6.0
+
+1. Fix WiFi Scanning bug.
+
 ### Major Releases v1.5.0
 
 1. Add support to **ESP32-S2 (ESP32-S2 Saola, AI-Thinker ESP-12K, ESP32S2 Dev Module, UM FeatherS2, UM ProS2, microS2, etc.)**
@@ -3954,6 +3963,9 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
  8. Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) to fix PIO error in using ESP32 LittleFS with old [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS)
  9. Thanks to [Manuel Capilla](https://github.com/molillo) for reporting [ESP8266 Clear SSID and Pass](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/33) bug which is fixed and leading to v1.4.2.
 10. Thanks to [David Gunzinger](https://github.com/pfy) for creating merged PR [It should be possible to start the ConfigPortal without connecting to WiFI #38](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/38).
+11. Thanks to [Russell Jahn](https://github.com/russelljahn) for reporting [ESPAsync_WiFiManager::startConfigPortal() will cause a watchdog timeout when called from a higher-priority task. #39](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/39) leading to v1.5.0 and v1.6.0
+
+
 
 <table>
   <tr>
@@ -3971,6 +3983,9 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
     <td align="center"><a href="https://github.com/solroshan"><img src="https://github.com/solroshan.png" width="100px;" alt="solroshan"/><br /><sub><b>Roshan</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/molillo"><img src="https://github.com/molillo.png" width="100px;" alt="molillo"/><br /><sub><b>Manuel Capilla</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/pfy"><img src="https://github.com/pfy.png" width="100px;" alt="pfy"/><br /><sub><b>David Gunzinger</b></sub></a><br /></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/russelljahn"><img src="https://github.com/russelljahn.png" width="100px;" alt="russelljahn"/><br /><sub><b>Russell Jahn</b></sub></a><br /></td>
   </tr> 
 </table>
 

@@ -13,13 +13,13 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.5.0
+  Version: 1.6.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
   1.0.11  K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                   to sync with ESP_WiFiManager v1.0.11
-  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with
                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
   1.1.2   K Hoang      17/09/2020 Fix bug in examples.
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
@@ -29,6 +29,7 @@
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
   1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
   1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
+  1.6.0   K Hoang      25/02/2021 Fix WiFi Scanning bug.
  *****************************************************************************************************************************/
 
 #pragma once
@@ -42,11 +43,9 @@
   #warning Using ESP32_S2. You have to follow library instructions to install esp32-s2 core and WebServer Patch
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.5.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.6.0"
 
 #include "ESPAsync_WiFiManager_Debug.h"
-
-#define HTTP_PORT               80
 
 //KH, for ESP32
 #ifdef ESP8266
@@ -119,6 +118,16 @@ typedef struct
   #define USING_CORS_FEATURE     false
 #endif
 
+#ifndef TIME_BETWEEN_MODAL_SCANS
+  // Default to 30s
+  #define TIME_BETWEEN_MODAL_SCANS          30000UL
+#endif
+
+#ifndef TIME_BETWEEN_MODELESS_SCANS
+  // Default to 60s
+  #define TIME_BETWEEN_MODELESS_SCANS       60000UL
+#endif
+
 //KH
 // Mofidy HTTP_HEAD to WM_HTTP_HEAD_START to avoid conflict in Arduino esp8266 core 2.6.0+
 const char WM_HTTP_200[] PROGMEM            = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
@@ -133,7 +142,7 @@ const char WM_HTTP_SCRIPT[] PROGMEM = "<script>function c(l){document.getElement
 // To permit disable or configure NTP from sketch
 #ifndef USE_ESP_WIFIMANAGER_NTP
   // To enable NTP config
-  #define USE_ESP_WIFIMANAGER_NTP     false //true
+  #define USE_ESP_WIFIMANAGER_NTP     true
 #endif
 
 #if USE_ESP_WIFIMANAGER_NTP
@@ -183,18 +192,18 @@ const char WM_HTTP_SAVED[] PROGMEM = "<div class=\"msg\"><b>Credentials Saved</b
 
 const char WM_HTTP_END[] PROGMEM = "</div></body></html>";
 
-const char WM_HTTP_HEAD_CL[]         PROGMEM = "Content-Length";
-const char WM_HTTP_HEAD_CT[]         PROGMEM = "text/html";
-const char WM_HTTP_HEAD_CT2[]        PROGMEM = "text/plain";
+const char WM_HTTP_HEAD_CL[]         = "Content-Length";
+const char WM_HTTP_HEAD_CT[]         = "text/html";
+const char WM_HTTP_HEAD_CT2[]        = "text/plain";
 
 //KH Add repeatedly used const
-const char WM_HTTP_CACHE_CONTROL[]   PROGMEM = "Cache-Control";
-const char WM_HTTP_NO_STORE[]        PROGMEM = "no-cache, no-store, must-revalidate";
-const char WM_HTTP_PRAGMA[]          PROGMEM = "Pragma";
-const char WM_HTTP_NO_CACHE[]        PROGMEM = "no-cache";
-const char WM_HTTP_EXPIRES[]         PROGMEM = "Expires";
-const char WM_HTTP_CORS[]            PROGMEM = "Access-Control-Allow-Origin";
-const char WM_HTTP_CORS_ALLOW_ALL[]  PROGMEM = "*";
+const char WM_HTTP_CACHE_CONTROL[]   = "Cache-Control";
+const char WM_HTTP_NO_STORE[]        = "no-cache, no-store, must-revalidate";
+const char WM_HTTP_PRAGMA[]          = "Pragma";
+const char WM_HTTP_NO_CACHE[]        = "no-cache";
+const char WM_HTTP_EXPIRES[]         = "Expires";
+const char WM_HTTP_CORS[]            = "Access-Control-Allow-Origin";
+const char WM_HTTP_CORS_ALLOW_ALL[]  = "*";
 
 #if USE_AVAILABLE_PAGES
 const char WM_HTTP_AVAILABLE_PAGES[] PROGMEM = "<h3>Available Pages</h3><table class=\"table\"><thead><tr><th>Page</th><th>Function</th></tr></thead><tbody><tr><td><a href=\"/\">/</a></td><td>Menu page.</td></tr><tr><td><a href=\"/wifi\">/wifi</a></td><td>Show WiFi scan results and enter WiFi configuration.</td></tr><tr><td><a href=\"/wifisave\">/wifisave</a></td><td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr><tr><td><a href=\"/close\">/close</a></td><td>Close the configuration server and configuration WiFi network.</td></tr><tr><td><a href=\"/i\">/i</a></td><td>This page.</td></tr><tr><td><a href=\"/r\">/r</a></td><td>Delete WiFi configuration and reboot. ESP device will not reconnect to a network until new WiFi configuration data is entered.</td></tr><tr><td><a href=\"/state\">/state</a></td><td>Current device state in JSON format. Interface for programmatic WiFi configuration.</td></tr></table>";
@@ -298,6 +307,13 @@ class ESPAsync_WiFiManager
 
     ~ESPAsync_WiFiManager();
     
+    void          scan();
+    String        scanModal();
+    void          loop();
+    void          safeLoop();
+    void          criticalLoop();
+    String        infoAsString();
+
     // Can use with STA staticIP now
     bool          autoConnect();
     bool          autoConnect(char const *apName, char const *apPassword = NULL);
@@ -495,10 +511,17 @@ class ESPAsync_WiFiManager
     }
 
   private:
-   
+  
     DNSServer      *dnsServer;
 
     AsyncWebServer *server;
+
+    bool            _modeless;
+    int             scannow;
+    int             shouldscan;
+    bool            needInfo = true;
+    String          pager;
+    wl_status_t     wifiStatus;
 
 #define RFC952_HOSTNAME_MAXLEN      24
     char RFC952_hostname[RFC952_HOSTNAME_MAXLEN + 1];
@@ -529,7 +552,11 @@ class ESPAsync_WiFiManager
 
     int                 numberOfNetworks;
     int                 *networkIndices;
-       
+    
+    WiFiResult          *wifiSSIDs;
+    wifi_ssid_count_t   wifiSSIDCount;
+    bool                wifiSSIDscan;
+    
     // To enable dynamic/random channel
     // default to channel 1
     #define MIN_WIFI_CHANNEL      1
@@ -622,7 +649,7 @@ class ESPAsync_WiFiManager
       return false;
     }
 };
+
+
 #endif    // ESPAsync_WiFiManager_h
-
-
 

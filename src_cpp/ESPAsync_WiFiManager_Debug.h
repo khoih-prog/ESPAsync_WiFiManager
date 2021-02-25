@@ -1,6 +1,6 @@
 /****************************************************************************************************************************
   ESPAsync_WiFiManager_Debug.h
-  For ESP8266 / ESP32 (including ESP32-S2) boards
+  For ESP8266 / ESP32 boards
 
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
   configuration and reconfiguration of WiFi credentials using a Captive Portal.
@@ -13,13 +13,13 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.5.0
+  Version: 1.6.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
   1.0.11  K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                   to sync with ESP_WiFiManager v1.0.11
-  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with 
+  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with
                                   ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
   1.1.2   K Hoang      17/09/2020 Fix bug in examples.
   1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
@@ -29,6 +29,7 @@
   1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
   1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
   1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
+  1.6.0   K Hoang      25/02/2021 Fix WiFi Scanning bug.
  *****************************************************************************************************************************/
 
 #pragma once
@@ -91,5 +92,4 @@ const char ESP_WM_MARK[] = "[WM] ";
 
 
 #endif    // ESPAsync_WiFiManager_Debug_H
-
 
