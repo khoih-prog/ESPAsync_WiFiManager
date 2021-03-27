@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.6.0
+  Version: 1.6.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -30,12 +30,13 @@
   1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
   1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
   1.6.0   K Hoang      25/02/2021 Fix WiFi Scanning bug.
+  1.6.1   K Hoang      26/03/2021 Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
  *****************************************************************************************************************************/
 #if !( defined(ESP8266) ||  defined(ESP32) )
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.6.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.6.1"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -300,7 +301,8 @@ uint8_t connectMultiWiFi()
   #if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
     #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           500L
   #else
-    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           0L
+    // For ESP32 core v1.0.6, must be >= 500
+    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           800L
   #endif
 #else
   // For ESP8266, this better be 2200 to enable connect the 1st time
