@@ -16,6 +16,7 @@
   * [Why Async is better](#why-async-is-better)
   * [Currently supported Boards](#currently-supported-boards)
 * [Changelog](#changelog)
+  * [Releases v1.6.2](#releases-v162)
   * [Releases v1.6.1](#releases-v161)
   * [Releases v1.6.0](#releases-v160)
   * [Major Releases v1.5.0](#major-releases-v150)
@@ -46,7 +47,7 @@
   * [4. Update tools](#4-update-tools)
     * [4.1 Update Toolchain](#41-update-toolchain)
     * [4.2 Update esptool](#42-update-esptool)
-  * [5. esp32-s2 WebServer Library Patch](#5-esp32-s2-webserver-library-patch)  
+  * [5. esp32-s2 WebServer Library Patch](#5-esp32-s2-webserver-library-patch)
 * [Note for Platform IO using ESP32 LittleFS](#note-for-platform-io-using-esp32-littlefs)
 * [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
 * [HOWTO Use analogRead() with ESP32 running WiFi and/or BlueTooth (BT/BLE)](#howto-use-analogread-with-esp32-running-wifi-andor-bluetooth-btble)
@@ -203,6 +204,10 @@ This [**ESPAsync_WiFiManager_Lite** library](https://github.com/khoih-prog/ESPAs
 
 ## Changelog
 
+### Releases v1.6.2
+
+1. Fix example misleading messages. Check [**Minor: examples/Async_ESP32_FSWebServer/ wrongly uses FileFS.begin(true)** #47](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/47)
+
 ### Releases v1.6.1
 
 1. Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
@@ -290,7 +295,7 @@ This [**ESPAsync_WiFiManager_Lite** library](https://github.com/khoih-prog/ESPAs
  6. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
  7. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
  8. [`ESP_DoubleResetDetector v1.1.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
- 9.  [`LittleFS_esp32 v1.0.5+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32).
+ 9.  [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32). **Notice**: This [`LittleFS_esp32 library`](https://github.com/lorol/LITTLEFS) has been integrated to Arduino [esp32 core v2.0.0](https://github.com/espressif/arduino-esp32/tree/master/libraries/LITTLEFS).
  
 ---
 
@@ -2134,7 +2139,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.6.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.6.2"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -3197,14 +3202,30 @@ void setup()
   if (!FileFS.begin(true))
 #else
   if (!FileFS.begin())
-#endif  
+#endif
   {
-    Serial.print(FS_Name);
-    Serial.println(F(" failed! AutoFormatting."));
-    
 #ifdef ESP8266
     FileFS.format();
 #endif
+
+    Serial.println(F("SPIFFS/LittleFS failed! Already tried formatting."));
+  
+    if (!FileFS.begin())
+    {     
+      // prevents debug info from the library to hide err message.
+      delay(100);
+      
+#if USE_LITTLEFS
+      Serial.println(F("LittleFS failed!. Please use SPIFFS or EEPROM. Stay forever"));
+#else
+      Serial.println(F("SPIFFS failed!. Please use LittleFS or EEPROM. Stay forever"));
+#endif
+
+      while (true)
+      {
+        delay(1);
+      }
+    }
   }
 
   // New in v1.4.0
@@ -3300,7 +3321,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3319,7 +3340,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3407,7 +3428,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3447,7 +3468,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3537,7 +3558,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3596,7 +3617,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3656,7 +3677,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -3734,7 +3755,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.6.1
+ESPAsync_WiFiManager v1.6.2
 ESP_DoubleResetDetector v1.1.1
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -3874,6 +3895,10 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 
 ## Releases
 
+### Releases v1.6.2
+
+1. Fix example misleading messages. Check [**Minor: examples/Async_ESP32_FSWebServer/ wrongly uses FileFS.begin(true)** #47](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/47)
+
 ### Releases v1.6.1
 
 1. Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
@@ -3974,7 +3999,7 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
  9. Thanks to [Manuel Capilla](https://github.com/molillo) for reporting [ESP8266 Clear SSID and Pass](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/33) bug which is fixed and leading to v1.4.2.
 10. Thanks to [David Gunzinger](https://github.com/pfy) for creating merged PR [It should be possible to start the ConfigPortal without connecting to WiFI #38](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/38).
 11. Thanks to [Russell Jahn](https://github.com/russelljahn) for reporting [ESPAsync_WiFiManager::startConfigPortal() will cause a watchdog timeout when called from a higher-priority task. #39](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/39) leading to v1.5.0 and v1.6.0
-
+12. Thanks to [robcazzaro](https://github.com/robcazzaro) for reporting [Minor: examples/Async_ESP32_FSWebServer/ wrongly uses FileFS.begin(true) #47](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/47) leading to v1.6.2
 
 
 <table>
@@ -3996,7 +4021,8 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/russelljahn"><img src="https://github.com/russelljahn.png" width="100px;" alt="russelljahn"/><br /><sub><b>Russell Jahn</b></sub></a><br /></td>
-  </tr> 
+    <td align="center"><a href="https://github.com/robcazzaro"><img src="https://github.com/robcazzaro.png" width="100px;" alt="robcazzaro"/><br /><sub><b>robcazzaro</b></sub></a><br /></td>
+  </tr>
 </table>
 
 ---

@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.6.1
+  Version: 1.6.2
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -31,6 +31,7 @@
   1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
   1.6.0   K Hoang      25/02/2021 Fix WiFi Scanning bug.
   1.6.1   K Hoang      26/03/2021 Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
+  1.6.2   K Hoang      08/04/2021 Fix example misleading messages.
  *****************************************************************************************************************************/
 
 #pragma once
@@ -44,7 +45,7 @@
   #warning Using ESP32_S2. You have to follow library instructions to install esp32-s2 core and WebServer Patch
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.6.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.6.2"
 
 #include "ESPAsync_WiFiManager_Debug.h"
 
