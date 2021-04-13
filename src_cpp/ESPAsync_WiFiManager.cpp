@@ -908,7 +908,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
 
 #if !( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
   server->reset();
-  *dnsServer = DNSServer();
+  dnsServer->stop();
 #endif
 
   return  WiFi.status() == WL_CONNECTED;
