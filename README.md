@@ -207,7 +207,7 @@ This [**ESPAsync_WiFiManager_Lite** library](https://github.com/khoih-prog/ESPAs
 
 ### Releases v1.6.3
 
-1. Fix dnsServer not closed to free up DNS port 53. Check [**Allow captive portal to run more than once by closing dnsServer cleanly. #49** #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49)
+1. Fix dnsServer not closed to free up DNS port 53. Check [**Allow captive portal to run more than once by closing dnsServer cleanly.** #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49)
 2. Add `dnsServer can't start` error message.
 
 ### Releases v1.6.2
@@ -3903,8 +3903,9 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 
 ### Releases v1.6.3
 
-1. Fix dnsServer not closed to free up DNS port 53. Check [**Allow captive portal to run more than once by closing dnsServer cleanly. #49** #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49)
+1. Fix dnsServer not closed to free up DNS port 53. Check [**Allow captive portal to run more than once by closing dnsServer cleanly.** #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49)
 2. Add `dnsServer can't start` error message.
+
 
 ### Releases v1.6.2
 
