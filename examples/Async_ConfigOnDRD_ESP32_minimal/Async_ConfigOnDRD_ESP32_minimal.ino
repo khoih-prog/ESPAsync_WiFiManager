@@ -6,9 +6,8 @@
  *****************************************************************************************************************************/
 #if !(defined(ESP32) )
   #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
-#elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
-  #warning You have to select HUGE APP or 1.9-2.0MB APP to be able to run Config Portal
 #endif
+
 #if defined(ESP32)
   #define USE_SPIFFS            true
   #define ESP_DRD_USE_EEPROM    true
