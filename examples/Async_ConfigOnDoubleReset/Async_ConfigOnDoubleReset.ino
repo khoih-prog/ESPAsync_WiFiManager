@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.7.0
+  Version: 1.7.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -35,6 +35,7 @@
   1.6.2   K Hoang      08/04/2021 Fix example misleading messages.
   1.6.3   K Hoang      13/04/2021 Allow captive portal to run more than once by closing dnsServer.
   1.7.0   K Hoang      20/04/2021 Add support to new ESP32-C3 using SPIFFS or EEPROM
+  1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
    This example will open a configuration portal when the reset button is pressed twice.
@@ -64,7 +65,7 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.7.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.7.1"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    1
@@ -410,15 +411,19 @@ uint8_t connectMultiWiFi()
   #define WIFI_MULTI_1ST_CONNECT_WAITING_MS             2200L
 #endif
 
-#define WIFI_MULTI_CONNECT_WAITING_MS                   100L
+#define WIFI_MULTI_CONNECT_WAITING_MS                   500L
 
   uint8_t status;
+
+  WiFi.mode(WIFI_STA);
 
   LOGERROR(F("ConnectMultiWiFi with :"));
 
   if ( (Router_SSID != "") && (Router_Pass != "") )
   {
     LOGERROR3(F("* Flash-stored Router_SSID = "), Router_SSID, F(", Router_Pass = "), Router_Pass );
+    LOGERROR3(F("* Add SSID = "), Router_SSID, F(", PW = "), Router_Pass );
+    wifiMulti.addAP(Router_SSID.c_str(), Router_Pass.c_str());
   }
 
   for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
@@ -432,7 +437,7 @@ uint8_t connectMultiWiFi()
 
   LOGERROR(F("Connecting MultiWifi..."));
 
-  WiFi.mode(WIFI_STA);
+  //WiFi.mode(WIFI_STA);
 
 #if !USE_DHCP_IP
   // New in v1.4.0
