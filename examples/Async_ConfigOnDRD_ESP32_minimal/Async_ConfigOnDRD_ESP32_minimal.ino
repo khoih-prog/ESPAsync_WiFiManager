@@ -22,7 +22,9 @@ DoubleResetDetector* drd;
 const int PIN_LED       = 2;
 bool      initialConfig = false;
 AsyncWebServer webServer(80);
+#if !( USING_ESP32_S2 || USING_ESP32_C3 )
 DNSServer dnsServer;
+#endif
 
 void setup() {
   pinMode(PIN_LED, OUTPUT);
@@ -31,7 +33,11 @@ void setup() {
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION); 
   drd = new DoubleResetDetector(DRD_TIMEOUT, DRD_ADDRESS);
   if (drd->detectDoubleReset()) { Serial.println(F("DRD")); initialConfig = true; }
-  ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "ConfigOnDoubleReset");
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
+  ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "Async_ConfigOnDRD");
+#else
+  ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "Async_ConfigOnDRD");
+#endif
   if (ESPAsync_wifiManager.WiFi_SSID() == "") { Serial.println(F("No AP credentials")); initialConfig = true; }
   if (initialConfig) {
     Serial.println(F("Starting Config Portal")); digitalWrite(PIN_LED, HIGH);

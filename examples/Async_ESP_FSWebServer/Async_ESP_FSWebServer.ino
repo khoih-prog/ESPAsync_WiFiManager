@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.7.1
+  Version: 1.8.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -35,6 +35,7 @@
   1.6.3   K Hoang      13/04/2021 Allow captive portal to run more than once by closing dnsServer.
   1.7.0   K Hoang      20/04/2021 Add support to new ESP32-C3 using SPIFFS or EEPROM
   1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
+  1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
  *****************************************************************************************************************************/
 /*****************************************************************************************************************************
    Compare this efficient Async_ESP_FSWebServer example with the so complicated twin ESP32_FSWebServer 
@@ -56,7 +57,7 @@
   #error This code is intended to run on the ESP8266 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.7.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.8.0"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -99,7 +100,7 @@ ESP8266WiFiMulti wifiMulti;
 
 // SSID and PW for Config Portal
 String ssid = "ESP_" + String(ESP_getChipId(), HEX);
-const char* password = "your_password";
+String password;
 
 // SSID and PW for your Router
 String Router_SSID;
@@ -126,9 +127,16 @@ typedef struct
 
 #define NUM_WIFI_CREDENTIALS      2
 
+// Assuming max 49 chars
+#define TZNAME_MAX_LEN            50
+#define TIMEZONE_MAX_LEN          50
+
 typedef struct
 {
   WiFi_Credentials  WiFi_Creds [NUM_WIFI_CREDENTIALS];
+  char TZ_Name[TZNAME_MAX_LEN];     // "America/Toronto"
+  char TZ[TIMEZONE_MAX_LEN];        // "EST5EDT,M3.2.0,M11.1.0"
+  uint16_t checksum;
 } WM_Config;
 
 WM_Config         WM_config;
@@ -151,7 +159,20 @@ bool initialConfig = false;
 
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
-#define USE_ESP_WIFIMANAGER_NTP     false
+#define USE_ESP_WIFIMANAGER_NTP     true
+
+// Just use enough to save memory. On ESP8266, can cause blank ConfigPortal screen
+// if using too much memory
+#define USING_AFRICA        false
+#define USING_AMERICA       true
+#define USING_ANTARCTICA    false
+#define USING_ASIA          false
+#define USING_ATLANTIC      false
+#define USING_AUSTRALIA     false
+#define USING_EUROPE        false
+#define USING_INDIAN        false
+#define USING_PACIFIC       false
+#define USING_ETC_GMT       false
 
 // Use true to enable CloudFlare NTP service. System can hang if you don't have Internet access while accessing CloudFlare
 // See Issue #21: CloudFlare link in the default portal (https://github.com/khoih-prog/ESP_WiFiManager/issues/21)
@@ -209,6 +230,8 @@ bool initialConfig = false;
 
 IPAddress dns1IP      = gatewayIP;
 IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
+
+#define USE_CUSTOM_AP_IP          false
 
 IPAddress APStaticIP  = IPAddress(192, 168, 100, 1);
 IPAddress APStaticGW  = IPAddress(192, 168, 100, 1);
@@ -368,7 +391,11 @@ uint8_t connectMultiWiFi()
     LOGERROR3(F("Channel:"), WiFi.channel(), F(",IP address:"), WiFi.localIP() );
   }
   else
+  {
     LOGERROR(F("WiFi not connected"));
+    
+    ESP.reset();
+  }
 
   return status;
 }
@@ -400,8 +427,36 @@ void toggleLED()
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 }
 
+#if USE_ESP_WIFIMANAGER_NTP
+
+void printLocalTime()
+{
+#if ESP8266
+  static time_t now;
+  
+  now = time(nullptr);
+  
+  if ( now > 1000000 )
+  {
+    Serial.print("Local Date/Time: ");
+    Serial.print(ctime(&now));
+  }
+#else
+  struct tm timeinfo;
+
+  getLocalTime( &timeinfo );
+  Serial.print("Local Date/Time: ");
+  Serial.print( asctime( &timeinfo ) );
+#endif
+}
+
+#endif
+
 void heartBeatPrint()
 {
+#if USE_ESP_WIFIMANAGER_NTP
+  printLocalTime();
+#else
   static int num = 1;
 
   if (WiFi.status() == WL_CONNECTED)
@@ -418,6 +473,7 @@ void heartBeatPrint()
   {
     Serial.print(F(" "));
   }
+#endif  
 }
 
 void check_WiFi()
@@ -438,8 +494,14 @@ void check_status()
   static ulong current_millis;
 
 #define WIFICHECK_INTERVAL    1000L
+
+#if USE_ESP_WIFIMANAGER_NTP
+  #define HEARTBEAT_INTERVAL    60000L
+#else
+  #define HEARTBEAT_INTERVAL    10000L
+#endif
+
 #define LED_INTERVAL          2000L
-#define HEARTBEAT_INTERVAL    10000L
 
   current_millis = millis();
   
@@ -465,6 +527,18 @@ void check_status()
   }
 }
 
+int calcChecksum(uint8_t* address, uint16_t sizeToCalc)
+{
+  uint16_t checkSum = 0;
+  
+  for (uint16_t index = 0; index < sizeToCalc; index++)
+  {
+    checkSum += * ( ( (byte*) address ) + index);
+  }
+
+  return checkSum;
+}
+
 bool loadConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "r");
@@ -475,7 +549,7 @@ bool loadConfigData()
   // New in v1.4.0
   memset(&WM_STA_IPconfig, 0, sizeof(WM_STA_IPconfig));
   //////
-    
+
   if (file)
   {
     file.readBytes((char *) &WM_config,   sizeof(WM_config));
@@ -483,10 +557,17 @@ bool loadConfigData()
     // New in v1.4.0
     file.readBytes((char *) &WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
     //////
-    
+
     file.close();
     LOGERROR(F("OK"));
 
+    if ( WM_config.checksum != calcChecksum( (uint8_t*) &WM_config, sizeof(WM_config) - sizeof(WM_config.checksum) ) )
+    {
+      LOGERROR(F("WM_config checksum wrong"));
+      
+      return false;
+    }
+    
     // New in v1.4.0
     displayIPConfigStruct(WM_STA_IPconfig);
     //////
@@ -500,7 +581,7 @@ bool loadConfigData()
     return false;
   }
 }
-    
+
 void saveConfigData()
 {
   File file = FileFS.open(CONFIG_FILENAME, "w");
@@ -508,14 +589,16 @@ void saveConfigData()
 
   if (file)
   {
-    file.write((uint8_t*) &WM_config,   sizeof(WM_config));
+    WM_config.checksum = calcChecksum( (uint8_t*) &WM_config, sizeof(WM_config) - sizeof(WM_config.checksum) );
+    
+    file.write((uint8_t*) &WM_config, sizeof(WM_config));
 
     displayIPConfigStruct(WM_STA_IPconfig);
 
     // New in v1.4.0
     file.write((uint8_t*) &WM_STA_IPconfig, sizeof(WM_STA_IPconfig));
     //////
-    
+
     file.close();
     LOGERROR(F("OK"));
   }
@@ -605,10 +688,12 @@ void setup()
   // Use this to personalize DHCP hostname (RFC952 conformed) 
   ESPAsync_WiFiManager ESPAsync_wifiManager(&server, &dnsServer, "Async_ESP-FSWebServer");
 
+#if USE_CUSTOM_AP_IP 
   //set custom ip for portal
   // New in v1.4.0
   ESPAsync_wifiManager.setAPStaticIPConfig(WM_AP_IPconfig);
   //////
+#endif
 
   ESPAsync_wifiManager.setMinimumSignalQuality(-1);
 
@@ -639,10 +724,31 @@ void setup()
 
   // SSID to uppercase
   ssid.toUpperCase();
+  password = "My" + ssid;
 
   bool configDataLoaded = loadConfigData();
 
-  if (!configDataLoaded)
+  if (configDataLoaded)
+  {
+    #if USE_ESP_WIFIMANAGER_NTP      
+    if ( strlen(WM_config.TZ_Name) > 0 )
+    {
+      LOGERROR3(F("Saving current TZ_Name ="), WM_config.TZ_Name, F(", TZ = "), WM_config.TZ);
+
+  #if ESP8266
+      configTime(WM_config.TZ, "pool.ntp.org"); 
+  #else
+      //configTzTime(WM_config.TZ, "pool.ntp.org" );
+      configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+  #endif  
+    }
+    else
+    {
+      Serial.println(F("Current Timezone is not set. Enter Config Portal to set."));
+    } 
+#endif
+  }
+  else
   {
     // From v1.1.0, Don't permit NULL password
     if ( (Router_SSID == "") || (Router_Pass == "") )
@@ -650,9 +756,22 @@ void setup()
       Serial.println(F("We haven't got any access point credentials, so get them now"));
   
       initialConfig = true;
-  
+
+      Serial.print(F("Starting configuration portal @ "));
+    
+#if USE_CUSTOM_AP_IP    
+      Serial.print(APStaticIP);
+#else
+      Serial.print(F("192.168.4.1"));
+#endif
+
+      Serial.print(F(", SSID = "));
+      Serial.print(ssid);
+      Serial.print(F(", PWD = "));
+      Serial.println(password);
+
       // Starts an access point
-      if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
+      if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password.c_str()))
         Serial.println(F("Not connected to WiFi but continuing anyway."));
       else
         Serial.println(F("WiFi connected...yeey :)"));
@@ -682,7 +801,39 @@ void setup()
           wifiMulti.addAP(WM_config.WiFi_Creds[i].wifi_ssid, WM_config.WiFi_Creds[i].wifi_pw);
         }
       }
-  
+
+#if USE_ESP_WIFIMANAGER_NTP      
+    String tempTZ   = ESPAsync_wifiManager.getTimezoneName();
+
+    if (strlen(tempTZ.c_str()) < sizeof(WM_config.TZ_Name) - 1)
+      strcpy(WM_config.TZ_Name, tempTZ.c_str());
+    else
+      strncpy(WM_config.TZ_Name, tempTZ.c_str(), sizeof(WM_config.TZ_Name) - 1);
+
+    const char * TZ_Result = ESPAsync_wifiManager.getTZ(WM_config.TZ_Name);
+    
+    if (strlen(TZ_Result) < sizeof(WM_config.TZ) - 1)
+      strcpy(WM_config.TZ, TZ_Result);
+    else
+      strncpy(WM_config.TZ, TZ_Result, sizeof(WM_config.TZ_Name) - 1);
+         
+    if ( strlen(WM_config.TZ_Name) > 0 )
+    {
+      LOGERROR3(F("Saving current TZ_Name ="), WM_config.TZ_Name, F(", TZ = "), WM_config.TZ);
+
+#if ESP8266
+      configTime(WM_config.TZ, "pool.ntp.org"); 
+#else
+      //configTzTime(WM_config.TZ, "pool.ntp.org" );
+      configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+#endif
+    }
+    else
+    {
+      LOGERROR(F("Current Timezone Name is not set. Enter Config Portal to set."));
+    }
+#endif
+
       // New in v1.4.0
       ESPAsync_wifiManager.getSTAStaticIPConfig(WM_STA_IPconfig);
       //////

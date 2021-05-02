@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.7.1
+  Version: 1.8.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -36,6 +36,7 @@
   1.6.3   K Hoang      13/04/2021 Allow captive portal to run more than once by closing dnsServer.
   1.7.0   K Hoang      20/04/2021 Add support to new ESP32-C3 using SPIFFS or EEPROM
   1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
+  1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
  *****************************************************************************************************************************/
 
 #pragma once
@@ -326,7 +327,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   if (WiFi.getAutoConnect() == 0)
     WiFi.setAutoConnect(1);
 
-#if !( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if !( USING_ESP32_S2 || USING_ESP32_C3 )
   #ifdef ESP8266
     // KH, mod for Async
     server->reset();
@@ -336,7 +337,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
 
   if (!dnsServer)
     dnsServer = new DNSServer;
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   // optional soft ip config
   // Must be put here before dns server start to take care of the non-default ConfigPortal AP IP.
@@ -548,7 +549,7 @@ void ESPAsync_WiFiManager::scan()
   if (!shouldscan) 
     return;
   
-  LOGDEBUG(F("scan: About to scan()"));
+  LOGDEBUG(F("About to scan"));
   
   if (wifiSSIDscan)
   {
@@ -557,25 +558,25 @@ void ESPAsync_WiFiManager::scan()
 
   if (wifiSSIDscan)
   {
-    LOGDEBUG(F("scan: Start scan()"));
+    LOGDEBUG(F("Start scan"));
     wifi_ssid_count_t n = WiFi.scanNetworks();
-    LOGDEBUG(F("scan: Scan done"));
+    LOGDEBUG(F("Scan done"));
     
     if (n == WIFI_SCAN_FAILED) 
     {
-      LOGDEBUG(F("scan: WIFI_SCAN_FAILED!"));
+      LOGDEBUG(F("WIFI_SCAN_FAILED!"));
     }
     else if (n == WIFI_SCAN_RUNNING) 
     {
-      LOGDEBUG(F("scan: WIFI_SCAN_RUNNING!"));
+      LOGDEBUG(F("WIFI_SCAN_RUNNING!"));
     } 
     else if (n < 0) 
     {
-      LOGDEBUG(F("scan: Failed with unknown error code!"));
+      LOGDEBUG(F("Failed, unknown error code!"));
     } 
     else if (n == 0) 
     {
-      LOGDEBUG(F("scan: No networks found"));
+      LOGDEBUG(F("No network found"));
       // page += F("No networks found. Refresh to scan again.");
     } 
     else 
@@ -632,7 +633,7 @@ void ESPAsync_WiFiManager::scan()
           {
             if (cssid == wifiSSIDs[j].SSID) 
             {
-              LOGDEBUG("scan: DUP AP: " +wifiSSIDs[j].SSID);
+              LOGDEBUG("DUP AP: " +wifiSSIDs[j].SSID);
               // set dup aps to NULL
               wifiSSIDs[j].duplicate = true; 
             }
@@ -804,13 +805,13 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
 
   bool TimedOut = true;
 
-  LOGINFO("ESPAsync_WiFiManager::startConfigPortal : Enter loop");
+  LOGINFO("startConfigPortal : Enter loop");
   
   scannow = -1 ;
 
   while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout)
   {
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )    
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )   
     // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
     delay(1);
 #else
@@ -824,7 +825,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
     //
     if ( scannow == -1 || millis() > scannow + TIME_BETWEEN_MODAL_SCANS)
     {
-      LOGDEBUG(F("startConfigPortal: About to modal scan()"));
+      LOGDEBUG(F("startConfigPortal: About to modal scan"));
       
       // since we are modal, we can scan every time
       shouldscan = true;
@@ -845,7 +846,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
         
       scannow = millis() ;
     }
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
     if (connect)
     {
@@ -915,7 +916,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
     LOGERROR1("Timed out connection result:", getStatus(connRes));
   }
 
-#if !( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if !( USING_ESP32_S2 || USING_ESP32_C3 )
   server->reset();
   dnsServer->stop();
 #endif
@@ -1360,7 +1361,7 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
     // If captive portal redirect instead of displaying the error page.
     return;
   }
-
+  
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Options");
   page += FPSTR(WM_HTTP_SCRIPT);
@@ -1399,7 +1400,7 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
     
   page += FPSTR(WM_HTTP_END);
  
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
   
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
@@ -1419,7 +1420,7 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
   
   request->send(response);
   
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 }
 
 
@@ -1441,16 +1442,16 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
   page += _customHeadElement;
   page += FPSTR(WM_HTTP_HEAD_END);
   page += F("<h2>Configuration</h2>");
-
-#if !( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 )
+  
+#if !( USING_ESP32_S2 || USING_ESP32_C3 )
 
   wifiSSIDscan = false;
   LOGDEBUG(F("handleWifi: Scan done"));
 
   if (wifiSSIDCount == 0) 
   {
-    LOGDEBUG(F("handleWifi: No networks found"));
-    page += F("No networks found. Refresh to scan again.");
+    LOGDEBUG(F("handleWifi: No network found"));
+    page += F("No network found. Refresh to scan again.");
   } 
   else 
   {
@@ -1468,9 +1469,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
   
   wifiSSIDscan = true;
   
-  page += "<small>To reuse already connected AP, leave SSID & password fields empty</small>";
-
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
   
   page += FPSTR(WM_HTTP_FORM_START);
   char parLength[2];
@@ -1602,12 +1601,14 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
 
     page += "<br/>";
   }
+  
+  page += FPSTR(WM_HTTP_SCRIPT_NTP_HIDDEN);
 
   page += FPSTR(WM_HTTP_FORM_END);
-
+   
   page += FPSTR(WM_HTTP_END);
   
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
   
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
@@ -1615,6 +1616,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
 #else  
  
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_CT, page);
+  
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
 #if USING_CORS_FEATURE
@@ -1627,7 +1629,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
   
   request->send(response);
   
-#endif    // ARDUINO_ESP32S2_DEV  
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Sent config page"));
 }
@@ -1646,7 +1648,21 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   // New from v1.1.0
   _ssid1 = request->arg("s1").c_str();
   _pass1 = request->arg("p1").c_str();
-  //////
+  
+  ///////////////////////
+
+#if USE_ESP_WIFIMANAGER_NTP  
+  if (request->hasArg("timezone"))
+  {
+    _timezoneName = request->arg("timezone");   //.c_str();
+    LOGDEBUG1(F("TZ ="), _timezoneName);
+  }
+  else
+  {
+    LOGDEBUG(F("No TZ arg"));
+  }
+#endif
+  ///////////////////////
 
   //parameters
   for (int i = 0; i < _paramsCount; i++)
@@ -1712,7 +1728,6 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Credentials Saved");
   page += FPSTR(WM_HTTP_SCRIPT);
-  page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(WM_HTTP_HEAD_END);
@@ -1725,8 +1740,10 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   //////
   
   page += FPSTR(WM_HTTP_END);
+  
+  //LOGDEBUG1(F("page ="), page);
  
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
   
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
@@ -1745,7 +1762,7 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
   request->send(response);
   
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Sent wifi save page"));
 
@@ -1765,7 +1782,6 @@ void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Close Server");
   page += FPSTR(WM_HTTP_SCRIPT);
-  page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(WM_HTTP_HEAD_END);
@@ -1782,7 +1798,7 @@ void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
   
   page += FPSTR(WM_HTTP_END);
    
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
   
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
@@ -1801,7 +1817,7 @@ void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
   request->send(response);
   
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
   
   stopConfigPortal = true; //signal ready to shutdown config portal
   
@@ -1824,7 +1840,6 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Info");
   page += FPSTR(WM_HTTP_SCRIPT);
-  page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   
@@ -1918,7 +1933,7 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   page += F("<p/><a href=\"https://github.com/khoih-prog/ESPAsync_WiFiManager\">https://github.com/khoih-prog/ESPAsync_WiFiManager</a>");
   page += FPSTR(WM_HTTP_END);
  
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
   
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
@@ -1937,7 +1952,7 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
   request->send(response);
   
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Info page sent"));
 }
@@ -1972,7 +1987,7 @@ void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
   page += WiFi_SSID();
   page += F("\"}");
    
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
   
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
@@ -1991,7 +2006,7 @@ void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
   
   request->send(response);
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
   
   LOGDEBUG(F("Sent state page in json format"));
 }
@@ -2006,14 +2021,13 @@ void ESPAsync_WiFiManager::handleReset(AsyncWebServerRequest *request)
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "WiFi Information");
   page += FPSTR(WM_HTTP_SCRIPT);
-  page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(WM_HTTP_HEAD_END);
   page += F("Resetting");
   page += FPSTR(WM_HTTP_END);
     
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 ) 
   request->send(200, WM_HTTP_HEAD_CT, page);
 #else  
     
@@ -2023,7 +2037,7 @@ void ESPAsync_WiFiManager::handleReset(AsyncWebServerRequest *request)
   response->addHeader(WM_HTTP_EXPIRES, "-1");
   
   request->send(response);
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Sent reset page"));
   delay(5000);
@@ -2068,7 +2082,7 @@ void ESPAsync_WiFiManager::handleNotFound(AsyncWebServerRequest *request)
     message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
   }
 
-#if ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_PROS2 || ARDUINO_MICROS2 ) 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, message);
   
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
@@ -2081,7 +2095,7 @@ void ESPAsync_WiFiManager::handleNotFound(AsyncWebServerRequest *request)
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
   
   request->send(response);
-#endif    // ARDUINO_ESP32S2_DEV
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 }
 
 //////////////////////////////////////////
