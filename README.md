@@ -78,6 +78,9 @@
   * [14. Using AUTOCONNECT_NO_INVALIDATE feature](#14-using-autoconnect_no_invalidate-feature)
   * [15. Using CORS (Cross-Origin Resource Sharing) feature](#15-using-cors-cross-origin-resource-sharing-feature) 
   * [16. Using MultiWiFi auto(Re)connect feature](#16-using-multiwifi-autoreconnect-feature)
+  * [17. How to auto getting _timezoneName](#17-how-to-auto-getting-_timezonename)
+  * [18. How to get TZ variable to configure Timezone](#18-how-to-get-tz-variable-to-configure-timezone) 
+  * [19. How to use the TZ variable to configure Timezone](#19-how-to-use-the-tz-variable-to-configure-timezone)
 * [HOWTO Open Config Portal](#howto-open-config-portal)
 * [HOWTO Add Dynamic Parameters](#howto-add-dynamic-parameters) 
   * [1. Determine the variables to be configured via Config Portal (CP)](#1-determine-the-variables-to-be-configured-via-config-portal-cp)
@@ -4285,7 +4288,7 @@ HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHH
 This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ)  on  **ESP32_DEV.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
 
 
-### 8.1 DRD => Config Portal
+#### 8.1 DRD => Config Portal
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
@@ -4309,7 +4312,7 @@ Open Config Portal without Timeout: Double Reset Detected
 Starting configuration portal @ 192.168.4.1, SSID = ESP_9ABF498, PWD = MyESP_9ABF498
 ```
 
-### 8.2 Data Saved => Connect to WiFi with correct local time, TZ set and using NTP
+#### 8.2 Data Saved => Connect to WiFi with correct local time, TZ set and using NTP
 
 ```
 [WM] Connecting to new AP
@@ -4329,7 +4332,7 @@ Local Date/Time: Sat May  1 00:16:30 2021
 Local Date/Time: Sat May  1 00:17:30 2021
 ```
 
-### 8.3 Normal running with correct local time, TZ set and using NTP
+#### 8.3 Normal running with correct local time, TZ set and using NTP
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
@@ -4376,7 +4379,7 @@ Local Date/Time: Sat May  1 00:15:19 2021
 
 This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
 
-### 9.1 DRD => Config Portal
+#### 9.1 DRD => Config Portal
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
@@ -4415,7 +4418,7 @@ Configuring AP SSID = ESP_AB1481
 ```
 
 
-### 9.2 Data Saved => Connect to WiFi with correct local time, TZ set and using NTP
+#### 9.2 Data Saved => Connect to WiFi with correct local time, TZ set and using NTP
 
 ```
 [WM] Connecting to new AP
@@ -4449,7 +4452,7 @@ Local Date/Time: Sat May  1 03:12:54 2021
 ```
 
 
-### 9.3 Normal running with correct local time, TZ set and using NTP
+#### 9.3 Normal running with correct local time, TZ set and using NTP
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
