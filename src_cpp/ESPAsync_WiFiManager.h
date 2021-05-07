@@ -13,7 +13,8 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.8.0
+  
+  Version: 1.8.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -36,6 +37,7 @@
   1.7.0   K Hoang      20/04/2021 Add support to new ESP32-C3 using SPIFFS or EEPROM
   1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
   1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
+  1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
  *****************************************************************************************************************************/
 
 #pragma once
@@ -57,7 +59,7 @@
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.8.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.8.1"
 
 #include "ESPAsync_WiFiManager_Debug.h"
 
@@ -544,7 +546,7 @@ class ESPAsync_WiFiManager
       return _timezoneName;
     }
 
-    String setTimezoneName(String& inTimezoneName) 
+    void setTimezoneName(String& inTimezoneName) 
     {  
       _timezoneName = inTimezoneName;
     }
@@ -729,7 +731,6 @@ class ESPAsync_WiFiManager
       return false;
     }
 };
-
 
 
 #endif    // ESPAsync_WiFiManager_h

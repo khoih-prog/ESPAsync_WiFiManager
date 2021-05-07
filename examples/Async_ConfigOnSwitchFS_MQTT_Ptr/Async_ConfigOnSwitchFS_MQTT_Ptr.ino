@@ -13,7 +13,7 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.8.0
+  Version: 1.8.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -36,6 +36,7 @@
   1.7.0   K Hoang      20/04/2021 Add support to new ESP32-C3 using SPIFFS or EEPROM
   1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
   1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
+  1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
   This example will open a Config Portal when there is no stored WiFi Credentials or when a button is pressed.
@@ -58,7 +59,7 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.8.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.8.1"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -611,7 +612,7 @@ void printLocalTime()
   
   now = time(nullptr);
   
-  if ( now > 1000000 )
+  if ( now > 1451602800 )
   {
     Serial.print("Local Date/Time: ");
     Serial.print(ctime(&now));
@@ -620,8 +621,14 @@ void printLocalTime()
   struct tm timeinfo;
 
   getLocalTime( &timeinfo );
-  Serial.print("Local Date/Time: ");
-  Serial.print( asctime( &timeinfo ) );
+
+  // Valid only if year > 2000. 
+  // You can get from timeinfo : tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec
+  if (timeinfo.tm_year > 100 )
+  {
+    Serial.print("Local Date/Time: ");
+    Serial.print( asctime( &timeinfo ) );
+  }
 #endif
 }
 
