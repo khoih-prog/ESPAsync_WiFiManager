@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.8.1
+  Version: 1.9.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -38,6 +38,7 @@
   1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
   1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
   1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
+  1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
  *****************************************************************************************************************************/
 
 #pragma once
@@ -59,7 +60,7 @@
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.8.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.0"
 
 #include "ESPAsync_WiFiManager_Debug.h"
 
@@ -201,7 +202,8 @@ const char WM_FLDSET_END[]    PROGMEM = "</fieldset>";
 
 const char WM_HTTP_PORTAL_OPTIONS[] PROGMEM = "<form action='/wifi' method='get'><button class='btn'>Configuration</button></form><br/><form action='/i' method='get'><button class='btn'>Information</button></form><br/><form action='/close' method='get'><button class='btn'>Exit Portal</button></form><br/>";
 const char WM_HTTP_ITEM[] PROGMEM = "<div><a href='#p' onclick='c(this)'>{v}</a>&nbsp;<span class='q {i}'>{r}%</span></div>";
-const char JSON_ITEM[] PROGMEM = "{'SSID':'{v}', 'Encryption':{i}, 'Quality':'{r}'}";
+const char JSON_ITEM[] PROGMEM    = "{\"SSID\":\"{v}\", \"Encryption\":{i}, \"Quality\":\"{r}\"}";
+
 
 // KH, update from v1.1.0
 const char WM_HTTP_FORM_START[] PROGMEM = "<form method='get' action='wifisave'><fieldset><div><label>SSID</label><input id='s' name='s' length=32 placeholder='SSID'><div></div></div><div><label>Password</label><input id='p' name='p' length=64 placeholder='password'><div></div></div><div><label>SSID1</label><input id='s1' name='s1' length=32 placeholder='SSID1'><div></div></div><div><label>Password</label><input id='p1' name='p1' length=64 placeholder='password1'><div></div></div></fieldset>";
@@ -225,6 +227,8 @@ const char WM_HTTP_HEAD_CL[]         = "Content-Length";
 const char WM_HTTP_HEAD_CT[]         = "text/html";
 const char WM_HTTP_HEAD_CT2[]        = "text/plain";
 
+const char WM_HTTP_HEAD_JSON[]       ="application/json";
+
 //KH Add repeatedly used const
 const char WM_HTTP_CACHE_CONTROL[]   = "Cache-Control";
 const char WM_HTTP_NO_STORE[]        = "no-cache, no-store, must-revalidate";
@@ -235,7 +239,7 @@ const char WM_HTTP_CORS[]            = "Access-Control-Allow-Origin";
 const char WM_HTTP_CORS_ALLOW_ALL[]  = "*";
 
 #if USE_AVAILABLE_PAGES
-const char WM_HTTP_AVAILABLE_PAGES[] PROGMEM = "<h3>Available Pages</h3><table class='table'><thead><tr><th>Page</th><th>Function</th></tr></thead><tbody><tr><td><a href='/'>/</a></td><td>Menu page.</td></tr><tr><td><a href='/wifi'>/wifi</a></td><td>Show WiFi scan results and enter WiFi configuration.</td></tr><tr><td><a href='/wifisave'>/wifisave</a></td><td>Save WiFi configuration information and configure device. Needs variables supplied.</td></tr><tr><td><a href='/close'>/close</a></td><td>Close the configuration server and configuration WiFi network.</td></tr><tr><td><a href='/i'>/i</a></td><td>This page.</td></tr><tr><td><a href='/r'>/r</a></td><td>Delete WiFi configuration and reboot. ESP device will not reconnect to a network until new WiFi configuration data is entered.</td></tr><tr><td><a href='/state'>/state</a></td><td>Current device state in JSON format. Interface for programmatic WiFi configuration.</td></tr></table>";
+const char WM_HTTP_AVAILABLE_PAGES[] PROGMEM = "<h3>Available Pages</h3><table class='table'><thead><tr><th>Page</th><th>Function</th></tr></thead><tbody><tr><td><a href='/'>/</a></td><td>Menu page.</td></tr><tr><td><a href='/wifi'>/wifi</a></td><td>Enter WiFi Config Page with scan results.</td></tr><tr><td><a href='/wifisave'>/wifisave</a></td><td>Save Config. Portal Info with supplied variables.</td></tr><tr><td><a href='/close'>/close</a></td><td>Close the Config Portal.</td></tr><tr><td><a href='/i'>/i</a></td><td>This Info page.</td></tr><tr><td><a href='/r'>/r</a></td><td>Delete WiFi configuration and reboot. ESP device will not reconnect to a network until new WiFi configuration data is entered.</td></tr><tr><td><a href='/state'>/state</a></td><td>Current device state in JSON format. Interface for programmatic WiFi configuration.</td></tr><tr><td><a href='/scan'>/scan</a></td><td>Run a WiFi scan and return results in JSON format. Interface for programmatic WiFi configuration.</td></tr></table>";
 #else
   const char WM_HTTP_AVAILABLE_PAGES[] PROGMEM = "";
 #endif
@@ -336,7 +340,9 @@ class ESPAsync_WiFiManager
 
     ~ESPAsync_WiFiManager();
     
+    //Scan for WiFiNetworks in range and sort by signal strength
     void          scan();
+    
     String        scanModal();
     void          loop();
     void          safeLoop();
@@ -424,10 +430,6 @@ class ESPAsync_WiFiManager
     //if this is true, remove duplicated Access Points - defaut true
     void          setRemoveDuplicateAPs(bool removeDuplicates);
     
-    //Scan for WiFiNetworks in range and sort by signal strength
-    //space for indices array allocated on the heap and should be freed when no longer required
-    int           scanWifiNetworks(int **indicesptr);
-
     // return SSID of router in STA mode got from config portal. NULL if no user's input //KH
     String				getSSID() 
     {
@@ -687,6 +689,7 @@ class ESPAsync_WiFiManager
     void          handleServerClose(AsyncWebServerRequest *request);
     void          handleInfo(AsyncWebServerRequest *request);
     void          handleState(AsyncWebServerRequest *request);
+    void          handleScan(AsyncWebServerRequest *request);
     void          handleReset(AsyncWebServerRequest *request);
     void          handleNotFound(AsyncWebServerRequest *request);
     bool          captivePortal(AsyncWebServerRequest *request);   

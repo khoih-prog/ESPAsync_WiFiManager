@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.8.1
+  Version: 1.9.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -38,6 +38,7 @@
   1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
   1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
   1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
+  1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
  *****************************************************************************************************************************/
 
 #include "ESPAsync_WiFiManager.h"
@@ -412,6 +413,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   server->on("/i",        std::bind(&ESPAsync_WiFiManager::handleInfo,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/r",        std::bind(&ESPAsync_WiFiManager::handleReset,       this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/state",    std::bind(&ESPAsync_WiFiManager::handleState,       this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
+  server->on("/scan",     std::bind(&ESPAsync_WiFiManager::handleScan,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
   server->on("/fwlink",   std::bind(&ESPAsync_WiFiManager::handleRoot,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);  
   server->onNotFound (std::bind(&ESPAsync_WiFiManager::handleNotFound,        this, std::placeholders::_1));
@@ -1838,6 +1840,7 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Info");
   page += FPSTR(WM_HTTP_SCRIPT);
+  page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   
@@ -1960,7 +1963,7 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
 // Handle the state page
 void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
 {
-  LOGDEBUG(F("State - json"));
+  LOGDEBUG(F("State-Json"));
    
   String page = F("{\"Soft_AP_IP\":\"");
   page += WiFi.softAPIP().toString();
@@ -2007,6 +2010,86 @@ void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
   
   LOGDEBUG(F("Sent state page in json format"));
+}
+
+//////////////////////////////////////////
+
+/** Handle the scan page */
+void ESPAsync_WiFiManager::handleScan(AsyncWebServerRequest *request)
+{
+  LOGDEBUG(F("Scan"));
+
+  // Disable _configPortalTimeout when someone accessing Portal to give some time to config
+  _configPortalTimeout = 0;		//KH
+
+  LOGDEBUG(F("Scan-Json"));
+
+  String page = F("{\"Access_Points\":[");
+  
+  // KH, display networks in page using previously scan results
+  for (int i = 0; i < wifiSSIDCount; i++) 
+  {
+    if (wifiSSIDs[i].duplicate == true) 
+      continue; // skip dups
+      
+    if (i != 0)
+      page += F(", ");
+
+    LOGDEBUG1(F("Index ="), i);
+    LOGDEBUG1(F("SSID ="), wifiSSIDs[i].SSID);
+    LOGDEBUG1(F("RSSI ="), wifiSSIDs[i].RSSI);
+      
+    int quality = getRSSIasQuality(wifiSSIDs[i].RSSI);
+
+    if (_minimumQuality == -1 || _minimumQuality < quality) 
+    {
+      String item = FPSTR(JSON_ITEM);
+      String rssiQ;
+      
+      rssiQ += quality;
+      item.replace("{v}", wifiSSIDs[i].SSID);
+      item.replace("{r}", rssiQ);
+      
+#if defined(ESP8266)
+      if (wifiSSIDs[i].encryptionType != ENC_TYPE_NONE)
+#else
+      if (wifiSSIDs[i].encryptionType != WIFI_AUTH_OPEN)
+#endif
+      {
+      item.replace("{i}", "true");
+      }
+      else
+      {
+        item.replace("{i}", "false");
+      }
+      
+      page += item;
+      delay(0);
+    } 
+    else 
+    {
+      LOGDEBUG(F("Skipping due to quality"));
+    }
+  }
+  
+  page += F("]}");
+ 
+#if ( USING_ESP32_S2 || USING_ESP32_C3 ) 
+  request->send(200, WM_HTTP_HEAD_CT, page);
+  
+  // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
+  delay(1);
+#else  
+    
+  AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_JSON, page);
+  response->addHeader(WM_HTTP_CACHE_CONTROL, WM_HTTP_NO_STORE);
+  response->addHeader(WM_HTTP_PRAGMA, WM_HTTP_NO_CACHE);
+  response->addHeader(WM_HTTP_EXPIRES, "-1");
+  
+  request->send(response);
+#endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )  
+   
+  LOGDEBUG(F("Sent WiFiScan Data in Json format"));
 }
 
 //////////////////////////////////////////
@@ -2151,123 +2234,6 @@ void ESPAsync_WiFiManager::setCustomHeadElement(const char* element) {
 void ESPAsync_WiFiManager::setRemoveDuplicateAPs(bool removeDuplicates)
 {
   _removeDuplicateAPs = removeDuplicates;
-}
-
-//////////////////////////////////////////
-
-// Scan for WiFiNetworks in range and sort by signal strength
-// space for indices array allocated on the heap and should be freed when no longer required
-int ESPAsync_WiFiManager::scanWifiNetworks(int **indicesptr)
-{
-  LOGDEBUG(F("Scanning Network"));
-  
-  int n = WiFi.scanNetworks();
-
-  LOGDEBUG1(F("scanWifiNetworks: Done, Scanned Networks n ="), n); 
-
-  //KH, Terrible bug here. WiFi.scanNetworks() returns n < 0 => malloc( negative == very big ) => crash!!!
-  //In .../esp32/libraries/WiFi/src/WiFiType.h
-  //#define WIFI_SCAN_RUNNING   (-1)
-  //#define WIFI_SCAN_FAILED    (-2)
-  //if (n == 0)
-  if (n <= 0)
-  {
-    LOGDEBUG(F("No network found"));
-    return (0);
-  }
-  else
-  {
-    // Allocate space off the heap for indices array.
-    // This space should be freed when no longer required.
-    int* indices = (int *)malloc(n * sizeof(int));
-
-    if (indices == NULL)
-    {
-      LOGDEBUG(F("ERROR: Out of memory"));
-      *indicesptr = NULL;
-      return (0);
-    }
-
-    *indicesptr = indices;
-   
-    //sort networks
-    for (int i = 0; i < n; i++)
-    {
-      indices[i] = i;
-    }
-
-    LOGDEBUG(F("Sorting"));
-
-    // RSSI SORT
-    // old sort
-    for (int i = 0; i < n; i++)
-    {
-      for (int j = i + 1; j < n; j++)
-      {
-        if (WiFi.RSSI(indices[j]) > WiFi.RSSI(indices[i]))
-        {
-          std::swap(indices[i], indices[j]);
-        }
-      }
-    }
-
-    LOGDEBUG(F("Removing Dup"));
-
-    // remove duplicates ( must be RSSI sorted )
-    if (_removeDuplicateAPs)
-    {
-      String cssid;
-      for (int i = 0; i < n; i++)
-      {
-        if (indices[i] == -1)
-          continue;
-
-        cssid = WiFi.SSID(indices[i]);
-        for (int j = i + 1; j < n; j++)
-        {
-          if (cssid == WiFi.SSID(indices[j]))
-          {
-            LOGDEBUG1("DUP AP:", WiFi.SSID(indices[j]));
-            
-            // set dup aps to index -1
-            indices[j] = -1;
-          }
-        }
-      }
-    }
-
-    for (int i = 0; i < n; i++)
-    {
-      if (indices[i] == -1)
-      {
-        // skip dups
-        continue;
-      }
-
-      int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
-
-      if (!(_minimumQuality == -1 || _minimumQuality < quality))
-      {
-        indices[i] = -1;
-        LOGDEBUG(F("Skipping low quality"));
-      }
-    }
-
-#if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 2)
-    for (int i = 0; i < n; i++)
-    {
-      if (indices[i] == -1)
-      { 
-        // skip dups
-        continue;
-      }
-      else
-        LOGINFO(WiFi.SSID(indices[i]));
-    }
-#endif
-
-    return (n);
-  }
 }
 
 //////////////////////////////////////////
