@@ -13,30 +13,6 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  Version: 1.8.1
-
-  Version Modified By  Date      Comments
-  ------- -----------  ---------- -----------
-  1.0.11  K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
-                                  to sync with ESP_WiFiManager v1.0.11
-  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with
-                                  ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
-  1.1.2   K Hoang      17/09/2020 Fix bug in examples.
-  1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
-  1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
-  1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
-  1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
-  1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
-  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
-  1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
-  1.6.0   K Hoang      25/02/2021 Fix WiFi Scanning bug.
-  1.6.1   K Hoang      26/03/2021 Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
-  1.6.2   K Hoang      08/04/2021 Fix example misleading messages.
-  1.6.3   K Hoang      13/04/2021 Allow captive portal to run more than once by closing dnsServer.
-  1.7.0   K Hoang      20/04/2021 Add support to new ESP32-C3 using SPIFFS or EEPROM
-  1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
-  1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
-  1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
  *****************************************************************************************************************************/
 /****************************************************************************************************************************
   This example will open a Config Portal when there is no stored WiFi Credentials or when a DRD is detected.
@@ -55,7 +31,7 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.8.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.0"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
