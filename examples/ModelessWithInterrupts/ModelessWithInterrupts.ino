@@ -19,7 +19,7 @@
   #error This code is intended to run on the ESP8266! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.1"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_       3
@@ -221,7 +221,7 @@ const uint32_t callCycleCount = ESP.getCpuFreqMHz() * 1024 / 8;
    WiFi, ESP or EEPROM, and we do too, there is a very good chance
    a reset will happen.
 */
-void ICACHE_RAM_ATTR interruptFunction()
+void IRAM_ATTR interruptFunction()
 {
   /*
      This is equivalent to:

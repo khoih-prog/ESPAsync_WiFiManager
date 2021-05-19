@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.0
+   Version: 1.9.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -39,6 +39,7 @@
   1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
   1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
   1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
+  1.9.1   K Hoang      18/05/2021 Fix warnings with ESP8266 core v3.0.0
  *****************************************************************************************************************************/
 
 #pragma once
@@ -60,7 +61,37 @@
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.1"
+
+#if ESP8266
+  #if (ARDUINO_ESP8266_GIT_VER == 0xefb0341a)
+    #define USING_ESP8266_CORE_VERSION    30000
+    #warning USING_ESP8266_CORE_VERSION "3.0.0"
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x2843a5ac)
+    #define USING_ESP8266_CORE_VERSION    20704
+    #warning USING_ESP8266_CORE_VERSION "2.7.4"
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x5d3af165)
+    #define USING_ESP8266_CORE_VERSION    20703
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x39c79d9b)
+    #define USING_ESP8266_CORE_VERSION    20702
+  #elif (ARDUINO_ESP8266_GIT_VER == 0xa5432625)
+    #define USING_ESP8266_CORE_VERSION    20701
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x3d128e5c)
+    #define USING_ESP8266_CORE_VERSION    20603
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x482516e3)
+    #define USING_ESP8266_CORE_VERSION    20602
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x482516e3)
+    #define USING_ESP8266_CORE_VERSION    20601
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x643ec203)
+    #define USING_ESP8266_CORE_VERSION    20600
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x8b899c12)
+    #define USING_ESP8266_CORE_VERSION    20502
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x00000000)
+    #define USING_ESP8266_CORE_VERSION    20402
+  #elif (ARDUINO_ESP8266_GIT_VER == 0x643ec203)
+    #define USING_ESP8266_CORE_VERSION    0    
+  #endif
+#endif
 
 #include "ESPAsync_WiFiManager_Debug.h"
 

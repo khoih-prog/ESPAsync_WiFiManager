@@ -16,6 +16,7 @@
   * [Why Async is better](#why-async-is-better)
   * [Currently supported Boards](#currently-supported-boards)
 * [Changelog](#changelog)
+  * [Releases v1.9.1](#releases-v191)
   * [Releases v1.9.0](#releases-v190)
   * [Releases v1.8.1](#releases-v181)
   * [Major Releases v1.8.0](#major-releases-v180)
@@ -149,19 +150,19 @@
     * [Async_ConfigOnDRD_ESP32_minimal](examples/Async_ConfigOnDRD_ESP32_minimal) 
     * [Async_ConfigOnDRD_ESP8266_minimal](examples/Async_ConfigOnDRD_ESP8266_minimal)
 * [Example Async_ConfigOnDRD_FS_MQTT_Ptr](#example-async_configondrd_fs_mqtt_ptr)
-* [Debug Terminal Output Samples](#debug-termimal-output-samples)
+* [Debug Terminal Output Samples](#debug-terminal-output-samples)
   * [1. Async_ConfigOnDRD_FS_MQTT_Ptr on ESP32_DEV](#1-async_configondrd_fs_mqtt_ptr_medium-on-esp32_dev)
-  * [2. Async_ConfigOnDRD_FS_MQTT_Ptr on ESP8266_NODEMCU](#2-async_configondrd_fs_mqtt_ptr_complex-on-esp8266_nodemcu)
+  * [2. Async_ConfigOnDRD_FS_MQTT_Ptr on ESP8266_NODEMCU_ESP12E](#2-async_configondrd_fs_mqtt_ptr_complex-on-ESP8266_NODEMCU_ESP12E)
   * [3. Async_ConfigOnDoubleReset on ESP32_DEV](#3-async_configondoublereset-on-esp32_dev)
-  * [4. Async_ConfigOnDoubleReset on ESP8266_NODEMCU](#4-async_configondoublereset-on-esp8266_nodemcu)
-  * [5. Async_ESP_FSWebServer_DRD on ESP8266_NODEMCU](#5-async_esp_fswebserver_drd-on-esp8266_nodemcu)
+  * [4. Async_ConfigOnDoubleReset on ESP8266_NODEMCU_ESP12E](#4-async_configondoublereset-on-ESP8266_NODEMCU_ESP12E)
+  * [5. Async_ESP_FSWebServer_DRD on ESP8266_NODEMCU_ESP12E](#5-async_esp_fswebserver_drd-on-ESP8266_NODEMCU_ESP12E)
   * [6. Async_ESP32_FSWebServer_DRD on ESP32_DEV](#6-async_esp32_fswebserver_drd-on-esp32_dev)
   * [7. Async_ConfigOnDoubleReset on ESP32S2_DEV](#7-async_configondoublereset-on-esp32s2_dev)
   * [8. Async_ConfigOnDoubleReset_TZ on ESP32_DEV](#8-async_configondoublereset_tz-on-esp32_dev)
     * [8.1 DRD => Config Portal](#81-drd--config-portal)
     * [8.2 Data Saved => Connect to WiFi with correct local time, TZ set and using NTP](#82-data-saved--connect-to-wifi-with-correct-local-time-tz-set-and-using-ntp)
     * [8.3 Normal running with correct local time, TZ set and using NTP](#83-normal-running-with-correct-local-time-tz-set-and-using-ntp)
-  * [9. Async_ESP_FSWebServer_DRD on ESP8266_NODEMCU](#9-async_esp_fswebserver_drd-on-esp8266_nodemcu)
+  * [9. Async_ESP_FSWebServer_DRD on ESP8266_NODEMCU_ESP12E](#9-async_esp_fswebserver_drd-on-ESP8266_NODEMCU_ESP12E)
     * [9.1 DRD => Config Portal](#91-drd--config-portal)
     * [9.2 Data Saved => Connect to WiFi with correct local time, TZ set and using NTP](#92-data-saved--connect-to-wifi-with-correct-local-time-tz-set-and-using-ntp)
     * [9.3 Normal running with correct local time, TZ set and using NTP](#93-normal-running-with-correct-local-time-tz-set-and-using-ntp)
@@ -225,6 +226,11 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 ---
 
 ## Changelog
+
+### Releases v1.9.1
+
+1. Fix warnings and verify compatibility with new ESP8266 core v3.0.0 
+2. Autodetect ESP8266 core v1.7.4- or new ESP8266 core v3.0.0 to use the new breaking features
 
 ### Releases v1.9.0
 
@@ -344,7 +350,7 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 ## Prerequisites
 
  1. [`Arduino IDE 1.8.13+` for Arduino](https://www.arduino.cc/en/Main/Software)
- 2. [`ESP8266 Core 2.7.4+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
+ 2. [`ESP8266 Core 3.0.0+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
  3. [`ESP32 Core 1.0.6+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
  4. [`ESP32-S2/C3 Core 1.0.6+`](https://github.com/espressif/arduino-esp32) for ESP32-S2/C3-based boards. Must follow [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide).
  5. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards.
@@ -2377,7 +2383,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.1"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -3020,10 +3026,10 @@ bool loadConfigData()
   File file = FileFS.open(CONFIG_FILENAME, "r");
   LOGERROR(F("LoadWiFiCfgFile "));
 
-  memset(&WM_config,       0, sizeof(WM_config));
+  memset((void *) &WM_config,       0, sizeof(WM_config));
 
   // New in v1.4.0
-  memset(&WM_STA_IPconfig, 0, sizeof(WM_STA_IPconfig));
+  memset((void *) &WM_STA_IPconfig, 0, sizeof(WM_STA_IPconfig));
   //////
 
   if (file)
@@ -3719,7 +3725,7 @@ void loop()
 ---
 ---
 
-### Debug Termimal Output Samples
+### Debug Terminal Output Samples
 
 #### 1. [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Medium) on ESP32_DEV
 
@@ -3729,7 +3735,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.0
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3748,7 +3754,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.0
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3828,15 +3834,15 @@ TWWWW
 
 ---
 
-#### 2. [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) on ESP8266_NODEMCU
+#### 2. [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) on  **ESP8266_NODEMCU 1.0.**. Config Portal was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
+This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) on  **ESP8266_NODEMCU_ESP12E 1.0.**. Config Portal was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
 
 ##### 2.1 With Config Data => Run normally
 
 ```
-Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.9.0
+Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3875,8 +3881,8 @@ TWWWW WTWWW
 ##### 2.2. DRD => Config Portal
 
 ```
-Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.9.0
+Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3966,7 +3972,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.0
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -4019,13 +4025,13 @@ HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH
 ```
 ---
 
-#### 4. [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on ESP8266_NODEMCU
+#### 4. [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on  **ESP8266_NODEMCU.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
+This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on  **ESP8266_NODEMCU_ESP12E.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
 
 ```cpp
-Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.9.0
+Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -4079,13 +4085,13 @@ HHHHHHHHHH HHHHHHHHHH HHH
 
 ---
 
-#### 5. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD) on ESP8266_NODEMCU
+#### 5. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU_ESP12E.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
 
 ```cpp
-Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.9.0
+Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -4163,7 +4169,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.0
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -4274,7 +4280,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.9.0
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -4311,7 +4317,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.0
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4355,7 +4361,7 @@ Local Date/Time: Sat May  1 00:17:30 2021
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.0
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4394,15 +4400,15 @@ Local Date/Time: Sat May  1 00:15:19 2021
 
 ---
 
-#### 9. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD) on ESP8266_NODEMCU
+#### 9. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
+This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU_ESP12E.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
 
 #### 9.1 DRD => Config Portal
 
 ```
-Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.9.0
+Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4474,8 +4480,8 @@ Local Date/Time: Sat May  1 03:12:54 2021
 #### 9.3 Normal running with correct local time, TZ set and using NTP
 
 ```
-Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU
-ESPAsync_WiFiManager v1.9.0
+Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
+ESPAsync_WiFiManager v1.9.1
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4564,6 +4570,11 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ---
 
 ## Releases
+
+### Releases v1.9.1
+
+1. Fix warnings and verify compatibility with new ESP8266 core v3.0.0 
+2. Autodetect ESP8266 core v1.7.4- or new ESP8266 core v3.0.0 to use the new breaking features
 
 ### Releases v1.9.0
 

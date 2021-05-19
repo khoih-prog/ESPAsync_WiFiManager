@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.0
+  Version: 1.9.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -39,6 +39,7 @@
   1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
   1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
   1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
+  1.9.1   K Hoang      18/05/2021 Fix warnings with ESP8266 core v3.0.0
  *****************************************************************************************************************************/
 
 #pragma once

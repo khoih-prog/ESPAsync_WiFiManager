@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.0
+   Version: 1.9.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -39,6 +39,7 @@
   1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
   1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
   1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
+  1.9.1   K Hoang      18/05/2021 Fix warnings with ESP8266 core v3.0.0
  *****************************************************************************************************************************/
 
 #include "ESPAsync_WiFiManager.h"
@@ -1102,7 +1103,11 @@ wl_status_t ESPAsync_WiFiManager::waitForConnectResult()
         LOGERROR(F("Connection timed out"));
       }
 
+#if ( ESP8266 && (USING_ESP8266_CORE_VERSION >= 30000) )
+      if (status == WL_CONNECTED || status == WL_CONNECT_FAILED || status == WL_WRONG_PASSWORD)
+#else
       if (status == WL_CONNECTED || status == WL_CONNECT_FAILED)
+#endif      
       {
         keepConnecting = false;
       }
@@ -1143,6 +1148,12 @@ const char* ESPAsync_WiFiManager::getStatus(int status)
       return "WL_CONNECTED";
     case WL_CONNECT_FAILED:
       return "WL_CONNECT_FAILED";
+      
+#if ( ESP8266 && (USING_ESP8266_CORE_VERSION >= 30000) )     
+    case WL_WRONG_PASSWORD:
+      return "WL_WRONG_PASSWORD"; 
+#endif
+
     case WL_DISCONNECTED:
       return "WL_DISCONNECTED";
     default:
@@ -1244,7 +1255,7 @@ void ESPAsync_WiFiManager::setAPStaticIPConfig(WiFi_AP_IPConfig  WM_AP_IPconfig)
 {
   LOGINFO(F("setAPStaticIPConfig"));
   
-  memcpy(&_WiFi_AP_IPconfig, &WM_AP_IPconfig, sizeof(_WiFi_AP_IPconfig));
+  memcpy((void *) &_WiFi_AP_IPconfig, &WM_AP_IPconfig, sizeof(_WiFi_AP_IPconfig));
 }
 
 //////////////////////////////////////////
@@ -1253,7 +1264,7 @@ void ESPAsync_WiFiManager::getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig
 {
   LOGINFO(F("getAPStaticIPConfig"));
   
-  memcpy(&WM_AP_IPconfig, &_WiFi_AP_IPconfig, sizeof(WM_AP_IPconfig));
+  memcpy((void *) &WM_AP_IPconfig, &_WiFi_AP_IPconfig, sizeof(WM_AP_IPconfig));
 }
 
 //////////////////////////////////////////
@@ -1272,7 +1283,7 @@ void ESPAsync_WiFiManager::setSTAStaticIPConfig(WiFi_STA_IPConfig WM_STA_IPconfi
 {
   LOGINFO(F("setSTAStaticIPConfig"));
   
-  memcpy(&_WiFi_STA_IPconfig, &WM_STA_IPconfig, sizeof(_WiFi_STA_IPconfig));
+  memcpy((void *) &_WiFi_STA_IPconfig, &WM_STA_IPconfig, sizeof(_WiFi_STA_IPconfig));
 }
 
 //////////////////////////////////////////
@@ -1281,7 +1292,7 @@ void ESPAsync_WiFiManager::getSTAStaticIPConfig(WiFi_STA_IPConfig &WM_STA_IPconf
 {
   LOGINFO(F("getSTAStaticIPConfig"));
   
-  memcpy(&WM_STA_IPconfig, &_WiFi_STA_IPconfig, sizeof(WM_STA_IPconfig));
+  memcpy((void *) &WM_STA_IPconfig, &_WiFi_STA_IPconfig, sizeof(WM_STA_IPconfig));
 }
 
 
