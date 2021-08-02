@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.1
+  Version: 1.9.2
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -40,6 +40,7 @@
   1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
   1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
   1.9.1   K Hoang      18/05/2021 Fix warnings with ESP8266 core v3.0.0
+  1.9.2   K Hoang      02/08/2021 Fix Mbed TLS compile error and MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
  *****************************************************************************************************************************/
 
 #pragma once
@@ -55,41 +56,75 @@
   #warning Using ESP32_S2. To follow library instructions to install esp32-s2 core and WebServer Patch
   #warning You have to select HUGE APP or 1.9-2.0 MB APP to be able to run Config Portal. Must use PSRAM
   #define USING_ESP32_S2        true
-#elif ( ARDUINO_ESP32C3_DEV )
+#elif defined( ARDUINO_ESP32C3_DEV )
   #warning Using ESP32_C3. To follow library instructions to install esp32-c3 core. Only SPIFFS and EEPROM OK.
-  #warning You have to select HUGE APP or 1.9-2.0 MB APP to be able to run Config Portal. Must use PSRAM
+  #warning You have to select Flash size 2MB and Minimal APP (1.3MB + 700KB) for some boards
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.2"
 
 #if ESP8266
-  #if (ARDUINO_ESP8266_GIT_VER == 0xefb0341a)
+  #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)
+    #define USING_ESP8266_CORE_VERSION    30002
+    #define ESP8266_CORE_VERSION          "ESP8266 core v3.0.2"
+    #warning USING_ESP8266_CORE_VERSION "3.0.2"
+  #elif (ARDUINO_ESP8266_GIT_VER == 0xcbf44fb3)
+    #define USING_ESP8266_CORE_VERSION    30001
+    #define ESP8266_CORE_VERSION          "ESP8266 core v3.0.1"
+    #warning USING_ESP8266_CORE_VERSION "3.0.1"  
+  #elif (ARDUINO_ESP8266_GIT_VER == 0xefb0341a)
     #define USING_ESP8266_CORE_VERSION    30000
-    #warning USING_ESP8266_CORE_VERSION "3.0.0"
+    #define ESP8266_CORE_VERSION          "ESP8266 core v3.0.0"
+    #warning USING_ESP8266_CORE_VERSION "3.0.0"  
   #elif (ARDUINO_ESP8266_GIT_VER == 0x2843a5ac)
     #define USING_ESP8266_CORE_VERSION    20704
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.4"
     #warning USING_ESP8266_CORE_VERSION "2.7.4"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x5d3af165)
     #define USING_ESP8266_CORE_VERSION    20703
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.3"
+    #warning USING_ESP8266_CORE_VERSION "2.7.3"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x39c79d9b)
     #define USING_ESP8266_CORE_VERSION    20702
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.2"
+    #warning USING_ESP8266_CORE_VERSION "2.7.2"
   #elif (ARDUINO_ESP8266_GIT_VER == 0xa5432625)
     #define USING_ESP8266_CORE_VERSION    20701
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.1"
+    #warning USING_ESP8266_CORE_VERSION "2.7.1"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x3d128e5c)
     #define USING_ESP8266_CORE_VERSION    20603
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.3"
+    #warning USING_ESP8266_CORE_VERSION "2.6.3"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x482516e3)
     #define USING_ESP8266_CORE_VERSION    20602
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.2"
+    #warning USING_ESP8266_CORE_VERSION "2.6.2"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x482516e3)
     #define USING_ESP8266_CORE_VERSION    20601
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.1"
+    #warning USING_ESP8266_CORE_VERSION "2.6.1"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x643ec203)
     #define USING_ESP8266_CORE_VERSION    20600
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.0"
+    #warning USING_ESP8266_CORE_VERSION "2.6.0"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x8b899c12)
     #define USING_ESP8266_CORE_VERSION    20502
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.5.2"
+    #warning USING_ESP8266_CORE_VERSION "2.5.2"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x00000000)
     #define USING_ESP8266_CORE_VERSION    20402
+    #define ESP8266_CORE_VERSION          "ESP8266 core v2.4.2"
+    #warning USING_ESP8266_CORE_VERSION "2.4.2"
   #elif (ARDUINO_ESP8266_GIT_VER == 0x643ec203)
-    #define USING_ESP8266_CORE_VERSION    0    
+    #define USING_ESP8266_CORE_VERSION    0
+    #define ESP8266_CORE_VERSION          "ESP8266 core too old"
+    #warning USING_ESP8266_CORE_VERSION "0.0.0"
+  #else
+    #define USING_ESP8266_CORE_VERSION    999999
+    #define ESP8266_CORE_VERSION          "ESP8266 core unknown"
+    #warning USING_ESP8266_CORE_VERSION "x.y.z"  
   #endif
 #endif
 
