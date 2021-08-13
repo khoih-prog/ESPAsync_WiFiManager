@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.2
+  Version: 1.9.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -41,6 +41,7 @@
   1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
   1.9.1   K Hoang      18/05/2021 Fix warnings with ESP8266 core v3.0.0
   1.9.2   K Hoang      02/08/2021 Fix Mbed TLS compile error and MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
+  1.9.3   K Hoang      13/08/2021 Add WiFi scanning of hidden SSIDs
  *****************************************************************************************************************************/
 
 #pragma once
@@ -62,7 +63,7 @@
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.2"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.3"
 
 #if ESP8266
   #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)

@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.2
+  Version: 1.9.3
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -41,6 +41,7 @@
   1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
   1.9.1   K Hoang      18/05/2021 Fix warnings with ESP8266 core v3.0.0
   1.9.2   K Hoang      02/08/2021 Fix Mbed TLS compile error and MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
+  1.9.3   K Hoang      13/08/2021 Add WiFi scanning of hidden SSIDs
  *****************************************************************************************************************************/
 
 #pragma once
@@ -564,7 +565,7 @@ void ESPAsync_WiFiManager::scan()
   if (wifiSSIDscan)
   {
     LOGDEBUG(F("Start scan"));
-    wifi_ssid_count_t n = WiFi.scanNetworks();
+    wifi_ssid_count_t n = WiFi.scanNetworks(false, true);
     LOGDEBUG(F("Scan done"));
     
     if (n == WIFI_SCAN_FAILED) 

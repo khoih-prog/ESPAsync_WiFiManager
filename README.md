@@ -16,6 +16,7 @@
   * [Why Async is better](#why-async-is-better)
   * [Currently supported Boards](#currently-supported-boards)
 * [Changelog](#changelog)
+  * [Releases v1.9.3](#releases-v193)
   * [Releases v1.9.2](#releases-v192)
   * [Releases v1.9.1](#releases-v191)
   * [Releases v1.9.0](#releases-v190)
@@ -231,6 +232,10 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 
 ## Changelog
 
+### Releases v1.9.3
+
+1. Add WiFi scanning of hidden SSIDs. Check [Add support for Wifi hidden SSID scanning. #66](https://github.com/khoih-prog/ESP_WiFiManager/pull/66)
+
 ### Releases v1.9.2
 
 1. Fix MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
@@ -365,7 +370,7 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
  3. [`ESP32 Core 1.0.6+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
  4. [`ESP32-S2/C3 Core 1.0.6+`](https://github.com/espressif/arduino-esp32) for ESP32-S2/C3-based boards. Must follow [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide).
  5. [`ESP32-S2/C3 Core 2.0.0-rc1+`](https://github.com/espressif/arduino-esp32) for ESP32-S2/C3-based boards to use experimental ESP32 core v2.0.0-rc1.
- 6. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You'd better use the [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged.
+ 6. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You have to use the latest [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged.
  7. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
  8. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
  9. [`ESP_DoubleResetDetector v1.1.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
@@ -2411,7 +2416,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.2"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.3"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -3763,7 +3768,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3782,7 +3787,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3870,7 +3875,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3910,7 +3915,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -4000,7 +4005,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -4059,7 +4064,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -4119,7 +4124,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -4197,7 +4202,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -4308,7 +4313,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -4345,7 +4350,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4389,7 +4394,7 @@ Local Date/Time: Sat May  1 00:17:30 2021
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4436,7 +4441,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4509,7 +4514,7 @@ Local Date/Time: Sat May  1 03:12:54 2021
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4568,7 +4573,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using SPIFFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.9.2
+ESPAsync_WiFiManager v1.9.3
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -4642,6 +4647,10 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ---
 
 ## Releases
+
+### Releases v1.9.3
+
+1. Add WiFi scanning of hidden SSIDs. Check [Add support for Wifi hidden SSID scanning. #66](https://github.com/khoih-prog/ESP_WiFiManager/pull/66)
 
 ### Releases v1.9.2
 
@@ -4798,6 +4807,8 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
 13. Thanks to [mattbradford83](https://github.com/mattbradford83) for identify, impressively locate, fix the bug and issue PR [Allow captive portal to run more than once by closing dnsServer cleanly. #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49) leading to v1.6.3
 14. Thanks to [yiancar](https://github.com/yiancar) to report the issue and propose a fix in [In AP, DNS server always redirects to 192.168.4.1 no mater what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58) leading to v1.7.1
 15. Thanks to [Stephen Lavelle](https://github.com/increpare) and [Ben Peart](https://github.com/benpeart) for requesting enhancement in [_timezoneName never getting set? #51](https://github.com/khoih-prog/ESP_WiFiManager/issues/51) and [How to retrieve timezone? #51](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/51) leading to new v1.8.0
+16. Thanks to [eth0up](https://github.com/eth0up) to make the PR [Add support for Wifi hidden SSID scanning. #66](https://github.com/khoih-prog/ESP_WiFiManager/pull/66) leading to v1.7.4
+
 
 <table>
   <tr>
@@ -4823,6 +4834,9 @@ to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-
     <td align="center"><a href="https://github.com/yiancar"><img src="https://github.com/yiancar.png" width="100px;" alt="yiancar"/><br /><sub><b>yiancar</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/increpare"><img src="https://github.com/increpare.png" width="100px;" alt="increpare"/><br /><sub><b>Stephen Lavelle</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/benpeart"><img src="https://github.com/benpeart.png" width="100px;" alt="benpeart"/><br /><sub><b>Ben Peart</b></sub></a><br /></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/eth0up"><img src="https://github.com/eth0up.png" width="100px;" alt="eth0up"/><br /><sub><b>eth0up</b></sub></a><br /></td>
   </tr>
 </table>
 
