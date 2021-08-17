@@ -63,6 +63,7 @@ ESP8266WiFiMulti wifiMulti;
   #define FileFS    LittleFS
   #define FS_Name       "LittleFS"
 #else
+  #include <SPIFFSEditor.h>
   FS* filesystem = &SPIFFS;
   #define FileFS    SPIFFS
   #define FS_Name       "SPIFFS"
@@ -70,8 +71,6 @@ ESP8266WiFiMulti wifiMulti;
 
 #define LED_ON      LOW
 #define LED_OFF     HIGH
-
-#include <SPIFFSEditor.h>
 
 #define ESP_getChipId()   (ESP.getChipId())
 
@@ -885,7 +884,10 @@ void setup()
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
+#if !USE_LITTLEFS
+  // SPIFFSEditor won't compile when using LittleFS
   server.addHandler(new SPIFFSEditor(http_username, http_password, FileFS));
+#endif
   server.serveStatic("/", FileFS, "/").setDefaultFile("index.htm");
 
   server.onNotFound([](AsyncWebServerRequest * request) 
