@@ -15,29 +15,7 @@
   * [Features](#features)
   * [Why Async is better](#why-async-is-better)
   * [Currently supported Boards](#currently-supported-boards)
-* [Changelog](#changelog)
-  * [Releases v1.9.3](#releases-v193)
-  * [Releases v1.9.2](#releases-v192)
-  * [Releases v1.9.1](#releases-v191)
-  * [Releases v1.9.0](#releases-v190)
-  * [Releases v1.8.1](#releases-v181)
-  * [Major Releases v1.8.0](#major-releases-v180)
-  * [Releases v1.7.1](#releases-v171)
-  * [Releases v1.7.0](#releases-v170)
-  * [Releases v1.6.3](#releases-v163)
-  * [Releases v1.6.2](#releases-v162)
-  * [Releases v1.6.1](#releases-v161)
-  * [Releases v1.6.0](#releases-v160)
-  * [Major Releases v1.5.0](#major-releases-v150)
-  * [Releases v1.4.3](#releases-v143)
-  * [Releases v1.4.2](#releases-v142)
-  * [Releases v1.4.1](#releases-v141)
-  * [Major Releases v1.4.0](#major-releases-v140)
-  * [Releases v1.3.0](#releases-v130)
-  * [Releases v1.2.0](#releases-v120)
-  * [Releases v1.1.2](#releases-v112)
-  * [Major Releases v1.1.1](#major-releases-v111)
-  * [Releases v1.0.11](#releases-v1011)
+* [Changelog](changelog.md)
 * [Prerequisites](#prerequisites)
 * [Installation](#installation)
   * [Use Arduino Library Manager](#use-arduino-library-manager)
@@ -45,22 +23,6 @@
   * [VS Code & PlatformIO](#vs-code--platformio)
 * [Libraries' Patches](#libraries-patches)
   * [1. For ESPAsyncWebServer library](#1-for-espasyncwebserver-library) 
-* [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide)
-  * [1. Save the original esp32 core](#1-save-the-original-esp32-core)
-  * [2. Install esp32 core v1.0.6](#2-install-esp32-core-v106)
-    * [2.1 Install esp32 core](#21-install-esp32-core)
-    * [2.2 Download latest zip with esp32-s2 support](#22-download-latest-zip-with-esp32-s2-support)
-    * [2.3 Unzip](#23-unzip)
-    * [2.3 Update esp32 core directories](#24-update-esp32-core-directories)
-  * [3. Download tools for ESP32-S2](#3-download-tools-for-esp32-s2) 
-    * [3.1 Download Toolchain for Xtensa (ESP32-S2) based on GCC](#31-download-toolchain-for-xtensa-esp32-s2-based-on-gcc)
-    * [3.2 Download esptool](#32-download-esptool)
-    * [3.3 Unzip](#33-unzip)
-  * [4. Update tools](#4-update-tools)
-    * [4.1 Update Toolchain](#41-update-toolchain)
-    * [4.2 Update esptool](#42-update-esptool)
-  * [5. Download tools for ESP32-C3](#5-download-tools-for-esp32-c3)
-  * [6. esp32-s2 WebServer Library Patch](#6-esp32-s2-webserver-library-patch)
 * [Note for Platform IO using ESP32 LittleFS](#note-for-platform-io-using-esp32-littlefs)
 * [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix-multiple-definitions-linker-error)
 * [HOWTO Use analogRead() with ESP32 running WiFi and/or BlueTooth (BT/BLE)](#howto-use-analogread-with-esp32-running-wifi-andor-bluetooth-btble)
@@ -174,7 +136,6 @@
 * [Debug](#debug)
 * [Troubleshooting](#troubleshooting)
 * [Issues](#issues)
-* [Releases](#releases)
 * [Contributions and Thanks](#contributions-and-thanks)
 * [Contributing](#contributing)
 * [License and credits](#license-and-credits)
@@ -230,151 +191,17 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 ---
 ---
 
-## Changelog
-
-### Releases v1.9.3
-
-1. Add WiFi scanning of hidden SSIDs. Check [Add support for Wifi hidden SSID scanning. #66](https://github.com/khoih-prog/ESP_WiFiManager/pull/66)
-
-### Releases v1.9.2
-
-1. Fix MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
-2. Fix AsyncWebServer library compile error with ESP32 core v2.0.0-rc1+. Check [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970)
-3. Verify compatibility with new ESP32 core v2.0.0-rc1+
-4. Verify compatibility with new ESP8266 core v3.0.2
-
-### Releases v1.9.1
-
-1. Fix warnings and verify compatibility with new ESP8266 core v3.0.0 
-2. Autodetect ESP8266 core v1.7.4- or new ESP8266 core v3.0.0 to use the new breaking features
-
-### Releases v1.9.0
-
-1. Add WiFi `/scan` page. 
-2. Fix timezoneName not displayed in Info page. 
-3. Clean up.
-
-### Releases v1.8.1
-
-1. Fix bug.
-2. Don't display invalid time when not synch yet.
-
-### Major Releases v1.8.0
-
-1. Add auto-Timezone feature with variable `_timezoneName` (e.g. `America/New_York`) and function to retrieve TZ (e.g. `EST5EDT,M3.2.0,M11.1.0`) to use directly to configure ESP32/ESP8266 timezone. Check [How to retrieve timezone? #51](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/51)
-2. Store those `_timezoneName` and `TZ` in LittleFS or SPIFFS config file.
-3. Using these new timezone feature is optional.
-4. Add checksum in config file to validate data read from LittleFS or SPIFFS config file.
-5. Update examples to show how to use the new TZ feature.
-
-### Releases v1.7.1
-
-1. Fix captive-portal bug if Config Portal AP address is not default 192.168.4.1. Check [In AP, DNS server always redirects to 192.168.4.1 no mater what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58)
-2. Fix MultiWiFi bug.
-
-### Releases v1.7.0
-
-1. Add **LittleFS and SPIFFS** support to new **ESP32-S2** boards (**Arduino ESP32C3_DEV**). Check [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide).
-2. Add **EEPROM and SPIFFS** support to new **ESP32-C3** boards (**Arduino ESP32C3_DEV**). Check [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide).
-
-### Releases v1.6.3
-
-1. Fix dnsServer not closed to free up DNS port 53. Check [**Allow captive portal to run more than once by closing dnsServer cleanly.** #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49)
-2. Add `dnsServer can't start` error message.
-
-### Releases v1.6.2
-
-1. Fix example misleading messages. Check [**Minor: examples/Async_ESP32_FSWebServer/ wrongly uses FileFS.begin(true)** #47](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/47)
-
-### Releases v1.6.1
-
-1. Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
-
-### Releases v1.6.0
-
-1. Fix WiFi Scanning bug.
-
-### Major Releases v1.5.0
-
-1. Add support to **ESP32-S2 (ESP32-S2 Saola, AI-Thinker ESP-12K, ESP32S2 Dev Module, UM FeatherS2, UM ProS2, microS2, etc.)**
-2. Add [**Instructions to install ESP32-S2 core**](#howto-install-esp32-s2-core-for-esp32-s2-saola-ai-thinker-esp-12k-boards-into-arduino-ide)
-3. Rewrite library code to be more efficient and multitask friendly
-
-### Releases v1.4.3
-
-1. Fix examples' bug not saving Static IP in certain cases.
-2. Add feature to warn if using examples with old library versions
-
-### Releases v1.4.2
-
-1. Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
-2. Fix compiler warnings.
-
-### Releases v1.4.1
-
-1. Fix bug.
-2. Fix compiler warnings.
-
-### Major Releases v1.4.0
-
-1. Fix staticIP not saved in examples. See [ESP32 static IP not saved after restarting the device](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/19)
-2. Add structures and functions to handle AP and STA IPs.
-3. Add complex examples 
-  * [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) to demo usage of std::map
-  * [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Medium).
-4. Add simple minimal examples 
-  * [Async_ConfigOnDRD_ESP32_minimal](examples/Async_ConfigOnDRD_ESP32_minimal)
-  * [Async_ConfigOnDRD_ESP8266_minimal](examples/Async_ConfigOnDRD_ESP8266_minimal)
-  * [Async_AutoConnect_ESP32_minimal](examples/Async_AutoConnect_ESP32_minimal)
-  * [Async_AutoConnect_ESP8266_minimal](examples/Async_AutoConnect_ESP8266_minimal)
-5. Modify Version String
-6. Add Table of Contents
-
-### Releases v1.3.0
-
-1. Add LittleFS support to ESP32-related examples to use [**LittleFS_esp32 Library**](https://github.com/lorol/LITTLEFS)
-2. Add Version String
-
-### Releases v1.2.0
-
-1. Restore cpp code besides Impl.h code to use in case of `multiple definition` linker error. See [`Change Implementation to seperate *.h and *.cpp file instead of *.h and *-Impl.h`](https://github.com/khoih-prog/ESP_WiFiManager/issues/38) and [`Support building in PlatformIO PR`](https://github.com/khoih-prog/ESP_WiFiManager/pull/20). Also have a look at [**HOWTO Fix Multiple Definitions Linker Error**](https://github.com/khoih-prog/ESPAsync_WiFiManager#HOWTO-Fix-Multiple-Definitions-Linker-Error)
-2. Fix bug [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16).
-
-### Releases v1.1.2
-
-1. Fix bug in examples.
-
-### Major Releases v1.1.1
-
-1. Add **MultiWiFi feature to auto(Re)connect to the best WiFi at runtime**
-2. Fix bug, typo and minor improvement.
-3. Completely enhanced examples to use new MultiWiFi feature.
-4. Add setCORSHeader function to allow **configurable CORS Header**. See [Using CORS feature](https://github.com/khoih-prog/ESPAsync_WiFiManager#15-using-cors-cross-origin-resource-sharing-feature)
-5. Bump up to v1.1.1 to sync with [ESP_WiFiManager v1.1.1](https://github.com/khoih-prog/ESP_WiFiManager/releases/tag/v1.1.1).
-
-### Releases 1.0.11
-
-1. Initial coding to use ESPAsyncWebServer instead of (ESP8266)WebServer.
-2. Add more features and error checking to many examples.
-3. Add example [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr)
-4. Bump up to v1.0.11 to sync with ESP_WiFiManager v1.0.11.
-
-
----
----
 
 ## Prerequisites
 
- 1. [`Arduino IDE 1.8.15+` for Arduino](https://www.arduino.cc/en/Main/Software)
+ 1. [`Arduino IDE 1.8.16+` for Arduino](https://www.arduino.cc/en/Main/Software)
  2. [`ESP8266 Core 3.0.2+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
- 3. [`ESP32 Core 1.0.6+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
- 4. [`ESP32-S2/C3 Core 1.0.6+`](https://github.com/espressif/arduino-esp32) for ESP32-S2/C3-based boards. Must follow [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide).
- 5. [`ESP32-S2/C3 Core 2.0.0-rc1+`](https://github.com/espressif/arduino-esp32) for ESP32-S2/C3-based boards to use experimental ESP32 core v2.0.0-rc1.
- 6. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You have to use the latest [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged.
- 7. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
- 8. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
- 9. [`ESP_DoubleResetDetector v1.1.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
-10. [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32). **Notice**: This [`LittleFS_esp32 library`](https://github.com/lorol/LITTLEFS) has been integrated to Arduino [esp32 core v1.0.6](https://github.com/espressif/arduino-esp32/tree/master/libraries/LITTLEFS).
+ 3. [`ESP32 Core 2.0.0+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
+ 4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You have to use the latest [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged.
+ 5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
+ 6. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
+ 7. [`ESP_DoubleResetDetector v1.1.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
+ 8. [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32). **Notice**: This [`LittleFS_esp32 library`](https://github.com/lorol/LITTLEFS) has been integrated to Arduino [esp32 core v1.0.6](https://github.com/espressif/arduino-esp32/tree/master/libraries/LITTLEFS).
  
 ---
 
@@ -416,166 +243,6 @@ Check the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https:/
 ---
 ---
 
-## HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE
-
-
-These are instructions demonstrating the steps to install esp32-s2/c3 core on Ubuntu machines. For Windows or other OS'es, just follow the the similar principles and steps.
-
-* Windows 10, follows these steps in [Steps to install Arduino ESP32 support on Windows](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/windows.md) 
-
-* Mac OS, follows these steps in [Installation instructions for Mac OS](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/mac.md)
-
-* Fedora, follows these steps in [Installation instructions for Fedora](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/fedora.md)
-
-* openSUSE, follows these steps in [Installation instructions for openSUSE](https://github.com/espressif/arduino-esp32/blob/master/docs/arduino-ide/opensuse.md)
-
-* You can also try to add [package_esp32_dev_index.json](https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json) into Arduino IDE `File - Preferences - Additional Boards Manager URLs` 
-
-
-```
-https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_dev_index.json
-```
-
-and have Board Manager auto-install the **development** esp32 core. For example : esp32 core `v2.0.0-alpha1`
-
-
----
-
-If you're already successful in testing the core, after installing by using the above procedures, you don't need to follows the hereafter manual steps.
-
----
-
-Assuming you already installed Arduino IDE ESP32 core and the installed directory is
-
-`/home/your_account/.arduino15/packages/esp32`
-
-
-### 1. Save the original esp32 core
-
-First, copy the whole original esp32 core to another safe place. Then delete all the sub-directories of
-
-`/home/your_account/.arduino15/packages/esp32/hardware/esp32/1.0.4`
-
----
-
-
-### 2. Install esp32 core v1.0.6
-
-#### 2.1 Install esp32 core
-
-Just use Arduino IDE Board Manager to install [ESP32 Arduino Release 1.0.6 based on ESP-IDF v3.3.5](https://github.com/espressif/arduino-esp32/releases/tag/1.0.6). This official v1.06 core doesn't have esp32-s2/s3 support. You have to download and use the latest master branch.
-
-
-#### 2.2 Download latest zip with esp32-s2 support
-
-As of **April 16th 2021**, the **esp32-s2/c3** board support has been included in master branch of esp32 core. Download [**esp32 core, master branch**](https://github.com/espressif/arduino-esp32) in the zip format.
-
-#### 2.3 Unzip
-
-<p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/Images/esp32_s2_Core_Unzipped.png">
-</p>
-
-#### 2.4 Update esp32 core directories
-
-Copy all subdirectories of esp32 core into `/home/your_account/.arduino15/packages/esp32/hardware/esp32/1.0.6`
-
-
----
-
-### 3 Download tools for ESP32-S2
-
-
-#### 3.1 Download Toolchain for Xtensa (ESP32-S2) based on GCC
-
-Download [**esp32-s2 Toolchain**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/api-guides/tools/idf-tools.html#xtensa-esp32s2-elf) corresponding to your environment (linux-amd64, win64, etc.).
-
-For example `xtensa-esp32s2-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz`, then un-archive.
-
-
-<p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/Images/esp32_s2_Toolchain.png">
-</p>
-
-#### 3.2 Download esptool
-
-
-Download [esptool](https://github.com/espressif/esptool/releases) int the `zip` format:
-
-`esptool-3.0.zip`
-
-#### 3.3 Unzip
-
-<p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/Images/esp32_s2_esptool.png">
-</p>
-
----
-
-### 4. Update tools
-
-#### 4.1 Update Toolchain
-
-Copy whole `xtensa-esp32s2-elf` directory into `/home/your_account/.arduino15/packages/esp32/hardware/esp32/1.0.6/tools`
-
-
-#### 4.2 Update esptool
-
-Rename `esptool-3.0` directory to `esptool`
-
-
-Copy whole `esptool` directory into `/home/your_account/.arduino15/packages/esp32/hardware/esp32/1.0.6/tools`
-
-
-<p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/Images/esp32_s2_tools.png">
-</p>
-
-
-### 5 Download tools for ESP32-C3
-
-Download [**esp32-c3 Toolchain**](https://docs.espressif.com/projects/esp-idf/en/latest/esp32s2/api-guides/tools/idf-tools.html#riscv32-esp-elf) corresponding to your environment (linux-amd64, win64, etc.).
-
-For example`riscv32-esp-elf-gcc8_4_0-crosstool-ng-1.24.0-123-g64eb9ff-linux-amd64.tar.gz`, then un-archive.
-
-Then using the similar steps as in
-
-* [3. Download tools for ESP32-S2](#3-download-tools-for-esp32-s2) 
-  * [3.1 Download Toolchain for Xtensa (ESP32-S2) based on GCC](#31-download-toolchain-for-xtensa-esp32-s2-based-on-gcc)
-  * [3.2 Download esptool](#32-download-esptool)
-  * [3.3 Unzip](#33-unzip)
-* [4. Update tools](#4-update-tools)
-  * [4.1 Update Toolchain](#41-update-toolchain)
-  * [4.2 Update esptool](#42-update-esptool)
-
-then copy whole `riscv32-esp-elf` directory into `/home/your_account/.arduino15/packages/esp32/hardware/esp32/1.0.6/tools`
-
-<p align="center">
-    <img src="https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/master/Images/ESP_WM_ESP32_C3_Support.png">
-</p>
-
-
-### 6. esp32-s2 WebServer Library Patch
-
-#### Necessary only for esp32 core v1.0.6-
-
-If you haven't installed a new version with [WebServer.handleClient delay PR #4350](https://github.com/espressif/arduino-esp32/pull/4350) or haven't applied the above mentioned PR, you have to use the following patch.
-
-
-**To be able to run Config Portal on ESP32-S2 boards**, you have to copy the files in [esp32-s2 WebServer Patch](esp32s2_WebServer_Patch/) directory into esp32-s2 WebServer library directory (~/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries/WebServer).
-
-Supposing the esp32-s2 version is 1.0.4, these files `WebServer.h/cpp` must be copied into the directory to replace:
-
-- `~/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries/WebServer/src/WebServer.h`
-- `~/.arduino15/packages/esp32/hardware/esp32/1.0.4/libraries/WebServer/src/WebServer.cpp`
-
-
----
-
-That's it. You're now ready to compile and test for **ESP32-S2 and ESP32-C3** now
-
----
----
 
 ### Note for Platform IO using ESP32 LittleFS
 
@@ -2416,7 +2083,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.3"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.4"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -3768,7 +3435,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3787,7 +3454,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 Config File not found
 Can't read Config File, using default values
@@ -3875,7 +3542,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3915,7 +3582,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector Version v1.1.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -4005,7 +3672,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -4064,7 +3731,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -4124,7 +3791,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -4202,7 +3869,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -4313,7 +3980,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -4350,7 +4017,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4394,7 +4061,7 @@ Local Date/Time: Sat May  1 00:17:30 2021
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4441,7 +4108,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4514,7 +4181,7 @@ Local Date/Time: Sat May  1 03:12:54 2021
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4569,11 +4236,11 @@ Local Date/Time: Sat May  1 03:12754 2021
 
 #### 10. [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ) on ESP32C3_DEV using SPIFFS
 
-This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ) on **ESP32C3_DEV using SPIFFS and ESP32 core v2.0.0-rc1.**.
+This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ) on **ESP32C3_DEV using SPIFFS and ESP32 core v2.0.0**.
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using SPIFFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.9.3
+ESPAsync_WiFiManager v1.9.4
 ESP_DoubleResetDetector v1.1.1
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -4646,149 +4313,6 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ---
 ---
 
-## Releases
-
-### Releases v1.9.3
-
-1. Add WiFi scanning of hidden SSIDs. Check [Add support for Wifi hidden SSID scanning. #66](https://github.com/khoih-prog/ESP_WiFiManager/pull/66)
-
-### Releases v1.9.2
-
-1. Fix MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
-2. Fix AsyncWebServer library compile error with ESP32 core v2.0.0-rc1+. Check [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970)
-3. Verify compatibility with new ESP32 core v2.0.0-rc1+
-4. Verify compatibility with new ESP8266 core v3.0.2
-
-### Releases v1.9.1
-
-1. Fix warnings and verify compatibility with new ESP8266 core v3.0.0 
-2. Autodetect ESP8266 core v1.7.4- or new ESP8266 core v3.0.0 to use the new breaking features
-
-### Releases v1.9.0
-
-1. Add WiFi `/scan` page. 
-2. Fix timezoneName not displayed in Info page. 
-3. Clean up.
-
-### Releases v1.8.1
-
-1. Fix bug.
-2. Don't display invalid time when not synch yet.
-
-### Major Releases v1.8.0
-
-1. Add auto-Timezone feature with variable `_timezoneName` (e.g. `America/New_York`) and function to retrieve TZ (e.g. `EST5EDT,M3.2.0,M11.1.0`) to use directly to configure ESP32/ESP8266 timezone. Check [How to retrieve timezone? #51](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/51)
-2. Store those `_timezoneName` and `TZ` in LittleFS or SPIFFS config file.
-3. Using these new timezone feature is optional.
-4. Add checksum in config file to validate data read from LittleFS or SPIFFS config file.
-5. Update examples to show how to use the new TZ feature.
-
-### Releases v1.7.1
-
-1. Fix captive-portal bug if Config Portal AP address is not default 192.168.4.1. Check [In AP, DNS server always redirects to 192.168.4.1 no mater what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58)
-2. Fix MultiWiFi bug.
-
-### Releases v1.7.0
-
-1. Add **LittleFS and SPIFFS** support to new **ESP32-S2** boards (**Arduino ESP32C3_DEV**). Check [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide).
-2. Add **EEPROM and SPIFFS** support to new **ESP32-C3** boards (**Arduino ESP32C3_DEV**). Check [HOWTO Install esp32 core for ESP32-S2 (Saola, AI-Thinker ESP-12K) and ESP32-C3 boards into Arduino IDE](#howto-install-esp32-core-for-esp32-s2-saola-ai-thinker-esp-12k-and-esp32-c3-boards-into-arduino-ide).
-
-### Releases v1.6.3
-
-1. Fix dnsServer not closed to free up DNS port 53. Check [**Allow captive portal to run more than once by closing dnsServer cleanly.** #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49)
-2. Add `dnsServer can't start` error message.
-
-
-### Releases v1.6.2
-
-1. Fix example misleading messages. Check [**Minor: examples/Async_ESP32_FSWebServer/ wrongly uses FileFS.begin(true)** #47](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/47)
-
-### Releases v1.6.1
-
-1. Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
-
-### Releases v1.6.0
-
-1. Fix WiFi Scanning bug.
-
-### Major Releases v1.5.0
-
-1. Add support to **ESP32-S2 (ESP32-S2 Saola, AI-Thinker ESP-12K, ESP32S2 Dev Module, UM FeatherS2, UM ProS2, microS2, etc.)**
-2. Add [**Instructions to install ESP32-S2 core**](#howto-install-esp32-s2-core-for-esp32-s2-saola-ai-thinker-esp-12k-boards-into-arduino-ide)
-3. Rewrite library code to be more efficient and multitask friendly
-
-### Releases v1.4.3
-
-1. Fix examples' bug not saving Static IP in certain cases.
-2. Add feature to warn if using examples with old library versions
-
-### Releases v1.4.2
-
-1. Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
-2. Fix compiler warnings.
-
-### Releases v1.4.1
-
-1. Fix bug.
-2. Fix compiler warnings.
-
-### Major Releases v1.4.0
-
-1. Fix staticIP not saved in examples. See [ESP32 static IP not saved after restarting the device](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/19)
-2. Add structures and functions to handle AP and STA IPs.
-3. Add complex examples 
-  * [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) to demo usage of std::map
-  * [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Medium).
-4. Add simple minimal examples 
-  * [Async_ConfigOnDRD_ESP32_minimal](examples/Async_ConfigOnDRD_ESP32_minimal)
-  * [Async_ConfigOnDRD_ESP8266_minimal](examples/Async_ConfigOnDRD_ESP8266_minimal)
-  * [Async_AutoConnect_ESP32_minimal](examples/Async_AutoConnect_ESP32_minimal)
-  * [Async_AutoConnect_ESP8266_minimal](examples/Async_AutoConnect_ESP8266_minimal)
-5. Modify Version String
-6. Add Table of Contents
-
-### Releases v1.3.0
-
-1. Add LittleFS support to ESP32-related examples to use [**LittleFS_esp32 Library**](https://github.com/lorol/LITTLEFS)
-2. Add Version String
-
-### Releases v1.2.0
-
-1. Restore cpp code besides Impl.h code to use in case of `multiple definition` linker error. See [`Change Implementation to seperate *.h and *.cpp file instead of *.h and *-Impl.h`](https://github.com/khoih-prog/ESP_WiFiManager/issues/38) and [`Support building in PlatformIO PR`](https://github.com/khoih-prog/ESP_WiFiManager/pull/20). Also have a look at [**HOWTO Fix Multiple Definitions Linker Error**](https://github.com/khoih-prog/ESPAsync_WiFiManager#HOWTO-Fix-Multiple-Definitions-Linker-Error)
-2. Fix bug [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16).
-
-### Releases v1.1.2
-
-1. Fix bug in examples.
-
-### Major Releases v1.1.1
-
-1. Add **MultiWiFi feature to auto(Re)connect to the best WiFi at runtime**
-2. Fix bug, typo and minor improvement.
-3. Completely enhanced examples to use new MultiWiFi feature.
-4. Add setCORSHeader function to allow **configurable CORS Header**. See [Using CORS feature](https://github.com/khoih-prog/ESPAsync_WiFiManager#15-using-cors-cross-origin-resource-sharing-feature)
-5. Bump up to v1.1.1 to sync with [ESP_WiFiManager v1.0.11](https://github.com/khoih-prog/ESP_WiFiManager/releases/tag/v1.1.1).
-
-### Releases 1.0.11
-
-1. Initial coding to use ESPAsyncWebServer instead of (ESP8266)WebServer.
-2. Add more features and error checking to many examples.
-3. Add example [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr)
-4. Bump up to v1.0.11 to sync with ESP_WiFiManager v1.0.11.
-
----
----
-
-This library is based on, modified, bug-fixed and improved from:
-
-1. [`Tzapu's WiFiManager`](https://github.com/tzapu/WiFiManager)
-2. [`Ken Taylor's WiFiManager`](https://github.com/kentaylor/WiFiManager)
-3. [`Alan Steremberg's ESPAsyncWiFiManager`](https://github.com/alanswx/ESPAsyncWiFiManager)
-4. [`Khoi Hoang's ESP_WiFiManager`](https://github.com/khoih-prog/ESP_WiFiManager)
-
-to use the better **asynchronous** [ESPAsyncWebServer](https://github.com/me-no-dev/ESPAsyncWebServer) instead of (ESP8266)WebServer.
-
----
 
 ### Contributions and Thanks
 
