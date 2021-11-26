@@ -196,12 +196,12 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 
  1. [`Arduino IDE 1.8.16+` for Arduino](https://www.arduino.cc/en/Main/Software)
  2. [`ESP8266 Core 3.0.2+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
- 3. [`ESP32 Core 2.0.0+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
+ 3. [`ESP32 Core 2.0.1+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
  4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You have to use the latest [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged.
  5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
  6. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
- 7. [`ESP_DoubleResetDetector v1.1.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
- 8. [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32). **Notice**: This [`LittleFS_esp32 library`](https://github.com/lorol/LITTLEFS) has been integrated to Arduino [esp32 core v1.0.6](https://github.com/espressif/arduino-esp32/tree/master/libraries/LITTLEFS).
+ 7. [`ESP_DoubleResetDetector v1.2.0+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
+ 8. [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS with ESP32 core v1.0.4-. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32). **Notice**: This [`LittleFS_esp32 library`](https://github.com/lorol/LITTLEFS) has been integrated to Arduino [ESP32 core v1.0.6+](https://github.com/espressif/arduino-esp32/tree/master/libraries/LITTLEFS) and you don't need to install it if using ESP32 core v1.0.6+
  
 ---
 
@@ -264,7 +264,7 @@ to
 #define CONFIG_LITTLEFS_FOR_IDF_3_2   /* For old IDF - like in release 1.0.4 */
 ```
 
-It's advisable to use the latest [`LittleFS_esp32 v1.0.5+`](https://github.com/lorol/LITTLEFS) to avoid the issue.
+It's advisable to use the latest [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) to avoid the issue.
 
 Thanks to [Roshan](https://github.com/solroshan) to report the issue in [Error esp_littlefs.c 'utime_p'](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/28) 
 
@@ -507,13 +507,25 @@ WM_Config         WM_config;
     // Use LittleFS
     #include "FS.h"
 
-    // The library will be depreciated after being merged to future major Arduino esp32 core release 2.x
-    // At that time, just remove this library inclusion
-    #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+    // Check cores/esp32/esp_arduino_version.h
+    #if ( ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0) )  //(ESP_ARDUINO_VERSION_MAJOR >= 2)
+      #warning Using ESP32 Core 1.0.6 or 2.0.0+
+      // The library has been merged into esp32 core from release 1.0.6
+      #include <LittleFS.h>
+      
+      FS* filesystem =      &LittleFS;
+      #define FileFS        LittleFS
+      #define FS_Name       "LittleFS"
+    #else
+      #warning Using ESP32 Core 1.0.4-. You must install LITTLEFS library
+      // The library has been merged into esp32 core from release 1.0.6
+      #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+      
+      FS* filesystem =      &LITTLEFS;
+      #define FileFS        LITTLEFS
+      #define FS_Name       "LittleFS"
+    #endif
     
-    FS* filesystem =      &LITTLEFS;
-    #define FileFS        LITTLEFS
-    #define FS_Name       "LittleFS"
   #elif USE_SPIFFS
     #include <SPIFFS.h>
     FS* filesystem =      &SPIFFS;
@@ -2083,7 +2095,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.4"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.5"
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -2118,12 +2130,25 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
     // Use LittleFS
     #include "FS.h"
 
-    // The library has been merged into esp32 core release 1.0.6
-     #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+    // Check cores/esp32/esp_arduino_version.h
+    #if ( ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0) )  //(ESP_ARDUINO_VERSION_MAJOR >= 2)
+      #warning Using ESP32 Core 1.0.6 or 2.0.0+
+      // The library has been merged into esp32 core from release 1.0.6
+      #include <LittleFS.h>
+      
+      FS* filesystem =      &LittleFS;
+      #define FileFS        LittleFS
+      #define FS_Name       "LittleFS"
+    #else
+      #warning Using ESP32 Core 1.0.4-. You must install LITTLEFS library
+      // The library has been merged into esp32 core from release 1.0.6
+      #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+      
+      FS* filesystem =      &LITTLEFS;
+      #define FileFS        LITTLEFS
+      #define FS_Name       "LittleFS"
+    #endif
     
-    FS* filesystem =      &LITTLEFS;
-    #define FileFS        LITTLEFS
-    #define FS_Name       "LittleFS"
   #elif USE_SPIFFS
     #include <SPIFFS.h>
     FS* filesystem =      &SPIFFS;
@@ -3435,8 +3460,8 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 Config File not found
 Can't read Config File, using default values
 LittleFS Flag read = 0xd0d01234
@@ -3454,8 +3479,8 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 Config File not found
 Can't read Config File, using default values
 LittleFS Flag read = 0xd0d04321
@@ -3542,8 +3567,8 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector Version v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
 LittleFS Flag read = 0xd0d04321
@@ -3582,8 +3607,8 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector Version v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
 LittleFS Flag read = 0xd0d01234
@@ -3672,8 +3697,8 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
 [WM] Set CORS Header to :  Your Access-Control-Allow-Origin
@@ -3731,8 +3756,8 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
 [WM] Set CORS Header to :  Your Access-Control-Allow-Origin
@@ -3791,8 +3816,8 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
 FS File: CanadaFlag_2.png, size: 8.12KB
@@ -3869,8 +3894,8 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
 FS File: /CanadaFlag_3.jpg, size: 10.89KB
@@ -3980,8 +4005,8 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
 Got ESP Self-Stored Credentials. Timeout 120s for Config Portal
@@ -4017,8 +4042,8 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
 Got ESP Self-Stored Credentials. Timeout 120s for Config Portal
@@ -4061,8 +4086,8 @@ Local Date/Time: Sat May  1 00:17:30 2021
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
 Got ESP Self-Stored Credentials. Timeout 120s for Config Portal
@@ -4108,8 +4133,8 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 Opening / directory
 FS File: drd.dat, size: 4B
 FS File: wifi_cred.dat, size: 334B
@@ -4181,8 +4206,8 @@ Local Date/Time: Sat May  1 03:12:54 2021
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 Opening / directory
 FS File: drd.dat, size: 4B
 FS File: wifi_cred.dat, size: 334B
@@ -4240,8 +4265,8 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using SPIFFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.9.4
-ESP_DoubleResetDetector v1.1.1
+ESPAsync_WiFiManager v1.9.5
+ESP_DoubleResetDetector v1.2.0
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
 Got ESP Self-Stored Credentials. Timeout 120s for Config Portal
@@ -4332,6 +4357,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 14. Thanks to [yiancar](https://github.com/yiancar) to report the issue and propose a fix in [In AP, DNS server always redirects to 192.168.4.1 no mater what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58) leading to v1.7.1
 15. Thanks to [Stephen Lavelle](https://github.com/increpare) and [Ben Peart](https://github.com/benpeart) for requesting enhancement in [_timezoneName never getting set? #51](https://github.com/khoih-prog/ESP_WiFiManager/issues/51) and [How to retrieve timezone? #51](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/51) leading to new v1.8.0
 16. Thanks to [eth0up](https://github.com/eth0up) to make the PR [Add support for Wifi hidden SSID scanning. #66](https://github.com/khoih-prog/ESP_WiFiManager/pull/66) leading to v1.7.4
+17. Thanks to [Francisco Trillo](https://github.com/Frtrillo) for reporting [Not working with ESP32 and Core 2.0.1 (or 2.0.0+) #74](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/74) leading to v1.9.5
 
 
 <table>
@@ -4361,6 +4387,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/eth0up"><img src="https://github.com/eth0up.png" width="100px;" alt="eth0up"/><br /><sub><b>eth0up</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/Frtrillo"><img src="https://github.com/Frtrillo.png" width="100px;" alt="Frtrillo"/><br /><sub><b>Francisco Trillo</b></sub></a><br /></td>
   </tr>
 </table>
 

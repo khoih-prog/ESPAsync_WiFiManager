@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.4
+  Version: 1.9.5
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -43,6 +43,7 @@
   1.9.2   K Hoang      02/08/2021 Fix Mbed TLS compile error and MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
   1.9.3   K Hoang      13/08/2021 Add WiFi scanning of hidden SSIDs
   1.9.4   K Hoang      10/10/2021 Update `platform.ini` and `library.json`
+  1.9.5   K Hoang      26/11/2021 Auto detect ESP32 core and use either built-in LittleFS or LITTLEFS library
  *****************************************************************************************************************************/
 
 #include "ESPAsync_WiFiManager.h"
