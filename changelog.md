@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.9.6](#releases-v196)
   * [Releases v1.9.5](#releases-v195)
   * [Releases v1.9.4](#releases-v194)
   * [Releases v1.9.3](#releases-v193)
@@ -41,6 +42,10 @@
 ---
 
 ## Changelog
+
+### Releases v1.9.6
+
+1. Fix compile error for ESP32 core v1.0.5-
 
 ### Releases v1.9.5
 
