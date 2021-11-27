@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.5
+  Version: 1.9.6
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -44,6 +44,7 @@
   1.9.3   K Hoang      13/08/2021 Add WiFi scanning of hidden SSIDs
   1.9.4   K Hoang      10/10/2021 Update `platform.ini` and `library.json`
   1.9.5   K Hoang      26/11/2021 Auto detect ESP32 core and use either built-in LittleFS or LITTLEFS library
+  1.9.6   K Hoang      26/11/2021 Fix compile error for ESP32 core v1.0.5-
  *****************************************************************************************************************************/
 
 #pragma once
@@ -65,7 +66,7 @@
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.5"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.6"
 
 #if ESP8266
   #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)
