@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.9.7](#releases-v197)
   * [Releases v1.9.6](#releases-v196)
   * [Releases v1.9.5](#releases-v195)
   * [Releases v1.9.4](#releases-v194)
@@ -42,6 +43,10 @@
 ---
 
 ## Changelog
+
+### Releases v1.9.7
+
+1. Fix bug to permit using HTTP port different from 80. Check [WiFiManager works only on port 80 #75](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/75)
 
 ### Releases v1.9.6
 

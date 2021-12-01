@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.6
+  Version: 1.9.7
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -45,6 +45,7 @@
   1.9.4   K Hoang      10/10/2021 Update `platform.ini` and `library.json`
   1.9.5   K Hoang      26/11/2021 Auto detect ESP32 core and use either built-in LittleFS or LITTLEFS library
   1.9.6   K Hoang      26/11/2021 Fix compile error for ESP32 core v1.0.5-
+  1.9.7   K Hoang      30/11/2021 Fix bug to permit using HTTP port different from 80 
  *****************************************************************************************************************************/
 
 #pragma once
@@ -2209,8 +2210,8 @@ bool ESPAsync_WiFiManager::captivePortal(AsyncWebServerRequest *request)
 {
   if (!isIp(request->host()))
   {
-    LOGDEBUG(F("Request redirected to captive portal"));
-    LOGDEBUG1(F("Location http://"), toStringIp(request->client()->localIP()));
+    LOGINFO(F("Request redirected to captive portal"));
+    LOGINFO1(F("Location http://"), toStringIp(request->client()->localIP()));
     
     AsyncWebServerResponse *response = request->beginResponse(302, WM_HTTP_HEAD_CT2, "");
     response->addHeader("Location", String("http://") + toStringIp(request->client()->localIP()));
@@ -2286,7 +2287,7 @@ bool ESPAsync_WiFiManager::isIp(String str)
   {
     int c = str.charAt(i);
 
-    if (c != '.' && (c < '0' || c > '9'))
+    if (c != '.' && c != ':' && (c < '0' || c > '9'))
     {
       return false;
     }
