@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.9.8](#releases-v198)
   * [Releases v1.9.7](#releases-v197)
   * [Releases v1.9.6](#releases-v196)
   * [Releases v1.9.5](#releases-v195)
@@ -43,6 +44,10 @@
 ---
 
 ## Changelog
+
+### Releases v1.9.8
+
+1. Fix bug returning IP `255.255.255.255` in core v2.0.0+ when using `hostname`
 
 ### Releases v1.9.7
 

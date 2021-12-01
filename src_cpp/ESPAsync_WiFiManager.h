@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.7
+  Version: 1.9.8
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -46,6 +46,7 @@
   1.9.5   K Hoang      26/11/2021 Auto detect ESP32 core and use either built-in LittleFS or LITTLEFS library
   1.9.6   K Hoang      26/11/2021 Fix compile error for ESP32 core v1.0.5-
   1.9.7   K Hoang      30/11/2021 Fix bug to permit using HTTP port different from 80
+  1.9.8   K Hoang      01/12/2021 Fix bug returning IP `255.255.255.255` in core v2.0.0+ when using `hostname`
  *****************************************************************************************************************************/
 
 #pragma once
@@ -67,7 +68,7 @@
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.7"
+#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.8"
 
 #if ESP8266
   #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)
@@ -603,11 +604,19 @@ class ESPAsync_WiFiManager
         WiFi.hostname(RFC952_hostname);
 #else
 
-  #if !( USING_ESP32_S2 || USING_ESP32_C3 )
+  // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
+  //#if ( ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0) )  //(ESP_ARDUINO_VERSION_MAJOR >= 2)
+  #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
+      WiFi.setHostname(RFC952_hostname);
+  #else     
+      // Still have bug in ESP32_S2 for old core. If using WiFi.setHostname() => WiFi.localIP() always = 255.255.255.255
+      if ( String(ARDUINO_BOARD) != "ESP32S2_DEV" )
+      {
         // See https://github.com/espressif/arduino-esp32/issues/2537
         WiFi.config(INADDR_NONE, INADDR_NONE, INADDR_NONE);
         WiFi.setHostname(RFC952_hostname);
-  #endif      
+      } 
+   #endif    
 #endif        
       }
     }
