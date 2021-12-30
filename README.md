@@ -115,6 +115,7 @@
     * [Async_AutoConnect_ESP8266_minimal](examples/Async_AutoConnect_ESP8266_minimal)
     * [Async_ConfigOnDRD_ESP32_minimal](examples/Async_ConfigOnDRD_ESP32_minimal) 
     * [Async_ConfigOnDRD_ESP8266_minimal](examples/Async_ConfigOnDRD_ESP8266_minimal)
+  * [Multiple-Definitions-Linker-Error demo](#Multiple-Definitions-Linker-Error-demo)
 * [Example Async_ConfigOnDRD_FS_MQTT_Ptr](#example-async_configondrd_fs_mqtt_ptr)
 * [Debug Terminal Output Samples](#debug-terminal-output-samples)
   * [1. Async_ConfigOnDRD_FS_MQTT_Ptr on ESP32_DEV](#1-async_configondrd_fs_mqtt_ptr_medium-on-esp32_dev)
@@ -2083,7 +2084,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
 16. [Async_ESP_FSWebServer](examples/Async_ESP_FSWebServer)
 17. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)
 18. [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr)
-19. [Async_ConfigPortalParamsOnSwitch_TZ](examples/Async_ConfigPortalParamsOnSwitch_TZ)  (now support ArduinoJson 6.0.0+ as well as 5.13.5-)
+19. [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ)           (now support ArduinoJson 6.0.0+ as well as 5.13.5-)
 
 #### High Complexity
 
@@ -2097,6 +2098,10 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
  3. [Async_ConfigOnDRD_ESP32_minimal](examples/Async_ConfigOnDRD_ESP32_minimal) 
  4. [Async_ConfigOnDRD_ESP8266_minimal](examples/Async_ConfigOnDRD_ESP8266_minimal)
 
+#### Multiple-Definitions-Linker-Error demo
+
+ 1. [Async_ConfigOnDoubleReset_Multi](examples/Async_ConfigOnDoubleReset_Multi)
+
 
 ---
 ---
@@ -2108,7 +2113,8 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.10.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.10.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1010000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -2440,7 +2446,8 @@ IPAddress APStaticIP  = IPAddress(192, 168, 100, 1);
 IPAddress APStaticGW  = IPAddress(192, 168, 100, 1);
 IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 
-#include <ESPAsync_WiFiManager.h>              //https://github.com/khoih-prog/ESPAsync_WiFiManager
+#include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
+#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 
 #define HTTP_PORT           80
 
@@ -3316,11 +3323,13 @@ void setup()
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
   Serial.println(ESP_DOUBLE_RESET_DETECTOR_VERSION);
 
-  if ( String(ESP_ASYNC_WIFIMANAGER_VERSION) < ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET )
+#if defined(ESP_ASYNC_WIFIMANAGER_VERSION_INT)
+  if (ESP_ASYNC_WIFIMANAGER_VERSION_INT < ESP_ASYNC_WIFIMANAGER_VERSION_MIN)
   {
     Serial.print("Warning. Must use this example on Version later than : ");
     Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET);
   }
+#endif
 
   Serial.setDebugOutput(false);
 
