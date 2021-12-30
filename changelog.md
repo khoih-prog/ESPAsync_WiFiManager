@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.10.0](#releases-v1100)
   * [Releases v1.9.8](#releases-v198)
   * [Releases v1.9.7](#releases-v197)
   * [Releases v1.9.6](#releases-v196)
@@ -44,6 +45,10 @@
 ---
 
 ## Changelog
+
+### Releases v1.10.0
+
+1. Fix `multiple-definitions` linker error and weird bug related to `src_cpp`. Check [Different behaviour using the src_cpp or src_h lib #80](https://github.com/khoih-prog/ESPAsync_WiFiManager/discussions/80)
 
 ### Releases v1.9.8
 

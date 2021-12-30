@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.9.8
+  Version: 1.10.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -47,6 +47,7 @@
   1.9.6   K Hoang      26/11/2021 Fix compile error for ESP32 core v1.0.5-
   1.9.7   K Hoang      30/11/2021 Fix bug to permit using HTTP port different from 80
   1.9.8   K Hoang      01/12/2021 Fix bug returning IP `255.255.255.255` in core v2.0.0+ when using `hostname`
+  1.10.0  K Hoang      29/12/2021 Fix `multiple-definitions` linker error and weird bug related to src_cpp
  *****************************************************************************************************************************/
 
 #pragma once
@@ -68,7 +69,13 @@
   #define USING_ESP32_C3        true
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION     "ESPAsync_WiFiManager v1.9.8"
+#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.10.0"
+
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MAJOR     1
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MINOR     10
+#define ESP_ASYNC_WIFIMANAGER_VERSION_PATCH     0
+
+#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1010000
 
 #if ESP8266
   #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)
@@ -814,9 +821,6 @@ class ESPAsync_WiFiManager
       return false;
     }
 };
-
-
-#include "ESPAsync_WiFiManager-Impl.h"
 
 #endif    // ESPAsync_WiFiManager_h
 
