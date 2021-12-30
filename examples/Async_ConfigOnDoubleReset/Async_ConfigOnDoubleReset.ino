@@ -42,10 +42,11 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET     "ESPAsync_WiFiManager v1.9.8"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.10.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1010000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
-#define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
+#define _ESPASYNC_WIFIMGR_LOGLEVEL_    1
 
 #include <FS.h>
 
@@ -238,7 +239,7 @@ typedef struct
 
 #define NUM_WIFI_CREDENTIALS      2
 
-// Assuming max 491 chars
+// Assuming max 49 chars
 #define TZNAME_MAX_LEN            50
 #define TIMEZONE_MAX_LEN          50
 
@@ -337,7 +338,8 @@ IPAddress APStaticIP  = IPAddress(192, 168, 100, 1);
 IPAddress APStaticGW  = IPAddress(192, 168, 100, 1);
 IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 
-#include <ESPAsync_WiFiManager.h>              //https://github.com/khoih-prog/ESPAsync_WiFiManager
+#include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
+#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 
 #define HTTP_PORT     80
 
@@ -458,6 +460,7 @@ uint8_t connectMultiWiFi()
 #endif
 
   int i = 0;
+  
   status = wifiMulti.run();
   delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
 
@@ -571,7 +574,7 @@ void check_status()
   #define HEARTBEAT_INTERVAL    60000L
 #else
   #define HEARTBEAT_INTERVAL    10000L
-#endif  
+#endif
 
   current_millis = millis();
 
@@ -682,16 +685,18 @@ void setup()
 
   delay(200);
 
-  Serial.print(F("\nStarting Async_ConfigOnDoubleReset using ")); Serial.print(FS_Name);
+  Serial.print(F("\nStarting Async_ConfigOnDoubleReset_TZ using ")); Serial.print(FS_Name);
   Serial.print(F(" on ")); Serial.println(ARDUINO_BOARD);
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
   Serial.println(ESP_DOUBLE_RESET_DETECTOR_VERSION);
 
-  if ( String(ESP_ASYNC_WIFIMANAGER_VERSION) < ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET )
+#if defined(ESP_ASYNC_WIFIMANAGER_VERSION_INT)
+  if (ESP_ASYNC_WIFIMANAGER_VERSION_INT < ESP_ASYNC_WIFIMANAGER_VERSION_MIN)
   {
     Serial.print("Warning. Must use this example on Version later than : ");
     Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET);
   }
+#endif
 
   Serial.setDebugOutput(false);
 
@@ -789,7 +794,7 @@ void setup()
 
   // SSID to uppercase
   ssid.toUpperCase();
-  password  = "My" + ssid;
+  password   = "My" + ssid;
 
   bool configDataLoaded = false;
 

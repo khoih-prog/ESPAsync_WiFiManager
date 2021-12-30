@@ -7,7 +7,8 @@
 #if !(defined(ESP32) )
   #error This code is intended to run on the ESP32 platform! Please check your Tools->Board setting.
 #endif
-#include <ESPAsync_WiFiManager.h>              //https://github.com/khoih-prog/ESPAsync_WiFiManager
+#include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
+#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 AsyncWebServer webServer(80);
 #if !( USING_ESP32_S2 || USING_ESP32_C3 )
 DNSServer dnsServer;

@@ -11,6 +11,7 @@
   #error This code is intended to run on the ESP8266 platform! Please check your Tools->Board setting.  
 #endif
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
+#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 #define DRD_TIMEOUT             10
 #define DRD_ADDRESS             0
 #include <ESP_DoubleResetDetector.h>            //https://github.com/khoih-prog/ESP_DoubleResetDetector
