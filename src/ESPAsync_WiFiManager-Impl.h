@@ -74,7 +74,7 @@ ESPAsync_WMParameter::ESPAsync_WMParameter(const char *id, const char *placehold
 }
 
 // KH, using struct                      
-ESPAsync_WMParameter::ESPAsync_WMParameter(WMParam_Data WMParam_data)
+ESPAsync_WMParameter::ESPAsync_WMParameter(const WMParam_Data& WMParam_data)
 {
   init(WMParam_data._id, WMParam_data._placeholder, WMParam_data._value, WMParam_data._length, "", WMParam_data._labelPlacement);
 }                  
@@ -111,7 +111,7 @@ ESPAsync_WMParameter::~ESPAsync_WMParameter()
 }
 
 // Using Struct to get/set whole data at once
-void ESPAsync_WMParameter::setWMParam_Data(WMParam_Data WMParam_data)
+void ESPAsync_WMParameter::setWMParam_Data(const WMParam_Data& WMParam_data)
 {
   LOGINFO(F("setWMParam_Data"));
   
@@ -1011,7 +1011,7 @@ int ESPAsync_WiFiManager::reconnectWifi()
 
 //////////////////////////////////////////
 
-int ESPAsync_WiFiManager::connectWifi(String ssid, String pass)
+int ESPAsync_WiFiManager::connectWifi(const String& ssid, const String& pass)
 {
   // Add option if didn't input/update SSID/PW => Use the previous saved Credentials.
   // But update the Static/DHCP options if changed.
@@ -1251,7 +1251,7 @@ int ESPAsync_WiFiManager::setConfigPortalChannel(int channel)
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
+void ESPAsync_WiFiManager::setAPStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn)
 {
   LOGINFO(F("setAPStaticIPConfig"));
   _WiFi_AP_IPconfig._ap_static_ip = ip;
@@ -1262,7 +1262,7 @@ void ESPAsync_WiFiManager::setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAdd
 //////////////////////////////////////////
 
 // KH, new using struct
-void ESPAsync_WiFiManager::setAPStaticIPConfig(WiFi_AP_IPConfig  WM_AP_IPconfig)
+void ESPAsync_WiFiManager::setAPStaticIPConfig(const WiFi_AP_IPConfig& WM_AP_IPconfig)
 {
   LOGINFO(F("setAPStaticIPConfig"));
   
@@ -1280,7 +1280,7 @@ void ESPAsync_WiFiManager::getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn)
+void ESPAsync_WiFiManager::setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn)
 {
   LOGINFO(F("setSTAStaticIPConfig"));
   _WiFi_STA_IPconfig._sta_static_ip = ip;
@@ -1290,7 +1290,7 @@ void ESPAsync_WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAd
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::setSTAStaticIPConfig(WiFi_STA_IPConfig WM_STA_IPconfig)
+void ESPAsync_WiFiManager::setSTAStaticIPConfig(const WiFi_STA_IPConfig& WM_STA_IPconfig)
 {
   LOGINFO(F("setSTAStaticIPConfig"));
   
@@ -1310,7 +1310,8 @@ void ESPAsync_WiFiManager::getSTAStaticIPConfig(WiFi_STA_IPConfig &WM_STA_IPconf
 //////////////////////////////////////////
 
 #if USE_CONFIGURABLE_DNS
-void ESPAsync_WiFiManager::setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn, IPAddress dns_address_1, IPAddress dns_address_2)
+void ESPAsync_WiFiManager::setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn, 
+                                                const IPAddress& dns_address_1, const IPAddress& dns_address_2)
 {
   LOGINFO(F("setSTAStaticIPConfig for USE_CONFIGURABLE_DNS"));
   _WiFi_STA_IPconfig._sta_static_ip = ip;
@@ -2283,7 +2284,7 @@ int ESPAsync_WiFiManager::getRSSIasQuality(int RSSI)
 //////////////////////////////////////////
 
 // Is this an IP?
-bool ESPAsync_WiFiManager::isIp(String str)
+bool ESPAsync_WiFiManager::isIp(const String& str)
 {
   for (unsigned int i = 0; i < str.length(); i++)
   {
@@ -2294,15 +2295,17 @@ bool ESPAsync_WiFiManager::isIp(String str)
       return false;
     }
   }
+  
   return true;
 }
 
 //////////////////////////////////////////
 
 // IP to String
-String ESPAsync_WiFiManager::toStringIp(IPAddress ip)
+String ESPAsync_WiFiManager::toStringIp(const IPAddress& ip)
 {
   String res = "";
+  
   for (int i = 0; i < 3; i++)
   {
     res += String((ip >> (8 * i)) & 0xFF) + ".";

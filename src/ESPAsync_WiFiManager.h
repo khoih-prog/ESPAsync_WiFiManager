@@ -348,19 +348,17 @@ class ESPAsync_WMParameter
   public:
   
     ESPAsync_WMParameter(const char *custom);
-    //ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
-    //ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom);
     ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, 
                           const char *custom = "", int labelPlacement = WFM_LABEL_BEFORE);
                           
     // KH, using struct                      
-    ESPAsync_WMParameter(WMParam_Data WMParam_data);                      
+    ESPAsync_WMParameter(const WMParam_Data& WMParam_data);                      
     //////
     
     ~ESPAsync_WMParameter();
     
     // Using Struct
-    void setWMParam_Data(WMParam_Data WMParam_data);
+    void setWMParam_Data(const WMParam_Data& WMParam_data);
     void getWMParam_Data(WMParam_Data &WMParam_data);
     //////
  
@@ -465,24 +463,24 @@ class ESPAsync_WiFiManager
     //////
     
     //sets a custom ip /gateway /subnet configuration
-    void          setAPStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    void          setAPStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn);
     
     // KH, new using struct
-    void          setAPStaticIPConfig(WiFi_AP_IPConfig  WM_AP_IPconfig);
+    void          setAPStaticIPConfig(const WiFi_AP_IPConfig&  WM_AP_IPconfig);
     void          getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig);
     //////
     
     //sets config for a static IP
-    void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn);
+    void          setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn);
     
     // KH, new using struct
-    void          setSTAStaticIPConfig(WiFi_STA_IPConfig  WM_STA_IPconfig);
+    void          setSTAStaticIPConfig(const WiFi_STA_IPConfig&  WM_STA_IPconfig);
     void          getSTAStaticIPConfig(WiFi_STA_IPConfig  &WM_STA_IPconfig);
     //////
 
 #if USE_CONFIGURABLE_DNS
-    void          setSTAStaticIPConfig(IPAddress ip, IPAddress gw, IPAddress sn,
-                                       IPAddress dns_address_1, IPAddress dns_address_2);
+    void          setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn,
+                                       const IPAddress& dns_address_1, const IPAddress& dns_address_2);
 #endif
 
     //called when AP mode and config portal is started
@@ -635,7 +633,7 @@ class ESPAsync_WiFiManager
       return _timezoneName;
     }
 
-    void setTimezoneName(String& inTimezoneName) 
+    void setTimezoneName(const String& inTimezoneName) 
     {  
       _timezoneName = inTimezoneName;
     }
@@ -670,7 +668,7 @@ class ESPAsync_WiFiManager
     }
     
     
-    const char * getTZ(String& timezoneName)
+    const char * getTZ(const String& timezoneName)
     {
       return getTZ(timezoneName.c_str());      
     }
@@ -763,7 +761,7 @@ class ESPAsync_WiFiManager
     int           reconnectWifi();
     //////
     
-    int           connectWifi(String ssid = "", String pass = "");
+    int           connectWifi(const String& ssid = "", const String& pass = "");
     
     wl_status_t   waitForConnectResult();
     
@@ -788,8 +786,8 @@ class ESPAsync_WiFiManager
 
     //helpers
     int           getRSSIasQuality(int RSSI);
-    bool          isIp(String str);
-    String        toStringIp(IPAddress ip);
+    bool          isIp(const String& str);
+    String        toStringIp(const IPAddress& ip);
 
     bool          connect;
     bool          stopConfigPortal = false;
