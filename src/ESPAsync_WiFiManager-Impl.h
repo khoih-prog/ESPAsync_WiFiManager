@@ -823,6 +823,16 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
 
   while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout)
   {
+	        // Portal Reset after timeout
+      if (
+	      ((millis() - (_configPortalStart + _configPortalTimeout)) >= _configPortalTimeout - 2)
+	      && ((millis() - (_configPortalStart + _configPortalTimeout)) >= _configPortalTimeout - 1)) 
+      { 
+	      Serial.println("Restart"); 
+	      delay(2000); 
+	      ESP.restart(); // Exit loop and restart ESP try to reconect to stored configs
+      }
+	  
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )   
     // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
     delay(1);
