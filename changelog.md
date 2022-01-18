@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.11.0](#releases-v1110)
   * [Releases v1.10.0](#releases-v1100)
   * [Releases v1.9.8](#releases-v198)
   * [Releases v1.9.7](#releases-v197)
@@ -45,6 +46,10 @@
 ---
 
 ## Changelog
+
+### Releases v1.11.0
+
+1. Reduce the breaking effect of v1.10.0 by enabling compatibility with old code to include only `ESPAsync_WiFiManager.h`. Check [Important Breaking Change from v1.10.0](https://github.com/khoih-prog/ESPAsync_WiFiManager#Important-Breaking-Change-from-v1100)
 
 ### Releases v1.10.0
 

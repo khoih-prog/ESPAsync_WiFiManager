@@ -8,7 +8,8 @@
   #error This code is intended to run on ESP8266 platform! Please check your Tools->Board setting.
 #endif
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
-#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
+// Redundant, for v1.10.0 only
+//#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 AsyncWebServer webServer(80);
 DNSServer dnsServer;
 

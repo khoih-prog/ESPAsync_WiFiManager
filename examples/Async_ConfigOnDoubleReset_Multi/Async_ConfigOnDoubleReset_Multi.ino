@@ -46,7 +46,9 @@
 #include "Async_ConfigOnDoubleReset_Multi.h"
 
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
-#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
+
+// Redundant, for v1.10.0 only
+//#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 
 void setup()
 {
