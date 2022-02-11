@@ -6,7 +6,7 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](#Contributing)
 [![GitHub issues](https://img.shields.io/github/issues/khoih-prog/ESPAsync_WiFiManager.svg)](http://github.com/khoih-prog/ESPAsync_WiFiManager/issues)
 
-<a href="https://www.buymeacoffee.com/khoihprog6" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
+<a href="https://www.buymeacoffee.com/khoihprog6" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 50px !important;width: 181px !important;" ></a>
 
 ---
 ---
@@ -139,6 +139,7 @@
     * [9.2 Data Saved => Connect to WiFi with correct local time, TZ set and using NTP](#92-data-saved--connect-to-wifi-with-correct-local-time-tz-set-and-using-ntp)
     * [9.3 Normal running with correct local time, TZ set and using NTP](#93-normal-running-with-correct-local-time-tz-set-and-using-ntp)
   * [10. Async_ConfigOnDoubleReset_TZ on ESP32C3_DEV using SPIFFS](#10-async_configondoublereset_tz-on-esp32c3_dev-using-spiffs)
+  * [11. Async_ConfigOnDoubleReset on ESP32S3_DEV using LittleFS](#11-Async_ConfigOnDoubleReset-on-ESP32S3_DEV-using-LittleFS) **New**
 * [Debug](#debug)
 * [Troubleshooting](#troubleshooting)
 * [Issues](#issues)
