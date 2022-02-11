@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.11.0
+  Version: 1.12.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -49,6 +49,7 @@
   1.9.8   K Hoang      01/12/2021 Fix bug returning IP `255.255.255.255` in core v2.0.0+ when using `hostname`
   1.10.0  K Hoang      29/12/2021 Fix `multiple-definitions` linker error and weird bug related to src_cpp
   1.11.0  K Hoang      17/01/2022 Enable compatibility with old code to include only ESP_WiFiManager.h
+  1.12.0  K Hoang      10/02/2022 Add support to new ESP32-S3
  *****************************************************************************************************************************/
 
 #pragma once
@@ -68,15 +69,19 @@
   #warning Using ESP32_C3. To follow library instructions to install esp32-c3 core. Only SPIFFS and EEPROM OK.
   #warning You have to select Flash size 2MB and Minimal APP (1.3MB + 700KB) for some boards
   #define USING_ESP32_C3        true
+#elif ( defined(ARDUINO_ESP32S3_DEV) || defined(ARDUINO_ESP32_S3_BOX) || defined(ARDUINO_TINYS3) || \
+        defined(ARDUINO_PROS3) || defined(ARDUINO_FEATHERS3) )
+  #warning Using ESP32_S3. To install esp32-s3-support branch if using core v2.0.2-.
+  #define USING_ESP32_S3        true   
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.11.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.12.0"
 
 #define ESP_ASYNC_WIFIMANAGER_VERSION_MAJOR     1
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MINOR     11
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MINOR     12
 #define ESP_ASYNC_WIFIMANAGER_VERSION_PATCH     0
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1011000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1012000
 
 #if ESP8266
   #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)

@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.12.0](#releases-v1120)
   * [Releases v1.11.0](#releases-v1110)
   * [Releases v1.10.0](#releases-v1100)
   * [Releases v1.9.8](#releases-v198)
@@ -46,6 +47,10 @@
 ---
 
 ## Changelog
+
+### Releases v1.12.0
+
+1. Add support to `ESP32-S3` (`ESP32S3_DEV, ESP32_S3_BOX, UM TINYS3, UM PROS3, UM FEATHERS3`, etc.) using [ESP32 core, esp32-s3-support branch, v2.0.2+](https://github.com/espressif/arduino-esp32/tree/esp32-s3-support)
 
 ### Releases v1.11.0
 

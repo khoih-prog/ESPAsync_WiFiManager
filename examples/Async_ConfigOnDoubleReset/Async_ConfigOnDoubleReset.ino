@@ -42,8 +42,8 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.11.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1011000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    1
@@ -687,7 +687,7 @@ void setup()
 
   delay(200);
 
-  Serial.print(F("\nStarting Async_ConfigOnDoubleReset_TZ using ")); Serial.print(FS_Name);
+  Serial.print(F("\nStarting Async_ConfigOnDoubleReset using ")); Serial.print(FS_Name);
   Serial.print(F(" on ")); Serial.println(ARDUINO_BOARD);
   Serial.println(ESP_ASYNC_WIFIMANAGER_VERSION);
   Serial.println(ESP_DOUBLE_RESET_DETECTOR_VERSION);

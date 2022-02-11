@@ -34,8 +34,8 @@
   #error This code is intended to run on the ESP8266 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.11.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1011000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -56,7 +56,7 @@ ESP8266WiFiMulti wifiMulti;
 //#define FORMAT_FILESYSTEM       true
 #define FORMAT_FILESYSTEM       false
 
-#define USE_LITTLEFS          true
+#define USE_LITTLEFS              true
 
 #if USE_LITTLEFS
   #include <LittleFS.h>
@@ -65,6 +65,7 @@ ESP8266WiFiMulti wifiMulti;
   #define FS_Name                 "LittleFS"
   #define ESP_DRD_USE_LITTLEFS    true
 #else
+  #include <SPIFFSEditor.h>
   FS* filesystem =                &SPIFFS;
   #define FileFS                  SPIFFS
   #define FS_Name                 "SPIFFS"
@@ -73,8 +74,6 @@ ESP8266WiFiMulti wifiMulti;
 
 #define LED_ON      LOW
 #define LED_OFF     HIGH
-
-#include <SPIFFSEditor.h>
 
 #define DOUBLERESETDETECTOR_DEBUG       true  //false
 
@@ -939,7 +938,11 @@ void setup()
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
 
+#if !USE_LITTLEFS
+  // SPIFFSEditor won't compile when using LittleFS
   server.addHandler(new SPIFFSEditor(http_username, http_password, FileFS));
+#endif
+
   server.serveStatic("/", FileFS, "/").setDefaultFile("index.htm");
   
   server.onNotFound([](AsyncWebServerRequest * request) 
