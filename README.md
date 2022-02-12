@@ -140,6 +140,7 @@
     * [9.3 Normal running with correct local time, TZ set and using NTP](#93-normal-running-with-correct-local-time-tz-set-and-using-ntp)
   * [10. Async_ConfigOnDoubleReset_TZ on ESP32C3_DEV using SPIFFS](#10-async_configondoublereset_tz-on-esp32c3_dev-using-spiffs)
   * [11. Async_ConfigOnDoubleReset on ESP32S3_DEV using LittleFS](#11-Async_ConfigOnDoubleReset-on-ESP32S3_DEV-using-LittleFS) **New**
+  * [12. Async_ConfigOnDoubleReset on ESP32C3_DEV using LittleFS](#12-Async_ConfigOnDoubleReset-on-ESP32C3_DEV-using-LittleFS) **New**
 * [Debug](#debug)
 * [Troubleshooting](#troubleshooting)
 * [Issues](#issues)
@@ -255,7 +256,7 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 
  1. **ESP8266 and ESP32-based boards using EEPROM, SPIFFS or LittleFS**.
  2. **ESP32-S2 (ESP32-S2 Saola, AI-Thinker ESP-12K, etc.) using EEPROM, SPIFFS or LittleFS**.
- 3. **ESP32-C3 (ARDUINO_ESP32C3_DEV) using EEPROM or SPIFFS**.
+ 3. **ESP32-C3 (ARDUINO_ESP32C3_DEV) using EEPROM, SPIFFS or LittleFS**.
  4. **ESP32-S3 (ESP32S3_DEV, ESP32_S3_BOX, UM TINYS3, UM PROS3, UM FEATHERS3, etc.) using EEPROM, SPIFFS or LittleFS**.
  
 ---
@@ -440,8 +441,14 @@ then connect WebBrowser to configurable ConfigPortal IP address, default is 192.
   WiFiMulti wifiMulti;
 
   // LittleFS has higher priority than SPIFFS
-  #define USE_LITTLEFS    true
-  #define USE_SPIFFS      false
+  #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
+    #define USE_LITTLEFS    true
+    #define USE_SPIFFS      false
+  #elif defined(ARDUINO_ESP32C3_DEV)
+    // For core v1.0.6-, ESP32-C3 only supporting SPIFFS and EEPROM. To use v2.0.0+ for LittleFS
+    #define USE_LITTLEFS          false
+    #define USE_SPIFFS            true
+  #endif
 
   #if USE_LITTLEFS
     // Use LittleFS
@@ -452,7 +459,7 @@ then connect WebBrowser to configurable ConfigPortal IP address, default is 192.
     #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
       #warning Using ESP32 Core 1.0.6 or 2.0.0+
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LittleFS.h>
+      #include <LittleFS.h>       // https://github.com/espressif/arduino-esp32/tree/master/libraries/LittleFS
       
       FS* filesystem =      &LittleFS;
       #define FileFS        LittleFS
@@ -460,7 +467,7 @@ then connect WebBrowser to configurable ConfigPortal IP address, default is 192.
     #else
       #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+      #include <LITTLEFS.h>       // https://github.com/lorol/LITTLEFS
       
       FS* filesystem =      &LITTLEFS;
       #define FileFS        LITTLEFS
@@ -582,8 +589,14 @@ WM_Config         WM_config;
   WiFiMulti wifiMulti;
 
   // LittleFS has higher priority than SPIFFS
-  #define USE_LITTLEFS    true
-  #define USE_SPIFFS      false
+  #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
+    #define USE_LITTLEFS    true
+    #define USE_SPIFFS      false
+  #elif defined(ARDUINO_ESP32C3_DEV)
+    // For core v1.0.6-, ESP32-C3 only supporting SPIFFS and EEPROM. To use v2.0.0+ for LittleFS
+    #define USE_LITTLEFS          false
+    #define USE_SPIFFS            true
+  #endif
 
   #if USE_LITTLEFS
     // Use LittleFS
@@ -594,7 +607,7 @@ WM_Config         WM_config;
     #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
       #warning Using ESP32 Core 1.0.6 or 2.0.0+
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LittleFS.h>
+      #include <LittleFS.h>       // https://github.com/espressif/arduino-esp32/tree/master/libraries/LittleFS
       
       FS* filesystem =      &LittleFS;
       #define FileFS        LittleFS
@@ -602,7 +615,7 @@ WM_Config         WM_config;
     #else
       #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+      #include <LITTLEFS.h>       // https://github.com/lorol/LITTLEFS
       
       FS* filesystem =      &LITTLEFS;
       #define FileFS        LITTLEFS
@@ -2182,7 +2195,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.1"
 #define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
@@ -2205,13 +2218,13 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
   WiFiMulti wifiMulti;
 
   // LittleFS has higher priority than SPIFFS
-  #if ( ARDUINO_ESP32C3_DEV )
-    // Currently, ESP32-C3 only supporting SPIFFS and EEPROM. Will fix to support LittleFS
-    #define USE_LITTLEFS          false
-    #define USE_SPIFFS            true
-  #else
+  #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
     #define USE_LITTLEFS    true
     #define USE_SPIFFS      false
+  #elif defined(ARDUINO_ESP32C3_DEV)
+    // For core v1.0.6-, ESP32-C3 only supporting SPIFFS and EEPROM. To use v2.0.0+ for LittleFS
+    #define USE_LITTLEFS          false
+    #define USE_SPIFFS            true
   #endif
 
   #if USE_LITTLEFS
@@ -2223,7 +2236,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
     #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
       #warning Using ESP32 Core 1.0.6 or 2.0.0+
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LittleFS.h>
+      #include <LittleFS.h>       // https://github.com/espressif/arduino-esp32/tree/master/libraries/LittleFS
       
       FS* filesystem =      &LittleFS;
       #define FileFS        LittleFS
@@ -2231,7 +2244,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
     #else
       #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
       // The library has been merged into esp32 core from release 1.0.6
-      #include <LITTLEFS.h>             // https://github.com/lorol/LITTLEFS
+      #include <LITTLEFS.h>       // https://github.com/lorol/LITTLEFS
       
       FS* filesystem =      &LITTLEFS;
       #define FileFS        LITTLEFS
@@ -3554,7 +3567,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 Config File not found
 Can't read Config File, using default values
@@ -3573,7 +3586,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 Config File not found
 Can't read Config File, using default values
@@ -3661,7 +3674,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3701,7 +3714,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -3791,7 +3804,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3850,7 +3863,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -3910,7 +3923,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -3988,7 +4001,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -4099,7 +4112,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -4136,7 +4149,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4178,7 +4191,7 @@ Local Date/Time: Thu Feb 10 23:50:26 2022
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4227,7 +4240,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4300,7 +4313,7 @@ Local Date/Time: Thu Feb 10 23:16:26 2022
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -4359,7 +4372,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using SPIFFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -4405,7 +4418,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S3_DEV
-ESPAsync_WiFiManager v1.12.0
+ESPAsync_WiFiManager v1.12.1
 ESP_DoubleResetDetector v1.3.0
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -4438,6 +4451,48 @@ Saving config file...
 Saving config file OK
 HHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH
 HHHHHHHHHH HHHHHHHHHH HHH
+```
+
+---
+
+#### 12. [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on ESP32C3_DEV using LittleFS
+
+This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on **ESP32C3_DEV using LittleFS and ESP32 core v2.0.2**.
+
+```
+Starting Async_ConfigOnDoubleReset using LittleFS on ESP32C3_DEV
+ESPAsync_WiFiManager v1.12.1
+ESP_DoubleResetDetector v1.3.0
+ESP Self-Stored: SSID = HueNet1, Pass = password
+[WM] * Add SSID =  HueNet1 , PW =  password
+Got ESP Self-Stored Credentials. Timeout 120s for Config Portal
+[WM] LoadWiFiCfgFile 
+[WM] OK
+[WM] stationIP = 0.0.0.0 , gatewayIP = 192.168.2.1
+[WM] netMask = 255.255.255.0
+[WM] dns1IP = 192.168.2.1 , dns2IP = 8.8.8.8
+Got stored Credentials. Timeout 120s for Config Portal
+LittleFS Flag read = 0xD0D04321
+No doubleResetDetected
+Saving config file...
+Saving config file OK
+[WM] * Add SSID =  HueNet1 , PW =  password
+[WM] * Add SSID =  HueNet2 , PW =  password
+ConnectMultiWiFi in setup
+[WM] ConnectMultiWiFi with :
+[WM] * Flash-stored Router_SSID =  HueNet1 , Router_Pass =  password
+[WM] * Add SSID =  HueNet1 , PW =  password
+[WM] * Additional SSID =  HueNet1 , PW =  password
+[WM] * Additional SSID =  HueNet2 , PW =  password
+[WM] Connecting MultiWifi...
+[WM] WiFi connected after time:  1
+[WM] SSID: HueNet1 ,RSSI= -19
+[WM] Channel: 2 ,IP address: 192.168.2.85
+After waiting 8.41 secs more in setup(), connection result is connected. Local IP: 192.168.2.85
+HStop doubleResetDetecting
+Saving config file...
+Saving config file OK
+HHH
 ```
 
 ---

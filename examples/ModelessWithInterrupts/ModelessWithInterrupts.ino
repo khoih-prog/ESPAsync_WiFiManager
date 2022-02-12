@@ -19,8 +19,8 @@
   #error This code is intended to run on the ESP8266! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012001
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_       3

@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.12.1](#releases-v1121)
   * [Releases v1.12.0](#releases-v1120)
   * [Releases v1.11.0](#releases-v1110)
   * [Releases v1.10.0](#releases-v1100)
@@ -47,6 +48,11 @@
 ---
 
 ## Changelog
+
+### Releases v1.12.1
+
+1. Add LittleFS support to `ESP32-C3`.
+2. Use ESP32-core's LittleFS library instead of Lorol's LITTLEFS library for v2.0.0+
 
 ### Releases v1.12.0
 
