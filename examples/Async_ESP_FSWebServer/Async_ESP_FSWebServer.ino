@@ -34,8 +34,8 @@
   #error This code is intended to run on the ESP8266 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.1"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012001
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.2"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012002
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
@@ -158,41 +158,39 @@ bool initialConfig = false;
 
 #define USING_CORS_FEATURE          true
 
-// Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
-#if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
-// Force DHCP to be true
-#if defined(USE_DHCP_IP)
-#undef USE_DHCP_IP
-#endif
-#define USE_DHCP_IP     true
-#else
-// You can select DHCP or Static IP here
-//#define USE_DHCP_IP     true
-#define USE_DHCP_IP     false
-#endif
+
+////////////////////////////////////////////
 
 // Use USE_DHCP_IP == true for dynamic DHCP IP, false to use static IP which you have to change accordingly to your network
 #if (defined(USE_STATIC_IP_CONFIG_IN_CP) && !USE_STATIC_IP_CONFIG_IN_CP)
-// Force DHCP to be true
+  // Force DHCP to be true
   #if defined(USE_DHCP_IP)
     #undef USE_DHCP_IP
   #endif
   #define USE_DHCP_IP     true
 #else
   // You can select DHCP or Static IP here
-  //#define USE_DHCP_IP     true
-  #define USE_DHCP_IP     false
+  #define USE_DHCP_IP     true
+  //#define USE_DHCP_IP     false
 #endif
 
 #if ( USE_DHCP_IP )
   // Use DHCP
-  #warning Using DHCP IP
+  
+  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+    #warning Using DHCP IP
+  #endif
+  
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
   IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
+  
 #else
   // Use static IP
-  #warning Using static IP
+  
+  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+    #warning Using static IP
+  #endif
   
   #ifdef ESP32
     IPAddress stationIP   = IPAddress(192, 168, 2, 232);
@@ -203,6 +201,9 @@ bool initialConfig = false;
   IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #endif
+
+////////////////////////////////////////////
+
 
 #define USE_CONFIGURABLE_DNS      true
 

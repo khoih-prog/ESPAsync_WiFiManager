@@ -42,8 +42,8 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.1"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012001
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.2"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012002
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    1
@@ -77,7 +77,10 @@
     // Check cores/esp32/esp_arduino_version.h and cores/esp32/core_version.h
     //#if ( ESP_ARDUINO_VERSION >= ESP_ARDUINO_VERSION_VAL(2, 0, 0) )  //(ESP_ARDUINO_VERSION_MAJOR >= 2)
     #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
-      #warning Using ESP32 Core 1.0.6 or 2.0.0+
+      #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+        #warning Using ESP32 Core 1.0.6 or 2.0.0+
+      #endif
+      
       // The library has been merged into esp32 core from release 1.0.6
       #include <LittleFS.h>       // https://github.com/espressif/arduino-esp32/tree/master/libraries/LittleFS
       
@@ -85,7 +88,10 @@
       #define FileFS        LittleFS
       #define FS_Name       "LittleFS"
     #else
-      #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
+      #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+        #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
+      #endif
+      
       // The library has been merged into esp32 core from release 1.0.6
       #include <LITTLEFS.h>       // https://github.com/lorol/LITTLEFS
       
@@ -310,13 +316,18 @@ extern bool initialConfig;    // = false;
 
 #if ( USE_DHCP_IP )
   // Use DHCP
-  #warning Using DHCP IP
+  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+    #warning Using DHCP IP
+  #endif
+  
   extern IPAddress stationIP;   //   = IPAddress(0, 0, 0, 0);
   extern IPAddress gatewayIP;   //   = IPAddress(192, 168, 1, 1);
   extern IPAddress netMask;     //     = IPAddress(255, 255, 255, 0);
 #else
   // Use static IP
-  #warning Using static IP
+  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+    #warning Using static IP
+  #endif
   
   #ifdef ESP32
     extern IPAddress stationIP;   //   = IPAddress(192, 168, 2, 232);
