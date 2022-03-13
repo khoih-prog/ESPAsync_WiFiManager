@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.12.2](#releases-v1122)
   * [Releases v1.12.1](#releases-v1121)
   * [Releases v1.12.0](#releases-v1120)
   * [Releases v1.11.0](#releases-v1110)
@@ -48,6 +49,13 @@
 ---
 
 ## Changelog
+
+### Releases v1.12.2
+
+1. Optimize code by using passing by `reference` instead of by `value`
+2. Delete all confusing, function-lacking `minimal` examples
+3. Delete all `Modeless` examples
+4. Display informational warnings only when `_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3`
 
 ### Releases v1.12.1
 

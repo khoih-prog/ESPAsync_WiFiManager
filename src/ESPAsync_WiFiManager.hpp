@@ -14,43 +14,18 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.12.1
+  Version: 1.12.2
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
   1.0.11  K Hoang      21/08/2020 Initial coding to use (ESP)AsyncWebServer instead of (ESP8266)WebServer. Bump up to v1.0.11
                                   to sync with ESP_WiFiManager v1.0.11
-  1.1.1   K Hoang      29/08/2020 Add MultiWiFi feature to autoconnect to best WiFi at runtime to sync with
-                                  ESP_WiFiManager v1.1.1. Add setCORSHeader function to allow flexible CORS
-  1.1.2   K Hoang      17/09/2020 Fix bug in examples.
-  1.2.0   K Hoang      15/10/2020 Restore cpp code besides Impl.h code to use if linker error. Fix bug.
-  1.3.0   K Hoang      04/12/2020 Add LittleFS support to ESP32 using LITTLEFS Library
-  1.4.0   K Hoang      18/12/2020 Fix staticIP not saved. Add functions. Add complex examples.
-  1.4.1   K Hoang      21/12/2020 Fix bug and compiler warnings.
-  1.4.2   K Hoang      21/12/2020 Fix examples' bug not using saved WiFi Credentials after losing all WiFi connections.
-  1.4.3   K Hoang      23/12/2020 Fix examples' bug not saving Static IP in certain cases.
-  1.5.0   K Hoang      13/02/2021 Add support to new ESP32-S2. Optimize code.
-  1.6.0   K Hoang      25/02/2021 Fix WiFi Scanning bug.
-  1.6.1   K Hoang      26/03/2021 Modify multiWiFi-related timings to work better with latest esp32 core v1.0.6
-  1.6.2   K Hoang      08/04/2021 Fix example misleading messages.
-  1.6.3   K Hoang      13/04/2021 Allow captive portal to run more than once by closing dnsServer.
-  1.7.0   K Hoang      20/04/2021 Add support to new ESP32-C3 using SPIFFS or EEPROM
-  1.7.1   K Hoang      25/04/2021 Fix MultiWiFi bug. Fix captive-portal bug if CP AP address is not default 192.168.4.1
-  1.8.0   K Hoang      30/04/2021 Set _timezoneName. Add support to new ESP32-S2 (METRO_ESP32S2, FUNHOUSE_ESP32S2, etc.)
-  1.8.1   K Hoang      06/05/2021 Fix bug. Don't display invalid time when not synch yet.
-  1.9.0   K Hoang      08/05/2021 Add WiFi /scan page. Fix timezoneName not displayed in Info page. Clean up.
-  1.9.1   K Hoang      18/05/2021 Fix warnings with ESP8266 core v3.0.0
-  1.9.2   K Hoang      02/08/2021 Fix Mbed TLS compile error and MultiWiFi connection issue with ESP32 core v2.0.0-rc1+
-  1.9.3   K Hoang      13/08/2021 Add WiFi scanning of hidden SSIDs
-  1.9.4   K Hoang      10/10/2021 Update `platform.ini` and `library.json`
-  1.9.5   K Hoang      26/11/2021 Auto detect ESP32 core and use either built-in LittleFS or LITTLEFS library
-  1.9.6   K Hoang      26/11/2021 Fix compile error for ESP32 core v1.0.5-
-  1.9.7   K Hoang      30/11/2021 Fix bug to permit using HTTP port different from 80
-  1.9.8   K Hoang      01/12/2021 Fix bug returning IP `255.255.255.255` in core v2.0.0+ when using `hostname`
+  ...
   1.10.0  K Hoang      29/12/2021 Fix `multiple-definitions` linker error and weird bug related to src_cpp
   1.11.0  K Hoang      17/01/2022 Enable compatibility with old code to include only ESP_WiFiManager.h
   1.12.0  K Hoang      10/02/2022 Add support to new ESP32-S3
   1.12.1  K Hoang      11/02/2022 Add LittleFS support to ESP32-C3. Use core LittleFS instead of Lorol's LITTLEFS for v2.0.0+
+  1.12.2  K Hoang      13/03/2022 Optimize code by using passing by `reference` instead of by `value`
  *****************************************************************************************************************************/
 
 #pragma once
@@ -63,85 +38,150 @@
 #elif ( ARDUINO_ESP32S2_DEV || ARDUINO_FEATHERS2 || ARDUINO_ESP32S2_THING_PLUS || ARDUINO_MICROS2 || \
         ARDUINO_METRO_ESP32S2 || ARDUINO_MAGTAG29_ESP32S2 || ARDUINO_FUNHOUSE_ESP32S2 || \
         ARDUINO_ADAFRUIT_FEATHER_ESP32S2_NOPSRAM )
-  #warning Using ESP32_S2. To follow library instructions to install esp32-s2 core and WebServer Patch
-  #warning You have to select HUGE APP or 1.9-2.0 MB APP to be able to run Config Portal. Must use PSRAM
-  #define USING_ESP32_S2        true
-#elif ( ARDUINO_ESP32C3_DEV )
-  #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
-    #warning Using ESP32_C3 using core v2.0.0+. Either LittleFS, SPIFFS or EEPROM OK.
-  #else
-    #warning Using ESP32_C3 using core v1.0.6-. To follow library instructions to install esp32-c3 core. Only SPIFFS and EEPROM OK.
+  #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)      
+		#warning Using ESP32_S2. To follow library instructions to install esp32-s2 core and WebServer Patch
+		#warning You have to select HUGE APP or 1.9-2.0 MB APP to be able to run Config Portal. Must use PSRAM
   #endif
   
-  #warning You have to select Flash size 2MB and Minimal APP (1.3MB + 700KB) for some boards
+  #define USING_ESP32_S2        true
+  
+#elif ( ARDUINO_ESP32C3_DEV )
+	#if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+		#if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
+		  #warning Using ESP32_C3 using core v2.0.0+. Either LittleFS, SPIFFS or EEPROM OK
+		#else
+		  #warning Using ESP32_C3 using core v1.0.6-. To follow library instructions to install esp32-c3 core. Only SPIFFS and EEPROM OK
+		#endif
+    
+ 		#warning You have to select Flash size 2MB and Minimal APP (1.3MB + 700KB) for some boards
+  
+  #endif
+  
   #define USING_ESP32_C3        true
+  
 #elif ( defined(ARDUINO_ESP32S3_DEV) || defined(ARDUINO_ESP32_S3_BOX) || defined(ARDUINO_TINYS3) || \
         defined(ARDUINO_PROS3) || defined(ARDUINO_FEATHERS3) )
-  #warning Using ESP32_S3. To install esp32-s3-support branch if using core v2.0.2-.
+
+	#if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)    
+		#warning Using ESP32_S3. To install esp32-s3-support branch if using core v2.0.2-
+	#endif
+  
   #define USING_ESP32_S3        true   
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.12.1"
+#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.12.2"
 
 #define ESP_ASYNC_WIFIMANAGER_VERSION_MAJOR     1
 #define ESP_ASYNC_WIFIMANAGER_VERSION_MINOR     12
-#define ESP_ASYNC_WIFIMANAGER_VERSION_PATCH     1
+#define ESP_ASYNC_WIFIMANAGER_VERSION_PATCH     2
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1012001
+#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1012002
 
 #if ESP8266
   #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)
     #define USING_ESP8266_CORE_VERSION    30002
     #define ESP8266_CORE_VERSION          "ESP8266 core v3.0.2"
-    #warning USING_ESP8266_CORE_VERSION "3.0.2"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "3.0.2"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0xcbf44fb3)
     #define USING_ESP8266_CORE_VERSION    30001
     #define ESP8266_CORE_VERSION          "ESP8266 core v3.0.1"
-    #warning USING_ESP8266_CORE_VERSION "3.0.1"  
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "3.0.1"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0xefb0341a)
     #define USING_ESP8266_CORE_VERSION    30000
     #define ESP8266_CORE_VERSION          "ESP8266 core v3.0.0"
-    #warning USING_ESP8266_CORE_VERSION "3.0.0"  
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "3.0.0"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x2843a5ac)
     #define USING_ESP8266_CORE_VERSION    20704
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.4"
-    #warning USING_ESP8266_CORE_VERSION "2.7.4"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.7.4"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x5d3af165)
     #define USING_ESP8266_CORE_VERSION    20703
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.3"
-    #warning USING_ESP8266_CORE_VERSION "2.7.3"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.7.3"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x39c79d9b)
     #define USING_ESP8266_CORE_VERSION    20702
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.2"
-    #warning USING_ESP8266_CORE_VERSION "2.7.2"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+    	#warning USING_ESP8266_CORE_VERSION "2.7.2"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0xa5432625)
     #define USING_ESP8266_CORE_VERSION    20701
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.7.1"
-    #warning USING_ESP8266_CORE_VERSION "2.7.1"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.7.1"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x3d128e5c)
     #define USING_ESP8266_CORE_VERSION    20603
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.3"
-    #warning USING_ESP8266_CORE_VERSION "2.6.3"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.6.3"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x482516e3)
     #define USING_ESP8266_CORE_VERSION    20602
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.2"
-    #warning USING_ESP8266_CORE_VERSION "2.6.2"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.6.2"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x482516e3)
     #define USING_ESP8266_CORE_VERSION    20601
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.1"
-    #warning USING_ESP8266_CORE_VERSION "2.6.1"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.6.1"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x643ec203)
     #define USING_ESP8266_CORE_VERSION    20600
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.6.0"
-    #warning USING_ESP8266_CORE_VERSION "2.6.0"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.6.0"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x8b899c12)
     #define USING_ESP8266_CORE_VERSION    20502
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.5.2"
-    #warning USING_ESP8266_CORE_VERSION "2.5.2"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.5.2"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x00000000)
     #define USING_ESP8266_CORE_VERSION    20402
     #define ESP8266_CORE_VERSION          "ESP8266 core v2.4.2"
-    #warning USING_ESP8266_CORE_VERSION "2.4.2"
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3) 
+    	#warning USING_ESP8266_CORE_VERSION "2.4.2"
+    #endif
+    
   #elif (ARDUINO_ESP8266_GIT_VER == 0x643ec203)
     #define USING_ESP8266_CORE_VERSION    0
     #define ESP8266_CORE_VERSION          "ESP8266 core too old"
@@ -265,7 +305,11 @@ const char WM_HTTP_SCRIPT_NTP_HIDDEN[] PROGMEM = "<p><input type='hidden' id='ti
   #if !(USE_CLOUDFLARE_NTP)
     #undef USE_CLOUDFLARE_NTP
     #define USE_CLOUDFLARE_NTP      true
-    #warning Forcing USE_CLOUDFLARE_NTP for ESP8266 as low memory can cause blank page
+    
+    #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
+    	#warning Forcing USE_CLOUDFLARE_NTP for ESP8266 as low memory can cause blank page
+    #endif
+    
   #endif
 #endif
 
@@ -360,8 +404,8 @@ class ESPAsync_WMParameter
   public:
   
     ESPAsync_WMParameter(const char *custom);
-    ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, 
-                          const char *custom = "", int labelPlacement = WFM_LABEL_BEFORE);
+    ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, const int& length, 
+                         const char *custom = "", const int& labelPlacement = WFM_LABEL_BEFORE);
                           
     // KH, using struct                      
     ESPAsync_WMParameter(const WMParam_Data& WMParam_data);                      
@@ -371,7 +415,7 @@ class ESPAsync_WMParameter
     
     // Using Struct
     void setWMParam_Data(const WMParam_Data& WMParam_data);
-    void getWMParam_Data(WMParam_Data &WMParam_data);
+    void getWMParam_Data(WMParam_Data& WMParam_data);
     //////
  
     const char *getID();
@@ -387,7 +431,8 @@ class ESPAsync_WMParameter
     
     const char *_customHTML;
 
-    void init(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
+    void init(const char *id, const char *placeholder, const char *defaultValue, const int& length, 
+              const char *custom, const int& labelPlacement);
 
     friend class ESPAsync_WiFiManager;
 };
@@ -459,19 +504,19 @@ class ESPAsync_WiFiManager
     //sets timeout before webserver loop ends and exits even if there has been no setup.
     //usefully for devices that failed to connect at some point and got stuck in a webserver loop
     //in seconds setConfigPortalTimeout is a new name for setTimeout
-    void          setConfigPortalTimeout(unsigned long seconds);
-    void          setTimeout(unsigned long seconds);
+    void          setConfigPortalTimeout(const unsigned long& seconds);
+    void          setTimeout(const unsigned long& seconds);
 
     //sets timeout for which to attempt connecting, usefull if you get a lot of failed connects
-    void          setConnectTimeout(unsigned long seconds);
+    void          setConnectTimeout(const unsigned long& seconds);
 
 
     void          setDebugOutput(bool debug);
     //defaults to not showing anything under 8% signal quality if called
-    void          setMinimumSignalQuality(int quality = 8);
+    void          setMinimumSignalQuality(const int& quality = 8);
     
     // To enable dynamic/random channel
-    int           setConfigPortalChannel(int channel = 1);
+    int           setConfigPortalChannel(const int& channel = 1);
     //////
     
     //sets a custom ip /gateway /subnet configuration
@@ -479,15 +524,15 @@ class ESPAsync_WiFiManager
     
     // KH, new using struct
     void          setAPStaticIPConfig(const WiFi_AP_IPConfig&  WM_AP_IPconfig);
-    void          getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig);
+    void          getAPStaticIPConfig(WiFi_AP_IPConfig& WM_AP_IPconfig);
     //////
     
     //sets config for a static IP
     void          setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn);
     
     // KH, new using struct
-    void          setSTAStaticIPConfig(const WiFi_STA_IPConfig&  WM_STA_IPconfig);
-    void          getSTAStaticIPConfig(WiFi_STA_IPConfig  &WM_STA_IPconfig);
+    void          setSTAStaticIPConfig(const WiFi_STA_IPConfig& WM_STA_IPconfig);
+    void          getSTAStaticIPConfig(WiFi_STA_IPConfig& WM_STA_IPconfig);
     //////
 
 #if USE_CONFIGURABLE_DNS
@@ -546,7 +591,7 @@ class ESPAsync_WiFiManager
     
     #define MAX_WIFI_CREDENTIALS        2
     
-    String				getSSID(uint8_t index) 
+    String				getSSID(const uint8_t& index) 
     {
       if (index == 0)
         return _ssid;
@@ -556,7 +601,7 @@ class ESPAsync_WiFiManager
         return String("");
     }
     
-    String				getPW(uint8_t index) 
+    String				getPW(const uint8_t& index) 
     {
       if (index == 0)
         return _pass;
@@ -588,7 +633,7 @@ class ESPAsync_WiFiManager
     // returns the Parameters Count
     int           getParametersCount();
 
-    const char*   getStatus(int status);
+    const char*   getStatus(const int& status);
 
 #ifdef ESP32
     String getStoredWiFiSSID();
@@ -791,13 +836,13 @@ class ESPAsync_WiFiManager
     void          handleNotFound(AsyncWebServerRequest *request);
     bool          captivePortal(AsyncWebServerRequest *request);   
     
-    void          reportStatus(String &page);
+    void          reportStatus(String& page);
 
     // DNS server
     const byte    DNS_PORT = 53;
 
     //helpers
-    int           getRSSIasQuality(int RSSI);
+    int           getRSSIasQuality(const int& RSSI);
     bool          isIp(const String& str);
     String        toStringIp(const IPAddress& ip);
 
