@@ -780,7 +780,7 @@ IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 #define HTTP_PORT           80
 
 AsyncWebServer webServer(HTTP_PORT);
-DNSServer dnsServer;
+AsyncDNSServer dnsServer;
 
 ///////////////////////////////////////////
 // New in v1.4.0
@@ -1222,7 +1222,7 @@ void printLocalTime()
 #define HTTP_PORT           80
 
 AsyncWebServer webServer(HTTP_PORT);
-DNSServer dnsServer;
+AsyncDNSServer dnsServer;
 
 ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer);
 ```

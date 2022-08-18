@@ -346,7 +346,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   {
     dnsServer->setErrorReplyCode(AsyncDNSReplyCode::NoError);
     
-    // DNSServer started with "*" domain name, all DNS requests will be passsed to WiFi.softAPIP()
+    // AsyncDNSServer started with "*" domain name, all DNS requests will be passsed to WiFi.softAPIP()
     if (! dnsServer->start(DNS_PORT, "*", WiFi.softAPIP()))
     {
       // No socket available
