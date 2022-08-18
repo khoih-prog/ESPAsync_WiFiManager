@@ -265,10 +265,11 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
  2. [`ESP8266 Core 3.0.2+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
  3. [`ESP32 Core 2.0.2+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
  4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You have to use the latest [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged.
- 5. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
- 6. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
- 7. [`ESP_DoubleResetDetector v1.3.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
- 8. [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS with ESP32 core v1.0.4-. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32). **Notice**: This [`LittleFS_esp32 library`](https://github.com/lorol/LITTLEFS) has been integrated to Arduino [ESP32 core v1.0.6+](https://github.com/espressif/arduino-esp32/tree/master/libraries/LITTLEFS) and you don't need to install it if using ESP32 core v1.0.6+
+ 5. [`ESPAsyncDNSServer v1.0.0+`](https://github.com/devyte/ESPAsyncDNSServer) for all ESP32/ESP8266-based boards.
+ 6. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
+ 7. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
+ 8. [`ESP_DoubleResetDetector v1.3.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
+ 9. [`LittleFS_esp32 v1.0.6+`](https://github.com/lorol/LITTLEFS) for ESP32-based boards using LittleFS with ESP32 core v1.0.4-. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/LittleFS_esp32.svg?)](https://www.ardu-badge.com/LittleFS_esp32). **Notice**: This [`LittleFS_esp32 library`](https://github.com/lorol/LITTLEFS) has been integrated to Arduino [ESP32 core v1.0.6+](https://github.com/espressif/arduino-esp32/tree/master/libraries/LITTLEFS) and you don't need to install it if using ESP32 core v1.0.6+
  
 ---
 ---
@@ -780,7 +781,7 @@ IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 #define HTTP_PORT           80
 
 AsyncWebServer webServer(HTTP_PORT);
-DNSServer dnsServer;
+AsyncDNSServer dnsServer;
 
 ///////////////////////////////////////////
 // New in v1.4.0
@@ -1222,7 +1223,7 @@ void printLocalTime()
 #define HTTP_PORT           80
 
 AsyncWebServer webServer(HTTP_PORT);
-DNSServer dnsServer;
+AsyncDNSServer dnsServer;
 
 ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer);
 ```

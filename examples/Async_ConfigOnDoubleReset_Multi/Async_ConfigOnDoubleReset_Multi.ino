@@ -128,7 +128,7 @@ void setup()
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "AsyncConfigOnDoubleReset");
 #else
-  DNSServer dnsServer;
+  AsyncDNSServer dnsServer;
 
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "AsyncConfigOnDoubleReset");
 #endif

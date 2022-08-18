@@ -204,7 +204,7 @@
   #include <ESPAsyncWebServer.h>
 #endif
 
-#include <DNSServer.h>
+#include <ESPAsyncDNSServer.h>
 #include <memory>
 #undef min
 #undef max
@@ -470,7 +470,7 @@ class ESPAsync_WiFiManager
 {
   public:
 
-    ESPAsync_WiFiManager(AsyncWebServer * webserver, DNSServer *dnsserver, const char *iHostname = "");
+    ESPAsync_WiFiManager(AsyncWebServer * webserver, AsyncDNSServer *dnsserver, const char *iHostname = "");
 
     ~ESPAsync_WiFiManager();
     
@@ -736,7 +736,7 @@ class ESPAsync_WiFiManager
 
   private:
   
-    DNSServer      *dnsServer;
+    AsyncDNSServer      *dnsServer;
 
     AsyncWebServer *server;
 

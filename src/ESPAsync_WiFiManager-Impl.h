@@ -182,7 +182,7 @@ char* ESPAsync_WiFiManager::getRFC952_hostname(const char* iHostname)
 
 //////////////////////////////////////////
 
-ESPAsync_WiFiManager::ESPAsync_WiFiManager(AsyncWebServer * webserver, DNSServer *dnsserver, const char *iHostname)
+ESPAsync_WiFiManager::ESPAsync_WiFiManager(AsyncWebServer * webserver, AsyncDNSServer *dnsserver, const char *iHostname)
 {
 
   server    = webserver;
@@ -328,7 +328,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   #endif
 
   if (!dnsServer)
-    dnsServer = new DNSServer;
+    dnsServer = new AsyncDNSServer;
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   // optional soft ip config
@@ -344,9 +344,9 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   /* Setup the DNS server redirecting all the domains to the apIP */
   if (dnsServer)
   {
-    dnsServer->setErrorReplyCode(DNSReplyCode::NoError);
+    dnsServer->setErrorReplyCode(AsyncDNSReplyCode::NoError);
     
-    // DNSServer started with "*" domain name, all DNS requests will be passsed to WiFi.softAPIP()
+    // AsyncDNSServer started with "*" domain name, all DNS requests will be passsed to WiFi.softAPIP()
     if (! dnsServer->start(DNS_PORT, "*", WiFi.softAPIP()))
     {
       // No socket available
@@ -756,9 +756,6 @@ void ESPAsync_WiFiManager::criticalLoop()
 
 void ESPAsync_WiFiManager::safeLoop()
 {
-  #ifndef USE_EADNS	
-  dnsServer->processNextRequest();
-  #endif
 }
 
 ///////////////////////////////////////////////////////////
@@ -807,10 +804,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )   
     // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
     delay(1);
-#else
-    //DNS
-    if (dnsServer)
-      dnsServer->processNextRequest();    
+#else 
     
     //
     //  we should do a scan every so often here and
