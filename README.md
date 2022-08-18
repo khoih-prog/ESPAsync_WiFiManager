@@ -263,9 +263,9 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 
  1. [`Arduino IDE 1.8.19+` for Arduino](https://github.com/arduino/Arduino). [![GitHub release](https://img.shields.io/github/release/arduino/Arduino.svg)](https://github.com/arduino/Arduino/releases/latest)
  2. [`ESP8266 Core 3.0.2+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
- 3. [`ESP32 Core 2.0.2+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
+ 3. [`ESP32 Core 2.0.4+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
  4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You have to use the latest [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged.
- 5. [`ESPAsyncDNSServer v1.0.0+`](https://github.com/devyte/ESPAsyncDNSServer) for all ESP32/ESP8266-based boards.
+ 5. [`ESPAsyncDNSServer v1.0.0+`](https://github.com/devyte/ESPAsyncDNSServer) or [`ESPAsyncDNSServer v1.0.0+`](https://github.com/khoih-prog/ESPAsyncDNSServer/releases/tag/v1.0.0) for all ESP32/ESP8266-based boards.
  6. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards.
  7. [`AsyncTCP v1.1.1+`](https://github.com/me-no-dev/AsyncTCP) for ESP32-based boards 
  8. [`ESP_DoubleResetDetector v1.3.1+`](https://github.com/khoih-prog/ESP_DoubleResetDetector) if using DRD feature. To install, check [![arduino-library-badge](https://www.ardu-badge.com/badge/ESP_DoubleResetDetector.svg?)](https://www.ardu-badge.com/ESP_DoubleResetDetector). Use v1.1.0+ if using LittleFS for EP32.
@@ -277,6 +277,7 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 ## Installation
 
 ### Use Arduino Library Manager
+
 The best and easiest way is to use `Arduino Library Manager`. Search for `ESPAsync_WiFiManager`, then select / install the latest version. You can also use this link [![arduino-library-badge](https://www.ardu-badge.com/badge/ESPAsync_WiFiManager.svg?)](https://www.ardu-badge.com/ESPAsync_WiFiManager) for more detailed instructions.
 
 ### Manual Install
@@ -495,7 +496,7 @@ then connect WebBrowser to configurable ConfigPortal IP address, default is 192.
 
   #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
   //needed for library
-  #include <DNSServer.h>
+  #include <ESPAsyncDNSServer.h>
 
   // From v1.1.1
   #include <ESP8266WiFiMulti.h>
@@ -643,7 +644,7 @@ WM_Config         WM_config;
 
   #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
   //needed for library
-  #include <DNSServer.h>
+  #include <ESPAsyncDNSServer.h>
 
   // From v1.1.1
   #include <ESP8266WiFiMulti.h>
@@ -2178,8 +2179,8 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
 
 ### Example [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr)
 
-https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/76ad904f63512b3a52f5fe00cc74c47d6ea6e49d/examples/Async_ConfigOnDRD_FS_MQTT_Ptr/Async_ConfigOnDRD_FS_MQTT_Ptr.ino#L17-L1408
 
+https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/b85697b9ce88ae46aaa19dd3e23985dcbc7d5103/examples/Async_ConfigOnDRD_FS_MQTT_Ptr/Async_ConfigOnDRD_FS_MQTT_Ptr.ino#L17-L1408
 
 ---
 ---
@@ -2194,7 +2195,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 Config File not found
 Can't read Config File, using default values
@@ -2213,7 +2214,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 Config File not found
 Can't read Config File, using default values
@@ -2301,7 +2302,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -2341,7 +2342,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -2431,7 +2432,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -2490,7 +2491,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -2550,7 +2551,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -2628,7 +2629,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -2739,7 +2740,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -2776,7 +2777,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -2818,7 +2819,7 @@ Local Date/Time: Thu Feb 10 23:50:26 2022
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -2867,7 +2868,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -2940,7 +2941,7 @@ Local Date/Time: Thu Feb 10 23:16:26 2022
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -2999,7 +3000,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using SPIFFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -3045,7 +3046,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S3_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -3088,7 +3089,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.12.2
+ESPAsync_WiFiManager v1.13.0
 ESP_DoubleResetDetector v1.3.1
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -3180,6 +3181,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 17. Thanks to [Francisco Trillo](https://github.com/Frtrillo) for reporting [Not working with ESP32 and Core 2.0.1 (or 2.0.0+) #74](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/74) leading to v1.9.5
 18. Thanks to [Dean Ott](https://github.com/deanjott) for reporting [WiFiManager works only on port 80 #75](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/75) and providing the solution leading to v1.9.7
 19. Thanks to [Twaste](https://github.com/Twaste) for initiate the discussion in [Different behaviour using the src_cpp or src_h lib #80](https://github.com/khoih-prog/ESPAsync_WiFiManager/discussions/80) and providing the idea to the solution, to fix `multiple-definitions` linker error, leading to v1.10.0
+20. Thanks to [Zongyi Yang](https://github.com/ZongyiYang) for creating merged PR [Fixes Captive Portal hanging depending on active core for AsyncTCP #100 #104](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/104).
 
 
 <table>
@@ -3212,6 +3214,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
     <td align="center"><a href="https://github.com/Frtrillo"><img src="https://github.com/Frtrillo.png" width="100px;" alt="Frtrillo"/><br /><sub><b>Francisco Trillo</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/deanjott"><img src="https://github.com/deanjott.png" width="100px;" alt="deanjott"/><br /><sub><b>Dean Ott</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/Twaste"><img src="https://github.com/Twaste.png" width="100px;" alt="Twaste"/><br /><sub><b>Twaste</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/ZongyiYang"><img src="https://github.com/ZongyiYang.png" width="100px;" alt="ZongyiYang"/><br /><sub><b>Zongyi Yang</b></sub></a><br /></td>
   </tr>
 </table>
 
@@ -3220,6 +3223,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 ### Contributing
 
 If you want to contribute to this project:
+
 - Report bugs and errors
 - Ask for enhancements
 - Create issues and pull requests
