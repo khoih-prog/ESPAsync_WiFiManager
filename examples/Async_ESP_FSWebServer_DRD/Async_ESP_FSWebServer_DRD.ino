@@ -42,7 +42,7 @@
 
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
-#include <DNSServer.h>
+#include <ESPAsyncDNSServer.h>
 #include <ESP8266mDNS.h>
 
 // From v1.1.0
@@ -241,7 +241,7 @@ String host = "async-esp8266fs";
 #define HTTP_PORT     80
 
 AsyncWebServer server(HTTP_PORT);
-DNSServer dnsServer;
+AsyncDNSServer dnsServer;
 
 AsyncEventSource events("/events");
 

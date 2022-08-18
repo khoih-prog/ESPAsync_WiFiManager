@@ -102,7 +102,7 @@
 
   #include <ESP8266WiFi.h>          //https://github.com/esp8266/Arduino
   //needed for library
-  #include <DNSServer.h>
+  #include <ESPAsyncDNSServer.h>
 
   // From v1.1.1
   #include <ESP8266WiFiMulti.h>
@@ -810,7 +810,7 @@ void setup()
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, NULL, "AutoConnect-FSParams");
 #else
-  DNSServer dnsServer;
+  AsyncDNSServer dnsServer;
   
   ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "AutoConnect-FSParams");
 #endif

@@ -261,7 +261,7 @@ String host = "async-esp32fs";
 #define HTTP_PORT     80
 
 AsyncWebServer server(HTTP_PORT);
-//DNSServer dnsServer;
+//AsyncDNSServer dnsServer;
 
 AsyncEventSource events("/events");
 
@@ -710,7 +710,7 @@ void setup()
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   ESPAsync_WiFiManager ESPAsync_wifiManager(&server, NULL, "AsyncESP32-FSWebServer");
 #else
-  DNSServer dnsServer;
+  AsyncDNSServer dnsServer;
   
   ESPAsync_WiFiManager ESPAsync_wifiManager(&server, &dnsServer, "AsyncESP32-FSWebServer");
 #endif
