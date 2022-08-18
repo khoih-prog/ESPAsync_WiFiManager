@@ -53,7 +53,7 @@
 
 ### Releases v1.13.0
 
-1. Using AsynsDNSServer instead of DNSServer. Check [Captive Portal hanging depending on active core for AsyncTCP #100](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/100)
+1. Using AsyncDNSServer instead of DNSServer. Check [Captive Portal hanging depending on active core for AsyncTCP #100](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/100)
 
 
 ### Releases v1.12.2
