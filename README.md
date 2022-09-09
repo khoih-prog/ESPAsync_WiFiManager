@@ -3222,7 +3222,6 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
     <td align="center"><a href="https://github.com/yiancar"><img src="https://github.com/yiancar.png" width="100px;" alt="yiancar"/><br /><sub><b>yiancar</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/increpare"><img src="https://github.com/increpare.png" width="100px;" alt="increpare"/><br /><sub><b>Stephen Lavelle</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/benpeart"><img src="https://github.com/benpeart.png" width="100px;" alt="benpeart"/><br /><sub><b>Ben Peart</b></sub></a><br /></td>
-    <td align="center"><a href="https://github.com/MattiaCC93"><img src="https://github.com/MattiaCC93.png" width="100px;" alt="MattiaCC93"/><br /><sub><b>MattiaCC93</b></sub></a><br /></td>
   </tr>
   <tr>
     <td align="center"><a href="https://github.com/eth0up"><img src="https://github.com/eth0up.png" width="100px;" alt="eth0up"/><br /><sub><b>eth0up</b></sub></a><br /></td>
@@ -3230,6 +3229,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
     <td align="center"><a href="https://github.com/deanjott"><img src="https://github.com/deanjott.png" width="100px;" alt="deanjott"/><br /><sub><b>Dean Ott</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/Twaste"><img src="https://github.com/Twaste.png" width="100px;" alt="Twaste"/><br /><sub><b>Twaste</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/ZongyiYang"><img src="https://github.com/ZongyiYang.png" width="100px;" alt="ZongyiYang"/><br /><sub><b>Zongyi Yang</b></sub></a><br /></td>
+    <td align="center"><a href="https://github.com/MattiaCC93"><img src="https://github.com/MattiaCC93.png" width="100px;" alt="MattiaCC93"/><br /><sub><b>MattiaCC93</b></sub></a><br /></td>
   </tr>
 </table>
 
