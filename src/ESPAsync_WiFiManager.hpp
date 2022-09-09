@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.13.0
+  Version: 1.14.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,6 +27,7 @@
   1.12.1  K Hoang      11/02/2022 Add LittleFS support to ESP32-C3. Use core LittleFS instead of Lorol's LITTLEFS for v2.0.0+
   1.12.2  K Hoang      13/03/2022 Optimize code by using passing by `reference` instead of by `value`
   1.13.0  K Hoang      18/08/2022 Using AsynsDNSServer instead of DNSServer
+  1.14.0  K Hoang      09/09/2022 Fix ESP32 chipID and add ESP_getChipOUI()
  *****************************************************************************************************************************/
 
 #pragma once
@@ -70,13 +71,13 @@
   #define USING_ESP32_S3        true   
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.13.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.14.0"
 
 #define ESP_ASYNC_WIFIMANAGER_VERSION_MAJOR     1
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MINOR     13
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MINOR     14
 #define ESP_ASYNC_WIFIMANAGER_VERSION_PATCH     0
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1013000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1014000
 
 #if ESP8266
   #if (ARDUINO_ESP8266_GIT_VER == 0xcf6ff4c4)
@@ -227,8 +228,18 @@
   
   #define ESP_getChipId()   (ESP.getChipId())
 #else		//ESP32
+
   #include <esp_wifi.h>
-  #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
+  
+  uint32_t getChipID();
+  uint32_t getChipOUI();
+   
+  #if defined(ESP_getChipId)
+    #undef ESP_getChipId
+  #endif
+  
+  #define ESP_getChipId()  	getChipID()
+  #define ESP_getChipOUI() 	getChipOUI()
 #endif
 
 typedef struct

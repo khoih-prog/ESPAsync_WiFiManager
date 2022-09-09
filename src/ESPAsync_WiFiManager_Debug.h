@@ -14,7 +14,7 @@
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
   
-  Version: 1.13.0
+  Version: 1.14.0
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -27,6 +27,7 @@
   1.12.1  K Hoang      11/02/2022 Add LittleFS support to ESP32-C3. Use core LittleFS instead of Lorol's LITTLEFS for v2.0.0+
   1.12.2  K Hoang      13/03/2022 Optimize code by using passing by `reference` instead of by `value`
   1.13.0  K Hoang      18/08/2022 Using AsynsDNSServer instead of DNSServer
+  1.14.0  K Hoang      09/09/2022 Fix ESP32 chipID and add ESP_getChipOUI()
  *****************************************************************************************************************************/
 
 #pragma once

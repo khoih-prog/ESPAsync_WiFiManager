@@ -31,8 +31,8 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.12.2"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1012002
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.14.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1014000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    2
@@ -109,8 +109,6 @@
     #define FS_Name       "FFat"
   #endif
   //////
-
-  #define ESP_getChipId()   ((uint32_t)ESP.getEfuseMac())
 
   #define LED_BUILTIN       2
   #define LED_ON            HIGH
@@ -227,15 +225,6 @@ char custom_AIO_KEY[custom_AIO_KEY_LEN];
 void MQTT_connect();
 bool readConfigFile();
 bool writeConfigFile();
-
-// For Config Portal
-// SSID and PW for Config Portal
-String ssid = "ESP_" + String(ESP_getChipId(), HEX);
-String password;
-
-// SSID and PW for your Router
-String Router_SSID;
-String Router_Pass;
 
 // From v1.1.1
 // You only need to format the filesystem once
@@ -377,6 +366,15 @@ IPAddress APStaticSN  = IPAddress(255, 255, 255, 0);
 
 // Redundant, for v1.10.0 only
 //#include <ESPAsync_WiFiManager-Impl.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
+
+// For Config Portal
+// SSID and PW for Config Portal
+String ssid = "ESP_" + String(ESP_getChipId(), HEX);
+String password;
+
+// SSID and PW for your Router
+String Router_SSID;
+String Router_Pass;
 
 ////////////////
 // Create WMParam_Data
