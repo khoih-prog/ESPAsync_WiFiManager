@@ -66,9 +66,6 @@
   #define USING_ETC_GMT      false
 #endif
 
-
-
-
 ////////////////////////////////////////////////////
 
 #define TZ_Africa_Abidjan	("GMT0")
@@ -845,7 +842,6 @@ static const char TZ_NAME[][TIMEZONE_MAX_LEN] /*PROGMEM*/ =
   "Asia/Yerevan",               //PSTR("<+04>-4")
 #endif
 
-
 #if USING_ATLANTIC  
   "Atlantic/Azores",            //PSTR("<-01>1<+00>",M3.5.0/0",M10.5.0/1")
   "Atlantic/Bermuda",           //PSTR("AST4ADT",M3.2.0",M11.1.0")
@@ -1089,7 +1085,6 @@ static const char ESP_TZ_NAME[][TIMEZONE_MAX_LEN] /*PROGMEM*/ =
   TZ_Africa_Tunis,  //PSTR("CET-1")
   TZ_Africa_Windhoek,  //PSTR("CAT-2")
 #endif
-
 
 #if USING_AMERICA  
   TZ_America_Adak,  //PSTR("HST10HDT,M3.2.0,M11.1.0")
@@ -1447,7 +1442,6 @@ static const char ESP_TZ_NAME[][TIMEZONE_MAX_LEN] /*PROGMEM*/ =
   TZ_Indian_Mayotte,  //PSTR("EAT-3")
   TZ_Indian_Reunion,  //PSTR("<+04>-4")
 #endif
-
 
 #if USING_PACIFIC  
   TZ_Pacific_Apia,  //PSTR("<+13>-13<+14>,M9.5.0/3,M4.1.0/4")

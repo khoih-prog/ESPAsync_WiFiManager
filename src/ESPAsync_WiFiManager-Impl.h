@@ -5,7 +5,7 @@
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
   configuration and reconfiguration of WiFi credentials using a Captive Portal.
 
-  Modified from 
+  Modified from
   1. Tzapu               (https://github.com/tzapu/WiFiManager)
   2. Ken Taylor          (https://github.com/kentaylor)
   3. Alan Steremberg     (https://github.com/alanswx/ESPAsyncWiFiManager)
@@ -13,8 +13,8 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  
-  Version: 1.14.0
+
+  Version: 1.14.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -28,6 +28,7 @@
   1.12.2  K Hoang      13/03/2022 Optimize code by using passing by `reference` instead of by `value`
   1.13.0  K Hoang      18/08/2022 Using AsynsDNSServer instead of DNSServer
   1.14.0  K Hoang      09/09/2022 Fix ESP32 chipID and add ESP_getChipOUI()
+  1.14.1  K Hoang      15/09/2022 Remove dependency on ESP_AsyncWebServer, ESPAsyncTCP and AsyncTCP in `library.properties`
  *****************************************************************************************************************************/
 
 #pragma once
@@ -48,21 +49,26 @@ ESPAsync_WMParameter::ESPAsync_WMParameter(const char *custom)
   _customHTML = custom;
 }
 
-ESPAsync_WMParameter::ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, 
-                                           const int& length, const char *custom, const int& labelPlacement)
+//////////////////////////////////////////
+
+ESPAsync_WMParameter::ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue,
+    const int& length, const char *custom, const int& labelPlacement)
 {
   init(id, placeholder, defaultValue, length, custom, labelPlacement);
 }
 
-// KH, using struct                      
+//////////////////////////////////////////
+
+// KH, using struct
 ESPAsync_WMParameter::ESPAsync_WMParameter(const WMParam_Data& WMParam_data)
 {
-  init(WMParam_data._id, WMParam_data._placeholder, WMParam_data._value, 
+  init(WMParam_data._id, WMParam_data._placeholder, WMParam_data._value,
        WMParam_data._length, "", WMParam_data._labelPlacement);
-}                  
-//////
+}
 
-void ESPAsync_WMParameter::init(const char *id, const char *placeholder, const char *defaultValue, 
+//////////////////////////////////////////
+
+void ESPAsync_WMParameter::init(const char *id, const char *placeholder, const char *defaultValue,
                                 const int& length, const char *custom, const int& labelPlacement)
 {
   _WMParam_data._id = id;
@@ -81,9 +87,11 @@ void ESPAsync_WMParameter::init(const char *id, const char *placeholder, const c
       strncpy(_WMParam_data._value, defaultValue, _WMParam_data._length);
     }
   }
-  
+
   _customHTML = custom;
 }
+
+//////////////////////////////////////////
 
 ESPAsync_WMParameter::~ESPAsync_WMParameter()
 {
@@ -93,66 +101,84 @@ ESPAsync_WMParameter::~ESPAsync_WMParameter()
   }
 }
 
+//////////////////////////////////////////
+
 // Using Struct to get/set whole data at once
 void ESPAsync_WMParameter::setWMParam_Data(const WMParam_Data& WMParam_data)
 {
   LOGINFO(F("setWMParam_Data"));
-  
+
   memcpy(&_WMParam_data, &WMParam_data, sizeof(_WMParam_data));
 }
+
+//////////////////////////////////////////
 
 void ESPAsync_WMParameter::getWMParam_Data(WMParam_Data& WMParam_data)
 {
   LOGINFO(F("getWMParam_Data"));
-  
+
   memcpy(&WMParam_data, &_WMParam_data, sizeof(WMParam_data));
 }
-//////
+
+//////////////////////////////////////////
 
 const char* ESPAsync_WMParameter::getValue()
 {
   return _WMParam_data._value;
 }
 
+//////////////////////////////////////////
+
 const char* ESPAsync_WMParameter::getID()
 {
   return _WMParam_data._id;
 }
+
+//////////////////////////////////////////
+
 const char* ESPAsync_WMParameter::getPlaceholder()
 {
   return _WMParam_data._placeholder;
 }
+
+//////////////////////////////////////////
 
 int ESPAsync_WMParameter::getValueLength()
 {
   return _WMParam_data._length;
 }
 
+//////////////////////////////////////////
+
 int ESPAsync_WMParameter::getLabelPlacement()
 {
   return _WMParam_data._labelPlacement;
 }
+
+//////////////////////////////////////////
+
 const char* ESPAsync_WMParameter::getCustomHTML()
 {
   return _customHTML;
 }
 
+//////////////////////////////////////////
+
 /**
    [getParameters description]
    @access public
 */
-ESPAsync_WMParameter** ESPAsync_WiFiManager::getParameters() 
+ESPAsync_WMParameter** ESPAsync_WiFiManager::getParameters()
 {
   return _params;
 }
-
 /////////////////////////////////////////////////////////////////////////////
 
 /**
    [getParametersCount description]
    @access public
 */
-int ESPAsync_WiFiManager::getParametersCount() 
+int ESPAsync_WiFiManager::getParametersCount()
 {
   return _paramsCount;
 }
@@ -175,6 +201,7 @@ char* ESPAsync_WiFiManager::getRFC952_hostname(const char* iHostname)
       j++;
     }
   }
+  
   // no '-' as last char
   if (isalnum(iHostname[len - 1]) || (iHostname[len - 1] != '-'))
     RFC952_hostname[j] = iHostname[len - 1];
@@ -189,17 +216,17 @@ ESPAsync_WiFiManager::ESPAsync_WiFiManager(AsyncWebServer * webserver, AsyncDNSS
 
   server    = webserver;
   dnsServer = dnsserver;
-  
+
   wifiSSIDs     = NULL;
-  
+
   // KH
   wifiSSIDscan  = true;
   //wifiSSIDscan  = false;
   //////
-  
+
   _modeless     = false;
   shouldscan    = true;
-  
+
 #if USE_DYNAMIC_PARAMS
   _max_params = WIFI_MANAGER_MAX_PARAMS;
   _params = (ESPAsync_WMParameter**)malloc(_max_params * sizeof(ESPAsync_WMParameter*));
@@ -213,9 +240,10 @@ ESPAsync_WiFiManager::ESPAsync_WiFiManager(AsyncWebServer * webserver, AsyncDNSS
   {
 #ifdef ESP8266
     String _hostname = "ESP8266-" + String(ESP.getChipId(), HEX);
-#else		//ESP32
+#else    //ESP32
     String _hostname = "ESP32-" + String(ESP_getChipId(), HEX);
 #endif
+
     _hostname.toUpperCase();
 
     getRFC952_hostname(_hostname.c_str());
@@ -267,9 +295,9 @@ void ESPAsync_WiFiManager::addParameter(ESPAsync_WMParameter *p)
   {
     // rezise the params array
     _max_params += WIFI_MANAGER_MAX_PARAMS;
-    
+
     LOGINFO1(F("Increasing _max_params to:"), _max_params);
-    
+
     ESPAsync_WMParameter** new_params = (ESPAsync_WMParameter**)realloc(_params, _max_params * sizeof(ESPAsync_WMParameter*));
 
     if (new_params != NULL)
@@ -279,16 +307,16 @@ void ESPAsync_WiFiManager::addParameter(ESPAsync_WMParameter *p)
     else
     {
       LOGINFO(F("ERROR: failed to realloc params, size not increased!"));
- 
+
       return false;
     }
   }
 
   _params[_paramsCount] = p;
   _paramsCount++;
-  
+
   LOGINFO1(F("Adding parameter"), p->getID());
-  
+
   return true;
 
 #else
@@ -298,7 +326,7 @@ void ESPAsync_WiFiManager::addParameter(ESPAsync_WMParameter *p)
   {
     _params[_paramsCount] = p;
     _paramsCount++;
-     
+
     LOGINFO1(F("Adding parameter"), p->getID());
   }
   else
@@ -322,12 +350,12 @@ void ESPAsync_WiFiManager::setupConfigPortal()
     WiFi.setAutoConnect(1);
 
 #if !( USING_ESP32_S2 || USING_ESP32_C3 )
-  #ifdef ESP8266
-    // KH, mod for Async
-    server->reset();
-  #else		//ESP32
-    server->reset();
-  #endif
+#ifdef ESP8266
+  // KH, mod for Async
+  server->reset();
+#else   //ESP32
+  server->reset();
+#endif
 
   if (!dnsServer)
     dnsServer = new AsyncDNSServer;
@@ -339,7 +367,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   if (_WiFi_AP_IPconfig._ap_static_ip)
   {
     LOGWARN3(F("Custom AP IP/GW/Subnet = "), _WiFi_AP_IPconfig._ap_static_ip, _WiFi_AP_IPconfig._ap_static_gw, _WiFi_AP_IPconfig._ap_static_sn);
-    
+
     WiFi.softAPConfig(_WiFi_AP_IPconfig._ap_static_ip, _WiFi_AP_IPconfig._ap_static_gw, _WiFi_AP_IPconfig._ap_static_sn);
   }
 
@@ -347,7 +375,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   if (dnsServer)
   {
     dnsServer->setErrorReplyCode(AsyncDNSReplyCode::NoError);
-    
+
     // AsyncDNSServer started with "*" domain name, all DNS requests will be passsed to WiFi.softAPIP()
     if (! dnsServer->start(DNS_PORT, "*", WiFi.softAPIP()))
     {
@@ -355,7 +383,7 @@ void ESPAsync_WiFiManager::setupConfigPortal()
       LOGERROR(F("Can't start DNS Server. No available socket"));
     }
   }
-  
+
   _configPortalStart = millis();
 
   LOGWARN1(F("\nConfiguring AP SSID ="), _apName);
@@ -366,13 +394,14 @@ void ESPAsync_WiFiManager::setupConfigPortal()
     {
       // fail passphrase to short or long!
       LOGERROR(F("Invalid AccessPoint password. Ignoring"));
-      
+
       _apPassword = NULL;
     }
+    
     LOGWARN1(F("AP PWD ="), _apPassword);
   }
-  
-  
+
+
   // KH, To enable dynamic/random channel
   static int channel;
   // Use random channel if  _WiFiAPChannel == 0
@@ -380,11 +409,11 @@ void ESPAsync_WiFiManager::setupConfigPortal()
     channel = (_configPortalStart % MAX_WIFI_CHANNEL) + 1;
   else
     channel = _WiFiAPChannel;
-  
+
   if (_apPassword != NULL)
   {
     LOGWARN1(F("AP Channel ="), channel);
-    
+
     //WiFi.softAP(_apName, _apPassword);//password option
     WiFi.softAP(_apName, _apPassword, channel);
   }
@@ -394,13 +423,13 @@ void ESPAsync_WiFiManager::setupConfigPortal()
     WiFi.softAP(_apName);
   }
   //////
-  
+
   delay(500); // Without delay I've seen the IP address blank
-  
+
   LOGWARN1(F("AP IP address ="), WiFi.softAPIP());
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-  
+
   server->on("/",         std::bind(&ESPAsync_WiFiManager::handleRoot,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/wifi",     std::bind(&ESPAsync_WiFiManager::handleWifi,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/wifisave", std::bind(&ESPAsync_WiFiManager::handleWifiSave,    this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
@@ -410,11 +439,11 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   server->on("/state",    std::bind(&ESPAsync_WiFiManager::handleState,       this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->on("/scan",     std::bind(&ESPAsync_WiFiManager::handleScan,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
-  server->on("/fwlink",   std::bind(&ESPAsync_WiFiManager::handleRoot,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);  
+  server->on("/fwlink",   std::bind(&ESPAsync_WiFiManager::handleRoot,        this, std::placeholders::_1)).setFilter(ON_AP_FILTER);
   server->onNotFound (std::bind(&ESPAsync_WiFiManager::handleNotFound,        this, std::placeholders::_1));
-  
+
   server->begin(); // Web server start
-  
+
   LOGWARN(F("HTTP server started"));
 }
 
@@ -424,7 +453,7 @@ bool ESPAsync_WiFiManager::autoConnect()
 {
 #ifdef ESP8266
   String ssid = "ESP_" + String(ESP.getChipId());
-#else		//ESP32
+#else   //ESP32
   String ssid = "ESP_" + String(ESP_getChipId());
 #endif
 
@@ -438,7 +467,6 @@ bool ESPAsync_WiFiManager::autoConnect()
   See some discussion at https://github.com/tzapu/WiFiManager/issues/68
 */
 
-
 //////////////////////////////////////////
 
 bool ESPAsync_WiFiManager::autoConnect(char const *apName, char const *apPassword)
@@ -450,9 +478,9 @@ bool ESPAsync_WiFiManager::autoConnect(char const *apName, char const *apPasswor
 #else
   LOGINFO(F("\nAutoConnect using previously saved SSID/PW, but invalidate previous settings"));
   // Connect to previously saved SSID/PW, but invalidate previous settings
-  connectWifi(WiFi_SSID(), WiFi_Pass());  
+  connectWifi(WiFi_SSID(), WiFi_Pass());
 #endif
- 
+
   unsigned long startedAt = millis();
 
   while (millis() - startedAt < 10000)
@@ -463,10 +491,10 @@ bool ESPAsync_WiFiManager::autoConnect(char const *apName, char const *apPasswor
     if (WiFi.status() == WL_CONNECTED)
     {
       float waited = (millis() - startedAt);
-       
+
       LOGWARN1(F("Connected after waiting (s) :"), waited / 1000);
       LOGWARN1(F("Local ip ="), WiFi.localIP());
-      
+
       return true;
     }
   }
@@ -481,24 +509,24 @@ bool ESPAsync_WiFiManager::autoConnect(char const *apName, char const *apPasswor
 String ESPAsync_WiFiManager::networkListAsString()
 {
   String pager ;
-  
+
   //display networks in page
-  for (int i = 0; i < wifiSSIDCount; i++) 
+  for (int i = 0; i < wifiSSIDCount; i++)
   {
-    if (wifiSSIDs[i].duplicate == true) 
+    if (wifiSSIDs[i].duplicate == true)
       continue; // skip dups
-      
+
     int quality = getRSSIasQuality(wifiSSIDs[i].RSSI);
 
-    if (_minimumQuality == -1 || _minimumQuality < quality) 
+    if (_minimumQuality == -1 || _minimumQuality < quality)
     {
       String item = FPSTR(WM_HTTP_ITEM);
       String rssiQ;
-      
+
       rssiQ += quality;
       item.replace("{v}", wifiSSIDs[i].SSID);
       item.replace("{r}", rssiQ);
-      
+
 #if defined(ESP8266)
       if (wifiSSIDs[i].encryptionType != ENC_TYPE_NONE)
 #else
@@ -506,22 +534,20 @@ String ESPAsync_WiFiManager::networkListAsString()
 #endif
       {
         item.replace("{i}", "l");
-      } 
-      else 
+      }
+      else
       {
         item.replace("{i}", "");
       }
-      
-      pager += item;
 
-    } 
-    else 
+      pager += item;
+    }
+    else
     {
       LOGDEBUG(F("Skipping due to quality"));
     }
-
   }
-  
+
   return pager;
 }
 
@@ -531,9 +557,9 @@ String ESPAsync_WiFiManager::scanModal()
 {
   shouldscan = true;
   scan();
-  
+
   String pager = networkListAsString();
-  
+
   return pager;
 }
 
@@ -541,11 +567,11 @@ String ESPAsync_WiFiManager::scanModal()
 
 void ESPAsync_WiFiManager::scan()
 {
-  if (!shouldscan) 
+  if (!shouldscan)
     return;
-  
+
   LOGDEBUG(F("About to scan"));
-  
+
   if (wifiSSIDscan)
   {
     delay(100);
@@ -556,32 +582,32 @@ void ESPAsync_WiFiManager::scan()
     LOGDEBUG(F("Start scan"));
     wifi_ssid_count_t n = WiFi.scanNetworks(false, true);
     LOGDEBUG(F("Scan done"));
-    
-    if (n == WIFI_SCAN_FAILED) 
+
+    if (n == WIFI_SCAN_FAILED)
     {
       LOGDEBUG(F("WIFI_SCAN_FAILED!"));
     }
-    else if (n == WIFI_SCAN_RUNNING) 
+    else if (n == WIFI_SCAN_RUNNING)
     {
       LOGDEBUG(F("WIFI_SCAN_RUNNING!"));
-    } 
-    else if (n < 0) 
+    }
+    else if (n < 0)
     {
       LOGDEBUG(F("Failed, unknown error code!"));
-    } 
-    else if (n == 0) 
+    }
+    else if (n == 0)
     {
       LOGDEBUG(F("No network found"));
       // page += F("No networks found. Refresh to scan again.");
-    } 
-    else 
+    }
+    else
     {
       if (wifiSSIDscan)
       {
         /* WE SHOULD MOVE THIS IN PLACE ATOMICALLY */
-        if (wifiSSIDs) 
+        if (wifiSSIDs)
           delete [] wifiSSIDs;
-          
+
         wifiSSIDs     = new WiFiResult[n];
         wifiSSIDCount = n;
 
@@ -590,22 +616,22 @@ void ESPAsync_WiFiManager::scan()
 
         for (wifi_ssid_count_t i = 0; i < n; i++)
         {
-          wifiSSIDs[i].duplicate=false;
+          wifiSSIDs[i].duplicate = false;
 
 #if defined(ESP8266)
           WiFi.getNetworkInfo(i, wifiSSIDs[i].SSID, wifiSSIDs[i].encryptionType, wifiSSIDs[i].RSSI, wifiSSIDs[i].BSSID, wifiSSIDs[i].channel, wifiSSIDs[i].isHidden);
 #else
           WiFi.getNetworkInfo(i, wifiSSIDs[i].SSID, wifiSSIDs[i].encryptionType, wifiSSIDs[i].RSSI, wifiSSIDs[i].BSSID, wifiSSIDs[i].channel);
- #endif
+#endif
         }
 
         // RSSI SORT
         // old sort
-        for (int i = 0; i < n; i++) 
+        for (int i = 0; i < n; i++)
         {
-          for (int j = i + 1; j < n; j++) 
+          for (int j = i + 1; j < n; j++)
           {
-            if (wifiSSIDs[j].RSSI > wifiSSIDs[i].RSSI) 
+            if (wifiSSIDs[j].RSSI > wifiSSIDs[i].RSSI)
             {
               std::swap(wifiSSIDs[i], wifiSSIDs[j]);
             }
@@ -613,27 +639,27 @@ void ESPAsync_WiFiManager::scan()
         }
 
         // remove duplicates ( must be RSSI sorted )
-        if (_removeDuplicateAPs) 
+        if (_removeDuplicateAPs)
         {
-        String cssid;
-        
-        for (int i = 0; i < n; i++) 
-        {
-          if (wifiSSIDs[i].duplicate == true) 
-            continue;
-            
-          cssid = wifiSSIDs[i].SSID;
-          
-          for (int j = i + 1; j < n; j++) 
+          String cssid;
+
+          for (int i = 0; i < n; i++)
           {
-            if (cssid == wifiSSIDs[j].SSID) 
+            if (wifiSSIDs[i].duplicate == true)
+              continue;
+
+            cssid = wifiSSIDs[i].SSID;
+
+            for (int j = i + 1; j < n; j++)
             {
-              LOGDEBUG("DUP AP: " +wifiSSIDs[j].SSID);
-              // set dup aps to NULL
-              wifiSSIDs[j].duplicate = true; 
+              if (cssid == wifiSSIDs[j].SSID)
+              {
+                LOGDEBUG("DUP AP: " + wifiSSIDs[j].SSID);
+                // set dup aps to NULL
+                wifiSSIDs[j].duplicate = true;
+              }
             }
           }
-        }
         }
       }
     }
@@ -642,29 +668,29 @@ void ESPAsync_WiFiManager::scan()
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword, bool shouldConnectWiFi) 
+void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char const *apPassword, bool shouldConnectWiFi)
 {
   _modeless     = true;
   _apName       = apName;
   _apPassword   = apPassword;
 
   WiFi.mode(WIFI_AP_STA);
-  
+
   LOGDEBUG("SET AP STA");
 
   // try to connect
-  if (shouldConnectWiFi && connectWifi("", "") == WL_CONNECTED)   
+  if (shouldConnectWiFi && connectWifi("", "") == WL_CONNECTED)
   {
     LOGDEBUG1(F("IP Address:"), WiFi.localIP());
-       
- 	  if ( _savecallback != NULL) 
-	  {
-	    //todo: check if any custom parameters actually exist, and check if they really changed maybe
-	    _savecallback();
-	  }
+
+    if ( _savecallback != NULL)
+    {
+      //todo: check if any custom parameters actually exist, and check if they really changed maybe
+      _savecallback();
+    }
   }
 
-  if ( _apcallback != NULL) 
+  if ( _apcallback != NULL)
   {
     _apcallback(this);
   }
@@ -678,15 +704,15 @@ void ESPAsync_WiFiManager::startConfigPortalModeless(char const *apName, char co
 
 void ESPAsync_WiFiManager::loop()
 {
-	safeLoop();
-	criticalLoop();
+  safeLoop();
+  criticalLoop();
 }
 
 //////////////////////////////////////////
 
-void ESPAsync_WiFiManager::setInfo() 
+void ESPAsync_WiFiManager::setInfo()
 {
-  if (needInfo) 
+  if (needInfo)
   {
     pager       = infoAsString();
     wifiStatus  = WiFi.status();
@@ -701,35 +727,35 @@ void ESPAsync_WiFiManager::setInfo()
 void ESPAsync_WiFiManager::criticalLoop()
 {
   LOGDEBUG(F("criticalLoop: Enter"));
-  
+
   if (_modeless)
   {
-    if (scannow == -1 || millis() > scannow + TIME_BETWEEN_MODELESS_SCANS)
+    if (scannow == -1 || ( millis() > scannow + TIME_BETWEEN_MODELESS_SCANS) )
     {
       LOGDEBUG(F("criticalLoop: modeless scan"));
-      
+
       scan();
       scannow = millis();
     }
-    
-    if (connect) 
+
+    if (connect)
     {
       connect = false;
 
       LOGDEBUG(F("criticalLoop: Connecting to new AP"));
 
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
-      if (connectWifi(_ssid, _pass) != WL_CONNECTED) 
+      if (connectWifi(_ssid, _pass) != WL_CONNECTED)
       {
         LOGDEBUG(F("criticalLoop: Failed to connect."));
-      } 
-      else 
+      }
+      else
       {
         //connected
         // alanswx - should we have a config to decide if we should shut down AP?
         // WiFi.mode(WIFI_STA);
         //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) 
+        if ( _savecallback != NULL)
         {
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
           _savecallback();
@@ -738,11 +764,11 @@ void ESPAsync_WiFiManager::criticalLoop()
         return;
       }
 
-      if (_shouldBreakAfterConfig) 
+      if (_shouldBreakAfterConfig)
       {
         //flag set to exit after config after trying to connect
         //notify that configuration has changed and any optional parameters should be saved
-        if ( _savecallback != NULL) 
+        if ( _savecallback != NULL)
         {
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
           _savecallback();
@@ -762,11 +788,11 @@ void ESPAsync_WiFiManager::safeLoop()
 
 ///////////////////////////////////////////////////////////
 
-bool  ESPAsync_WiFiManager::startConfigPortal()
+bool ESPAsync_WiFiManager::startConfigPortal()
 {
 #ifdef ESP8266
   String ssid = "ESP_" + String(ESP.getChipId());
-#else		//ESP32
+#else   //ESP32
   String ssid = "ESP_" + String(ESP_getChipId());
 #endif
 
@@ -777,7 +803,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal()
 
 //////////////////////////////////////////
 
-bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *apPassword)
+bool ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *apPassword)
 {
   WiFi.mode(WIFI_AP_STA);
 
@@ -788,7 +814,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
   if (_apcallback != NULL)
   {
     LOGINFO("_apcallback");
-    
+
     _apcallback(this);
   }
 
@@ -799,27 +825,27 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
   bool TimedOut = true;
 
   LOGINFO("startConfigPortal : Enter loop");
-  
+
   scannow = -1 ;
 
-  while (_configPortalTimeout == 0 || millis() < _configPortalStart + _configPortalTimeout)
+  while (_configPortalTimeout == 0 || ( millis() < _configPortalStart + _configPortalTimeout) )
   {
-#if ( USING_ESP32_S2 || USING_ESP32_C3 )   
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
     // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
     delay(1);
-#else 
-    
+#else
+
     //
     //  we should do a scan every so often here and
     //  try to reconnect to AP while we are at it
     //
-    if ( scannow == -1 || millis() > scannow + TIME_BETWEEN_MODAL_SCANS)
+    if ( scannow == -1 || ( millis() > scannow + TIME_BETWEEN_MODAL_SCANS) )
     {
       LOGDEBUG(F("startConfigPortal: About to modal scan"));
-      
+
       // since we are modal, we can scan every time
       shouldscan = true;
-      
+
 #if defined(ESP8266)
       // we might still be connecting, so that has to stop for scanning
       ETS_UART_INTR_DISABLE ();
@@ -830,10 +856,10 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
 #endif
 
       scan();
-      
-      //if (_tryConnectDuringConfigPortal) 
+
+      //if (_tryConnectDuringConfigPortal)
       //  WiFi.begin(); // try to reconnect to AP
-        
+
       scannow = millis() ;
     }
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
@@ -847,9 +873,9 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
 
       // using user-provided  _ssid, _pass in place of system-stored ssid and pass
       if (connectWifi(_ssid, _pass) != WL_CONNECTED)
-      {  
+      {
         LOGERROR(F("Failed to connect"));
-    
+
         WiFi.mode(WIFI_AP); // Dual mode becomes flaky if not connected to a WiFi network.
       }
       else
@@ -860,9 +886,10 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
           _savecallback();
         }
+        
         break;
       }
-      
+
       if (_shouldBreakAfterConfig)
       {
         //flag set to exit after config after trying to connect
@@ -872,6 +899,7 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
           //todo: check if any custom parameters actually exist, and check if they really changed maybe
           _savecallback();
         }
+        
         break;
       }
     }
@@ -879,27 +907,28 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
     if (stopConfigPortal)
     {
       LOGERROR("Stop ConfigPortal");
-     
+
       stopConfigPortal = false;
       break;
     }
-    
+
     yield();
-    
+
 #if ( defined(TIME_BETWEEN_CONFIG_PORTAL_LOOP) && (TIME_BETWEEN_CONFIG_PORTAL_LOOP > 0) )
-    #warning Using delay in startConfigPortal loop
+#warning Using delay in startConfigPortal loop
     delay(TIME_BETWEEN_CONFIG_PORTAL_LOOP);
-#endif    
+#endif
   }
 
   WiFi.mode(WIFI_STA);
+  
   if (TimedOut)
   {
     setHostname();
 
     // New v1.0.8 to fix static IP when CP not entered or timed-out
     setWifiStaticIP();
-    
+
     WiFi.begin();
     int connRes = waitForConnectResult();
 
@@ -911,35 +940,35 @@ bool  ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *ap
   dnsServer->stop();
 #endif
 
-  return  WiFi.status() == WL_CONNECTED;
+  return  (WiFi.status() == WL_CONNECTED);
 }
 
 //////////////////////////////////////////
 
 void ESPAsync_WiFiManager::setWifiStaticIP()
-{ 
+{
 #if USE_CONFIGURABLE_DNS
   if (_WiFi_STA_IPconfig._sta_static_ip)
   {
     LOGWARN(F("Custom STA IP/GW/Subnet"));
-   
+
     //***** Added section for DNS config option *****
-    if (_WiFi_STA_IPconfig._sta_static_dns1 && _WiFi_STA_IPconfig._sta_static_dns2) 
-    { 
+    if (_WiFi_STA_IPconfig._sta_static_dns1 && _WiFi_STA_IPconfig._sta_static_dns2)
+    {
       LOGWARN(F("DNS1 and DNS2 set"));
- 
+
       WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn, _WiFi_STA_IPconfig._sta_static_dns1, _WiFi_STA_IPconfig._sta_static_dns2);
     }
-    else if (_WiFi_STA_IPconfig._sta_static_dns1) 
+    else if (_WiFi_STA_IPconfig._sta_static_dns1)
     {
       LOGWARN(F("Only DNS1 set"));
-     
+
       WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn, _WiFi_STA_IPconfig._sta_static_dns1);
     }
-    else 
+    else
     {
       LOGWARN(F("No DNS server set"));
-  
+
       WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn);
     }
     //***** End added section for DNS config option *****
@@ -955,7 +984,7 @@ void ESPAsync_WiFiManager::setWifiStaticIP()
   if (_WiFi_STA_IPconfig._sta_static_ip)
   {
     WiFi.config(_WiFi_STA_IPconfig._sta_static_ip, _WiFi_STA_IPconfig._sta_static_gw, _WiFi_STA_IPconfig._sta_static_sn);
-    
+
     LOGWARN1(F("Custom STA IP/GW/Subnet : "), WiFi.localIP());
   }
 #endif
@@ -967,23 +996,26 @@ void ESPAsync_WiFiManager::setWifiStaticIP()
 int ESPAsync_WiFiManager::reconnectWifi()
 {
   int connectResult;
-  
+
   // using user-provided  _ssid, _pass in place of system-stored ssid and pass
   if ( ( connectResult = connectWifi(_ssid, _pass) ) != WL_CONNECTED)
-  {  
+  {
     LOGERROR1(F("Failed to connect to"), _ssid);
-    
-    if ( ( connectResult = connectWifi(_ssid1, _pass1) ) != WL_CONNECTED)
-    {  
-      LOGERROR1(F("Failed to connect to"), _ssid1);
 
+    if ( ( connectResult = connectWifi(_ssid1, _pass1) ) != WL_CONNECTED)
+    {
+      LOGERROR1(F("Failed to connect to"), _ssid1);
     }
     else
+    {
       LOGERROR1(F("Connected to"), _ssid1);
+    }
   }
   else
-      LOGERROR1(F("Connected to"), _ssid);
-  
+  {
+    LOGERROR1(F("Connected to"), _ssid);
+  }
+
   return connectResult;
 }
 
@@ -994,14 +1026,15 @@ int ESPAsync_WiFiManager::connectWifi(const String& ssid, const String& pass)
   // Add option if didn't input/update SSID/PW => Use the previous saved Credentials.
   // But update the Static/DHCP options if changed.
   if ( (ssid != "") || ( (ssid == "") && (WiFi_SSID() != "") ) )
-  {  
+  {
     //fix for auto connect racing issue. Move up from v1.1.0 to avoid resetSettings()
     if (WiFi.status() == WL_CONNECTED)
     {
       LOGWARN(F("Already connected. Bailing out."));
+      
       return WL_CONNECTED;
     }
-     
+
     if (ssid != "")
       resetSettings();
 
@@ -1012,7 +1045,7 @@ int ESPAsync_WiFiManager::connectWifi(const String& ssid, const String& pass)
     WiFi.mode(WIFI_AP_STA); //It will start in station mode if it was previously in AP mode.
 
     setHostname();
-    
+
     // KH, Fix ESP32 staticIP after exiting CP
 #ifdef ESP32
     setWifiStaticIP();
@@ -1022,14 +1055,14 @@ int ESPAsync_WiFiManager::connectWifi(const String& ssid, const String& pass)
     {
       // Start Wifi with new values.
       LOGWARN(F("Connect to new WiFi using new IP parameters"));
-      
+
       WiFi.begin(ssid.c_str(), pass.c_str());
     }
     else
     {
       // Start Wifi with old values.
       LOGWARN(F("Connect to previous WiFi using new IP parameters"));
-      
+
       WiFi.begin();
     }
   }
@@ -1039,6 +1072,7 @@ int ESPAsync_WiFiManager::connectWifi(const String& ssid, const String& pass)
   }
 
   int connRes = waitForConnectResult();
+  
   LOGWARN1("Connection result: ", getStatus(connRes));
 
   //not connected, WPS enabled, no pass - first attempt
@@ -1059,19 +1093,20 @@ wl_status_t ESPAsync_WiFiManager::waitForConnectResult()
   if (_connectTimeout == 0)
   {
     unsigned long startedAt = millis();
-    
+
     // In ESP8266, WiFi.waitForConnectResult() @return wl_status_t (0-255) or -1 on timeout !!!
     // In ESP32, WiFi.waitForConnectResult() @return wl_status_t (0-255)
     // So, using int for connRes to be safe
     //int connRes = WiFi.waitForConnectResult();
     WiFi.waitForConnectResult();
-    
+
     float waited = (millis() - startedAt);
 
     LOGWARN1(F("Connected after waiting (s) :"), waited / 1000);
     LOGWARN1(F("Local ip ="), WiFi.localIP());
 
     // Fix bug from v1.1.0+, connRes is sometimes not correct.
+    
     //return connRes;
     return WiFi.status();
   }
@@ -1080,15 +1115,17 @@ wl_status_t ESPAsync_WiFiManager::waitForConnectResult()
     LOGERROR(F("Waiting WiFi connection with time out"));
     unsigned long start = millis();
     bool keepConnecting = true;
-    
+
     wl_status_t status;
 
     while (keepConnecting)
     {
       status = WiFi.status();
+      
       if (millis() > start + _connectTimeout)
       {
         keepConnecting = false;
+        
         LOGERROR(F("Connection timed out"));
       }
 
@@ -1096,13 +1133,14 @@ wl_status_t ESPAsync_WiFiManager::waitForConnectResult()
       if (status == WL_CONNECTED || status == WL_CONNECT_FAILED || status == WL_WRONG_PASSWORD)
 #else
       if (status == WL_CONNECTED || status == WL_CONNECT_FAILED)
-#endif      
+#endif
       {
         keepConnecting = false;
       }
+      
       delay(100);
     }
-    
+
     return status;
   }
 }
@@ -1115,7 +1153,7 @@ void ESPAsync_WiFiManager::startWPS()
   LOGINFO("START WPS");
   WiFi.beginWPSConfig();
   LOGINFO("END WPS");
-#else		//ESP32
+#else   //ESP32
   // TODO
   LOGINFO("ESP32 WPS TODO");
 #endif
@@ -1137,10 +1175,10 @@ const char* ESPAsync_WiFiManager::getStatus(const int& status)
       return "WL_CONNECTED";
     case WL_CONNECT_FAILED:
       return "WL_CONNECT_FAILED";
-      
-#if ( ESP8266 && (USING_ESP8266_CORE_VERSION >= 30000) )     
+
+#if ( ESP8266 && (USING_ESP8266_CORE_VERSION >= 30000) )
     case WL_WRONG_PASSWORD:
-      return "WL_WRONG_PASSWORD"; 
+      return "WL_WRONG_PASSWORD";
 #endif
 
     case WL_DISCONNECTED:
@@ -1169,15 +1207,15 @@ String ESPAsync_WiFiManager::getConfigPortalPW()
 void ESPAsync_WiFiManager::resetSettings()
 {
   LOGINFO(F("Previous settings invalidated"));
-  
-#ifdef ESP8266  
+
+#ifdef ESP8266
   WiFi.disconnect(true);
 #else
   WiFi.disconnect(true, true);
-  
+
   // Temporary fix for issue of not clearing WiFi SSID/PW from flash of ESP32
   // See https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/25 and https://github.com/espressif/arduino-esp32/issues/400
-  WiFi.begin("0","0");
+  WiFi.begin("0", "0");
   //////
 #endif
 
@@ -1232,6 +1270,7 @@ int ESPAsync_WiFiManager::setConfigPortalChannel(const int& channel)
 void ESPAsync_WiFiManager::setAPStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn)
 {
   LOGINFO(F("setAPStaticIPConfig"));
+  
   _WiFi_AP_IPconfig._ap_static_ip = ip;
   _WiFi_AP_IPconfig._ap_static_gw = gw;
   _WiFi_AP_IPconfig._ap_static_sn = sn;
@@ -1243,7 +1282,7 @@ void ESPAsync_WiFiManager::setAPStaticIPConfig(const IPAddress& ip, const IPAddr
 void ESPAsync_WiFiManager::setAPStaticIPConfig(const WiFi_AP_IPConfig& WM_AP_IPconfig)
 {
   LOGINFO(F("setAPStaticIPConfig"));
-  
+
   memcpy((void *) &_WiFi_AP_IPconfig, &WM_AP_IPconfig, sizeof(_WiFi_AP_IPconfig));
 }
 
@@ -1252,7 +1291,7 @@ void ESPAsync_WiFiManager::setAPStaticIPConfig(const WiFi_AP_IPConfig& WM_AP_IPc
 void ESPAsync_WiFiManager::getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig)
 {
   LOGINFO(F("getAPStaticIPConfig"));
-  
+
   memcpy((void *) &WM_AP_IPconfig, &_WiFi_AP_IPconfig, sizeof(WM_AP_IPconfig));
 }
 
@@ -1261,6 +1300,7 @@ void ESPAsync_WiFiManager::getAPStaticIPConfig(WiFi_AP_IPConfig  &WM_AP_IPconfig
 void ESPAsync_WiFiManager::setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn)
 {
   LOGINFO(F("setSTAStaticIPConfig"));
+  
   _WiFi_STA_IPconfig._sta_static_ip = ip;
   _WiFi_STA_IPconfig._sta_static_gw = gw;
   _WiFi_STA_IPconfig._sta_static_sn = sn;
@@ -1271,7 +1311,7 @@ void ESPAsync_WiFiManager::setSTAStaticIPConfig(const IPAddress& ip, const IPAdd
 void ESPAsync_WiFiManager::setSTAStaticIPConfig(const WiFi_STA_IPConfig& WM_STA_IPconfig)
 {
   LOGINFO(F("setSTAStaticIPConfig"));
-  
+
   memcpy((void *) &_WiFi_STA_IPconfig, &WM_STA_IPconfig, sizeof(_WiFi_STA_IPconfig));
 }
 
@@ -1280,7 +1320,7 @@ void ESPAsync_WiFiManager::setSTAStaticIPConfig(const WiFi_STA_IPConfig& WM_STA_
 void ESPAsync_WiFiManager::getSTAStaticIPConfig(WiFi_STA_IPConfig& WM_STA_IPconfig)
 {
   LOGINFO(F("getSTAStaticIPConfig"));
-  
+
   memcpy((void *) &WM_STA_IPconfig, &_WiFi_STA_IPconfig, sizeof(WM_STA_IPconfig));
 }
 
@@ -1288,7 +1328,7 @@ void ESPAsync_WiFiManager::getSTAStaticIPConfig(WiFi_STA_IPConfig& WM_STA_IPconf
 //////////////////////////////////////////
 
 #if USE_CONFIGURABLE_DNS
-void ESPAsync_WiFiManager::setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn, 
+void ESPAsync_WiFiManager::setSTAStaticIPConfig(const IPAddress& ip, const IPAddress& gw, const IPAddress& sn,
                                                 const IPAddress& dns_address_1, const IPAddress& dns_address_2)
 {
   LOGINFO(F("setSTAStaticIPConfig for USE_CONFIGURABLE_DNS"));
@@ -1353,7 +1393,7 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
 
   // Disable _configPortalTimeout when someone accessing Portal to give some time to config
   _configPortalTimeout = 0;
-  
+
   //wifiSSIDscan  = true;
   //scan();
 
@@ -1362,9 +1402,10 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
     // If captive portal redirect instead of displaying the error page.
     return;
   }
-  
+
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Options");
+  
   page += FPSTR(WM_HTTP_SCRIPT);
   page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
@@ -1389,38 +1430,36 @@ void ESPAsync_WiFiManager::handleRoot(AsyncWebServerRequest *request)
   }
 
   page += "</h2>";
-  
   page += FPSTR(WM_FLDSET_START);
-  
   page += FPSTR(WM_HTTP_PORTAL_OPTIONS);
   page += F("<div class=\"msg\">");
-  reportStatus(page);
-  page += F("</div>");
   
+  reportStatus(page);
+  
+  page += F("</div>");
   page += FPSTR(WM_FLDSET_END);
-    
   page += FPSTR(WM_HTTP_END);
- 
+
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else  
- 
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_CT, page);
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
-  
+
 #if USING_CORS_FEATURE
   // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
   response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
-  
+
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
-  
+
   request->send(response);
-  
+
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 }
 
@@ -1434,49 +1473,49 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
 
   // Disable _configPortalTimeout when someone accessing Portal to give some time to config
   _configPortalTimeout = 0;
-   
+
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Config ESP");
+  
   page += FPSTR(WM_HTTP_SCRIPT);
   page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(WM_HTTP_HEAD_END);
   page += F("<h2>Configuration</h2>");
-  
+
 #if !( USING_ESP32_S2 || USING_ESP32_C3 )
 
   wifiSSIDscan = false;
   LOGDEBUG(F("handleWifi: Scan done"));
 
-  if (wifiSSIDCount == 0) 
+  if (wifiSSIDCount == 0)
   {
     LOGDEBUG(F("handleWifi: No network found"));
+    
     page += F("No network found. Refresh to scan again.");
-  } 
-  else 
+  }
+  else
   {
     page += FPSTR(WM_FLDSET_START);
-    
+
     //display networks in page
     String pager = networkListAsString();
-    
+
     page += pager;
-    
     page += FPSTR(WM_FLDSET_END);
-   
     page += "<br/>";
   }
-  
+
   wifiSSIDscan = true;
-  
+
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
-  
+
   page += FPSTR(WM_HTTP_FORM_START);
   char parLength[2];
-  
+
   page += FPSTR(WM_FLDSET_START);
-    
+
   // add the extra parameters to the form
   for (int i = 0; i < _paramsCount; i++)
   {
@@ -1484,9 +1523,9 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
     {
       break;
     }
-    
+
     String pitem;
-    
+
     switch (_params[i]->getLabelPlacement())
     {
       case WFM_LABEL_BEFORE:
@@ -1506,7 +1545,9 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
       pitem.replace("{i}", _params[i]->getID());
       pitem.replace("{n}", _params[i]->getID());
       pitem.replace("{p}", _params[i]->getPlaceholder());
+      
       snprintf(parLength, 2, "%d", _params[i]->getValueLength());
+      
       pitem.replace("{l}", parLength);
       pitem.replace("{v}", _params[i]->getValue());
       pitem.replace("{c}", _params[i]->getCustomHTML());
@@ -1518,7 +1559,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
 
     page += pitem;
   }
-  
+
   if (_paramsCount > 0)
   {
     page += FPSTR(WM_FLDSET_END);
@@ -1530,22 +1571,24 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
   }
 
   LOGDEBUG1(F("Static IP ="), _WiFi_STA_IPconfig._sta_static_ip.toString());
-  
+
   // KH, Comment out to permit changing from DHCP to static IP, or vice versa
   // and add staticIP label in CP
-  
+
   // To permit disable/enable StaticIP configuration in Config Portal from sketch. Valid only if DHCP is used.
   // You'll loose the feature of dynamically changing from DHCP to static IP, or vice versa
   // You have to explicitly specify false to disable the feature.
 
 #if !USE_STATIC_IP_CONFIG_IN_CP
   if (_WiFi_STA_IPconfig._sta_static_ip)
-#endif  
+#endif
   {
     page += FPSTR(WM_FLDSET_START);
-    
+
     String item = FPSTR(WM_HTTP_FORM_LABEL);
+    
     item += FPSTR(WM_HTTP_FORM_PARAM);
+    
     item.replace("{i}", "ip");
     item.replace("{n}", "ip");
     item.replace("{p}", "Static IP");
@@ -1556,6 +1599,7 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
 
     item = FPSTR(WM_HTTP_FORM_LABEL);
     item += FPSTR(WM_HTTP_FORM_PARAM);
+    
     item.replace("{i}", "gw");
     item.replace("{n}", "gw");
     item.replace("{p}", "Gateway IP");
@@ -1566,18 +1610,20 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
 
     item = FPSTR(WM_HTTP_FORM_LABEL);
     item += FPSTR(WM_HTTP_FORM_PARAM);
+    
     item.replace("{i}", "sn");
     item.replace("{n}", "sn");
     item.replace("{p}", "Subnet");
     item.replace("{l}", "15");
     item.replace("{v}", _WiFi_STA_IPconfig._sta_static_sn.toString());
 
-  #if USE_CONFIGURABLE_DNS
+#if USE_CONFIGURABLE_DNS
     //***** Added for DNS address options *****
     page += item;
 
     item = FPSTR(WM_HTTP_FORM_LABEL);
     item += FPSTR(WM_HTTP_FORM_PARAM);
+    
     item.replace("{i}", "dns1");
     item.replace("{n}", "dns1");
     item.replace("{p}", "DNS1 IP");
@@ -1588,48 +1634,45 @@ void ESPAsync_WiFiManager::handleWifi(AsyncWebServerRequest *request)
 
     item = FPSTR(WM_HTTP_FORM_LABEL);
     item += FPSTR(WM_HTTP_FORM_PARAM);
+    
     item.replace("{i}", "dns2");
     item.replace("{n}", "dns2");
     item.replace("{p}", "DNS2 IP");
     item.replace("{l}", "15");
     item.replace("{v}", _WiFi_STA_IPconfig._sta_static_dns2.toString());
     //***** End added for DNS address options *****
-  #endif
+#endif
 
     page += item;
-    
     page += FPSTR(WM_FLDSET_END);
-
     page += "<br/>";
   }
-  
-  page += FPSTR(WM_HTTP_SCRIPT_NTP_HIDDEN);
 
+  page += FPSTR(WM_HTTP_SCRIPT_NTP_HIDDEN);
   page += FPSTR(WM_HTTP_FORM_END);
-   
   page += FPSTR(WM_HTTP_END);
-  
+
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else  
- 
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_CT, page);
-  
+
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
-  
+
 #if USING_CORS_FEATURE
   // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
   response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
-  
+
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
-  
+
   request->send(response);
-  
+
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Sent config page"));
@@ -1645,17 +1688,18 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   //SAVE/connect here
   _ssid = request->arg("s").c_str();
   _pass = request->arg("p").c_str();
-  
+
   // New from v1.1.0
   _ssid1 = request->arg("s1").c_str();
   _pass1 = request->arg("p1").c_str();
-  
+
   ///////////////////////
 
-#if USE_ESP_WIFIMANAGER_NTP  
+#if USE_ESP_WIFIMANAGER_NTP
   if (request->hasArg("timezone"))
   {
     _timezoneName = request->arg("timezone");   //.c_str();
+    
     LOGDEBUG1(F("TZ ="), _timezoneName);
   }
   else
@@ -1675,34 +1719,37 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
 
     //read parameter
     String value = request->arg(_params[i]->getID()).c_str();
-    
+
     //store it in array
     value.toCharArray(_params[i]->_WMParam_data._value, _params[i]->_WMParam_data._length);
-    
+
     LOGDEBUG2(F("Parameter and value :"), _params[i]->getID(), value);
   }
 
   if (request->hasArg("ip"))
   {
     String ip = request->arg("ip");
-    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_ip, ip.c_str());
     
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_ip, ip.c_str());
+
     LOGDEBUG1(F("New Static IP ="), _WiFi_STA_IPconfig._sta_static_ip.toString());
   }
 
   if (request->hasArg("gw"))
   {
     String gw = request->arg("gw");
-    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_gw, gw.c_str());
     
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_gw, gw.c_str());
+
     LOGDEBUG1(F("New Static Gateway ="), _WiFi_STA_IPconfig._sta_static_gw.toString());
   }
 
   if (request->hasArg("sn"))
   {
     String sn = request->arg("sn");
-    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_sn, sn.c_str());
     
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_sn, sn.c_str());
+
     LOGDEBUG1(F("New Static Netmask ="), _WiFi_STA_IPconfig._sta_static_sn.toString());
   }
 
@@ -1711,16 +1758,18 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   if (request->hasArg("dns1"))
   {
     String dns1 = request->arg("dns1");
-    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_dns1, dns1.c_str());
     
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_dns1, dns1.c_str());
+
     LOGDEBUG1(F("New Static DNS1 ="), _WiFi_STA_IPconfig._sta_static_dns1.toString());
   }
 
   if (request->hasArg("dns2"))
   {
     String dns2 = request->arg("dns2");
-    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_dns2, dns2.c_str());
     
+    optionalIPFromString(&_WiFi_STA_IPconfig._sta_static_dns2, dns2.c_str());
+
     LOGDEBUG1(F("New Static DNS2 ="), _WiFi_STA_IPconfig._sta_static_dns2.toString());
   }
   //*****  End added for DNS Options *****
@@ -1728,41 +1777,44 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
 
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Credentials Saved");
+  
   page += FPSTR(WM_HTTP_SCRIPT);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(WM_HTTP_HEAD_END);
   page += FPSTR(WM_HTTP_SAVED);
+  
   page.replace("{v}", _apName);
   page.replace("{x}", _ssid);
-  
+
   // KH, update from v1.1.0
   page.replace("{x1}", _ssid1);
   //////
-  
+
   page += FPSTR(WM_HTTP_END);
-  
+
   //LOGDEBUG1(F("page ="), page);
- 
+
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else    
- 
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_CT, page);
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
-  
+
 #if USING_CORS_FEATURE
   // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
   response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
-  
+
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
-  request->send(response);
   
+  request->send(response);
+
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Sent wifi save page"));
@@ -1779,9 +1831,10 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
 void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
 {
   LOGDEBUG(F("Server Close"));
-   
+
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Close Server");
+  
   page += FPSTR(WM_HTTP_SCRIPT);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
@@ -1794,34 +1847,35 @@ void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
   page += WiFi.localIP().toString();
   page += F("</b><br><br>");
   page += F("Portal closed...<br><br>");
-  
+
   //page += F("Push button on device to restart configuration server!");
-  
+
   page += FPSTR(WM_HTTP_END);
-   
+
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else    
- 
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_CT, page);
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
-  
+
 #if USING_CORS_FEATURE
   // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
   response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
-  
+
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
+  
   request->send(response);
-  
+
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
-  
+
   stopConfigPortal = true; //signal ready to shutdown config portal
-  
+
   LOGDEBUG(F("Sent server close page"));
 
   // Restore when Press Save WiFi
@@ -1837,21 +1891,22 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
 
   // Disable _configPortalTimeout when someone accessing Portal to give some time to config
   _configPortalTimeout = 0;
- 
+
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "Info");
+  
   page += FPSTR(WM_HTTP_SCRIPT);
   page += FPSTR(WM_HTTP_SCRIPT_NTP);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
-  
+
   if (connect)
     page += F("<meta http-equiv=\"refresh\" content=\"5; url=/i\">");
-  
+
   page += FPSTR(WM_HTTP_HEAD_END);
-  
+
   page += F("<dl>");
-  
+
   if (connect)
   {
     page += F("<dt>Trying to connect</dt><dd>");
@@ -1859,30 +1914,28 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
     page += F("</dd>");
   }
 
-  page +=pager;
-  
+  page += pager;
   page += F("<h2>WiFi Information</h2>");
+  
   reportStatus(page);
-  
+
   page += FPSTR(WM_FLDSET_START);
-  
   page += F("<h3>Device Data</h3>");
-  
   page += F("<table class=\"table\">");
   page += F("<thead><tr><th>Name</th><th>Value</th></tr></thead><tbody><tr><td>Chip ID</td><td>");
 
 #ifdef ESP8266
-  page += String(ESP.getChipId(), HEX);		//ESP.getChipId();
-#else		//ESP32
+  page += String(ESP.getChipId(), HEX);   //ESP.getChipId();
+#else   //ESP32
 
-  page += String(ESP_getChipId(), HEX);		//ESP.getChipId();
-  
+  page += String(ESP_getChipId(), HEX);   //ESP.getChipId();
   page += F("</td></tr>");
+  
   page += F("<tr><td>Chip OUI</td><td>");
   page += F("0x");
-  page += String(getChipOUI(), HEX);		//ESP.getChipId();
-  
+  page += String(getChipOUI(), HEX);    //ESP.getChipId();
   page += F("</td></tr>");
+  
   page += F("<tr><td>Chip Model</td><td>");
   page += ESP.getChipModel();
   page += F(" Rev");
@@ -1890,32 +1943,37 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
 #endif
 
   page += F("</td></tr>");
+  
   page += F("<tr><td>Flash Chip ID</td><td>");
 
 #ifdef ESP8266
-  page += String(ESP.getFlashChipId(), HEX);		//ESP.getFlashChipId();
-#else		//ESP32
+  page += String(ESP.getFlashChipId(), HEX);    //ESP.getFlashChipId();
+#else   //ESP32
   // TODO
   page += F("TODO");
 #endif
 
   page += F("</td></tr>");
+  
   page += F("<tr><td>IDE Flash Size</td><td>");
   page += ESP.getFlashChipSize();
   page += F(" bytes</td></tr>");
+  
   page += F("<tr><td>Real Flash Size</td><td>");
 
 #ifdef ESP8266
   page += ESP.getFlashChipRealSize();
-#else		//ESP32
+#else   //ESP32
   // TODO
   page += F("TODO");
 #endif
 
   page += F(" bytes</td></tr>");
+  
   page += F("<tr><td>Access Point IP</td><td>");
   page += WiFi.softAPIP().toString();
   page += F("</td></tr>");
+  
   page += F("<tr><td>Access Point MAC</td><td>");
   page += WiFi.softAPmacAddress();
   page += F("</td></tr>");
@@ -1934,38 +1992,38 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
   page += F("</tbody></table>");
 
   page += FPSTR(WM_FLDSET_END);
-  
-#if USE_AVAILABLE_PAGES  
+
+#if USE_AVAILABLE_PAGES
   page += FPSTR(WM_FLDSET_START);
-  
   page += FPSTR(WM_HTTP_AVAILABLE_PAGES);
-  
   page += FPSTR(WM_FLDSET_END);
 #endif
 
   page += F("<p/>More information about ESPAsync_WiFiManager at");
   page += F("<p/><a href=\"https://github.com/khoih-prog/ESPAsync_WiFiManager\">https://github.com/khoih-prog/ESPAsync_WiFiManager</a>");
   page += FPSTR(WM_HTTP_END);
- 
+
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else    
- 
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_CT, page);
-  response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   
+  response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
+
 #if USING_CORS_FEATURE
   // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
   response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
-  
+
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
-  request->send(response);
   
+  request->send(response);
+
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Info page sent"));
@@ -1977,8 +2035,9 @@ void ESPAsync_WiFiManager::handleInfo(AsyncWebServerRequest *request)
 void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
 {
   LOGDEBUG(F("State-Json"));
-   
+
   String page = F("{\"Soft_AP_IP\":\"");
+  
   page += WiFi.softAPIP().toString();
   page += F("\",\"Soft_AP_MAC\":\"");
   page += WiFi.softAPmacAddress();
@@ -2000,28 +2059,28 @@ void ESPAsync_WiFiManager::handleState(AsyncWebServerRequest *request)
   page += F("\"SSID\":\"");
   page += WiFi_SSID();
   page += F("\"}");
-   
+
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else  
-   
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, "application/json", page);
   response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
-  
+
 #if USING_CORS_FEATURE
   // New from v1.1.0, for configure CORS Header, default to WM_HTTP_CORS_ALLOW_ALL = "*"
   response->addHeader(FPSTR(WM_HTTP_CORS), _CORS_Header);
 #endif
-  
+
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
-  
+
   request->send(response);
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
-  
+
   LOGDEBUG(F("Sent state page in json format"));
 }
 
@@ -2033,75 +2092,76 @@ void ESPAsync_WiFiManager::handleScan(AsyncWebServerRequest *request)
   LOGDEBUG(F("Scan"));
 
   // Disable _configPortalTimeout when someone accessing Portal to give some time to config
-  _configPortalTimeout = 0;		//KH
+  _configPortalTimeout = 0;   //KH
 
   LOGDEBUG(F("Scan-Json"));
 
   String page = F("{\"Access_Points\":[");
-  
+
   // KH, display networks in page using previously scan results
-  for (int i = 0; i < wifiSSIDCount; i++) 
+  for (int i = 0; i < wifiSSIDCount; i++)
   {
-    if (wifiSSIDs[i].duplicate == true) 
+    if (wifiSSIDs[i].duplicate == true)
       continue; // skip dups
-      
+
     if (i != 0)
       page += F(", ");
 
     LOGDEBUG1(F("Index ="), i);
     LOGDEBUG1(F("SSID ="), wifiSSIDs[i].SSID);
     LOGDEBUG1(F("RSSI ="), wifiSSIDs[i].RSSI);
-      
+
     int quality = getRSSIasQuality(wifiSSIDs[i].RSSI);
 
-    if (_minimumQuality == -1 || _minimumQuality < quality) 
+    if (_minimumQuality == -1 || _minimumQuality < quality)
     {
       String item = FPSTR(JSON_ITEM);
       String rssiQ;
-      
+
       rssiQ += quality;
       item.replace("{v}", wifiSSIDs[i].SSID);
       item.replace("{r}", rssiQ);
-      
+
 #if defined(ESP8266)
       if (wifiSSIDs[i].encryptionType != ENC_TYPE_NONE)
 #else
       if (wifiSSIDs[i].encryptionType != WIFI_AUTH_OPEN)
 #endif
       {
-      item.replace("{i}", "true");
+        item.replace("{i}", "true");
       }
       else
       {
         item.replace("{i}", "false");
       }
-      
+
       page += item;
       delay(0);
-    } 
-    else 
+    }
+    else
     {
       LOGDEBUG(F("Skipping due to quality"));
     }
   }
-  
+
   page += F("]}");
- 
-#if ( USING_ESP32_S2 || USING_ESP32_C3 ) 
+
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else  
-    
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_JSON, page);
+  
   response->addHeader(WM_HTTP_CACHE_CONTROL, WM_HTTP_NO_STORE);
   response->addHeader(WM_HTTP_PRAGMA, WM_HTTP_NO_CACHE);
   response->addHeader(WM_HTTP_EXPIRES, "-1");
-  
+
   request->send(response);
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )  
-   
+
   LOGDEBUG(F("Sent WiFiScan Data in Json format"));
 }
 
@@ -2111,31 +2171,33 @@ void ESPAsync_WiFiManager::handleScan(AsyncWebServerRequest *request)
 void ESPAsync_WiFiManager::handleReset(AsyncWebServerRequest *request)
 {
   LOGDEBUG(F("Reset"));
-    
+
   String page = FPSTR(WM_HTTP_HEAD_START);
   page.replace("{v}", "WiFi Information");
+  
   page += FPSTR(WM_HTTP_SCRIPT);
   page += FPSTR(WM_HTTP_STYLE);
   page += _customHeadElement;
   page += FPSTR(WM_HTTP_HEAD_END);
   page += F("Resetting");
   page += FPSTR(WM_HTTP_END);
-    
-#if ( USING_ESP32_S2 || USING_ESP32_C3 ) 
+
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, page);
-#else  
-    
+#else
+
   AsyncWebServerResponse *response = request->beginResponse(200, WM_HTTP_HEAD_CT, page);
+  
   response->addHeader(WM_HTTP_CACHE_CONTROL, WM_HTTP_NO_STORE);
   response->addHeader(WM_HTTP_PRAGMA, WM_HTTP_NO_CACHE);
   response->addHeader(WM_HTTP_EXPIRES, "-1");
-  
+
   request->send(response);
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
   LOGDEBUG(F("Sent reset page"));
   delay(5000);
-  
+
   // Temporary fix for issue of not clearing WiFi SSID/PW from flash of ESP32
   // See https://github.com/khoih-prog/ESP_WiFiManager/issues/25 and https://github.com/espressif/arduino-esp32/issues/400
   resetSettings();
@@ -2144,7 +2206,7 @@ void ESPAsync_WiFiManager::handleReset(AsyncWebServerRequest *request)
 
 #ifdef ESP8266
   ESP.reset();
-#else		//ESP32
+#else   //ESP32
   ESP.restart();
 #endif
 
@@ -2162,7 +2224,7 @@ void ESPAsync_WiFiManager::handleNotFound(AsyncWebServerRequest *request)
   }
 
   String message = "File Not Found\n\n";
-  
+
   message += "URI: ";
   message += request->url();
   message += "\nMethod: ";
@@ -2178,16 +2240,17 @@ void ESPAsync_WiFiManager::handleNotFound(AsyncWebServerRequest *request)
 
 #if ( USING_ESP32_S2 || USING_ESP32_C3 )
   request->send(200, WM_HTTP_HEAD_CT, message);
-  
+
   // Fix ESP32-S2 issue with WebServer (https://github.com/espressif/arduino-esp32/issues/4348)
   delay(1);
-#else  
+#else
 
   AsyncWebServerResponse *response = request->beginResponse( 404, WM_HTTP_HEAD_CT2, message );
-  response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE)); 
+  
+  response->addHeader(FPSTR(WM_HTTP_CACHE_CONTROL), FPSTR(WM_HTTP_NO_STORE));
   response->addHeader(FPSTR(WM_HTTP_PRAGMA), FPSTR(WM_HTTP_NO_CACHE));
   response->addHeader(FPSTR(WM_HTTP_EXPIRES), "-1");
-  
+
   request->send(response);
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 }
@@ -2205,16 +2268,18 @@ bool ESPAsync_WiFiManager::captivePortal(AsyncWebServerRequest *request)
   {
     LOGINFO(F("Request redirected to captive portal"));
     LOGINFO1(F("Location http://"), toStringIp(request->client()->localIP()));
-    
+
     AsyncWebServerResponse *response = request->beginResponse(302, WM_HTTP_HEAD_CT2, "");
+    
     response->addHeader("Location", String("http://") + toStringIp(request->client()->localIP()));
+    
     request->send(response);
-       
+
     return true;
   }
-  
+
   LOGDEBUG1(F("request host IP ="), request->host());
-  
+
   return false;
 }
 
@@ -2237,7 +2302,7 @@ void ESPAsync_WiFiManager::setSaveConfigCallback(void(*func)())
 //////////////////////////////////////////
 
 // sets a custom element to add to head, like a new style tag
-void ESPAsync_WiFiManager::setCustomHeadElement(const char* element) 
+void ESPAsync_WiFiManager::setCustomHeadElement(const char* element)
 {
   _customHeadElement = element;
 }
@@ -2281,12 +2346,12 @@ bool ESPAsync_WiFiManager::isIp(const String& str)
   {
     int c = str.charAt(i);
 
-    if (c != '.' && c != ':' && (c < '0' || c > '9'))
+    if ( (c != '.') && (c != ':') && ( (c < '0') || (c > '9') ) )
     {
       return false;
     }
   }
-  
+
   return true;
 }
 
@@ -2296,7 +2361,7 @@ bool ESPAsync_WiFiManager::isIp(const String& str)
 String ESPAsync_WiFiManager::toStringIp(const IPAddress& ip)
 {
   String res = "";
-  
+
   for (int i = 0; i < 3; i++)
   {
     res += String((ip >> (8 * i)) & 0xFF) + ".";
@@ -2330,7 +2395,9 @@ String ESPAsync_WiFiManager::getStoredWiFiSSID()
   else
   {
     wifi_config_t conf;
+    
     esp_wifi_get_config(WIFI_IF_STA, &conf);
+    
     return String(reinterpret_cast<char*>(conf.sta.ssid));
   }
 
@@ -2347,10 +2414,13 @@ String ESPAsync_WiFiManager::getStoredWiFiPass()
   }
 
   wifi_config_t conf;
-  esp_wifi_get_config(WIFI_IF_STA, &conf);
   
+  esp_wifi_get_config(WIFI_IF_STA, &conf);
+
   return String(reinterpret_cast<char*>(conf.sta.password));
 }
+
+//////////////////////////////////////////
 
 uint32_t getChipID()
 {
@@ -2360,9 +2430,11 @@ uint32_t getChipID()
   {
     chipId64 |= ( ( (uint64_t) ESP.getEfuseMac() >> (40 - (i * 8)) ) & 0xff ) << (i * 8);
   }
-  
+
   return (uint32_t) (chipId64 & 0xFFFFFF);
 }
+
+//////////////////////////////////////////
 
 uint32_t getChipOUI()
 {
@@ -2372,7 +2444,7 @@ uint32_t getChipOUI()
   {
     chipId64 |= ( ( (uint64_t) ESP.getEfuseMac() >> (40 - (i * 8)) ) & 0xff ) << (i * 8);
   }
-  
+
   return (uint32_t) (chipId64 >> 24);
 }
 
@@ -2381,4 +2453,3 @@ uint32_t getChipOUI()
 //////////////////////////////////////////
 
 #endif    // ESPAsync_WiFiManager_Impl_h
-
