@@ -55,7 +55,7 @@
 
 ### Releases v1.14.1
 
-1. Remove dependency on ESP_AsyncWebServer, ESPAsyncTCP and AsyncTCP in `library.properties`. Check [no protocol" error #113](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/113)
+1. Remove dependency on ESP_AsyncWebServer, ESPAsyncTCP and AsyncTCP in `library.properties`. Check ["no protocol" error #113](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/113)"
 2. Add notes about manual installation of above-mentioned libraries for `Arduino IDE`
 
 ### Releases v1.14.0
