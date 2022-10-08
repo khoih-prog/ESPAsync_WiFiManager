@@ -157,7 +157,7 @@ ESP32 `chipID` is now correct and unique. The previous releases' 32-bit wrong `c
 
 For example
 
-```
+```ini
 Chip_ID_64 : 0x98F4AB085288
 chipOUI    : 0x98F4AB
 chipId     : 0x85288
@@ -172,13 +172,13 @@ Please have a look at [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix
 
 From v1.11.0, you just use
 
-```
+```cpp
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
 ```
 
 instead of both
 
-```
+```cpp
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
 
 // To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
@@ -188,14 +188,14 @@ instead of both
 
 For complex project having `Multiple Definitions Linker Error` issue, you can use in many files (**Be careful**: `.hpp`, not `.h`)
 
-```
+```cpp
 #include <ESPAsync_WiFiManager.hpp>             //https://github.com/khoih-prog/ESPAsync_WiFiManager
 ```
 
 but only in main(), .ino with setup() to avoid `Multiple Definitions Linker Error`
 
 
-```
+```cpp
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
 ```
 
@@ -210,7 +210,7 @@ Please have a look at [HOWTO Fix `Multiple Definitions` Linker Error](#howto-fix
 
 From v1.10.0, you must use
 
-```
+```cpp
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
 
 // To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
@@ -219,7 +219,7 @@ From v1.10.0, you must use
 
 instead of only
 
-```
+```cpp
 #include <ESPAsync_WiFiManager.h>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
 ```
 
@@ -279,7 +279,7 @@ This [**ESPAsync_WiFiManager** library](https://github.com/khoih-prog/ESPAsync_W
 
  1. [`Arduino IDE 1.8.19+` for Arduino](https://github.com/arduino/Arduino). [![GitHub release](https://img.shields.io/github/release/arduino/Arduino.svg)](https://github.com/arduino/Arduino/releases/latest)
  2. [`ESP8266 Core 3.0.2+`](https://github.com/esp8266/Arduino) for ESP8266-based boards. [![Latest release](https://img.shields.io/github/release/esp8266/Arduino.svg)](https://github.com/esp8266/Arduino/releases/latest/)
- 3. [`ESP32 Core 2.0.4+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
+ 3. [`ESP32 Core 2.0.5+`](https://github.com/espressif/arduino-esp32) for ESP32-based boards. [![Latest release](https://img.shields.io/github/release/espressif/arduino-esp32.svg)](https://github.com/espressif/arduino-esp32/releases/latest/)
  4. [`ESPAsyncWebServer v1.2.3+`](https://github.com/me-no-dev/ESPAsyncWebServer) for all ESP32/ESP8266-based boards. You have to use the latest [forked ESPAsyncWebServer](https://github.com/khoih-prog/ESPAsyncWebServer) if the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https://github.com/me-no-dev/ESPAsyncWebServer/pull/970) hasn't been merged. **To install manually for Arduino IDE**
  5. [`ESPAsyncDNSServer v1.0.0+`](https://github.com/devyte/ESPAsyncDNSServer) or [`ESPAsyncDNSServer v1.0.0+`](https://github.com/khoih-prog/ESPAsyncDNSServer/releases/tag/v1.0.0) for all ESP32/ESP8266-based boards.
  6. [`ESPAsyncTCP v1.2.2+`](https://github.com/me-no-dev/ESPAsyncTCP) for ESP8266-based boards. **To install manually for Arduino IDE**
@@ -332,19 +332,19 @@ Check the PR [Fix compiler error for ESP32-C3 and mbed TLS v2.7.0+ #970](https:/
 
 #### Necessary only for esp32 core v1.0.6-
 
-From esp32 core v1.0.6+, [`LittleFS_esp32 v1.0.6`](https://github.com/lorol/LITTLEFS) has been included and this step is not necessary anymore.
+From esp32 core `v1.0.6+`, [`LittleFS_esp32 v1.0.6`](https://github.com/lorol/LITTLEFS) has been included and this step is not necessary anymore.
 
-In Platform IO, to fix the error when using [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS) for ESP32-based boards with ESP32 core v1.0.4- (ESP-IDF v3.2-), uncomment the following line
+In Platform IO, to fix the error when using [`LittleFS_esp32 v1.0`](https://github.com/lorol/LITTLEFS) for ESP32-based boards with ESP32 core `v1.0.4-` (ESP-IDF v3.2-), uncomment the following line
 
 from
 
-```
+```cpp
 //#define CONFIG_LITTLEFS_FOR_IDF_3_2   /* For old IDF - like in release 1.0.4 */
 ```
 
 to
 
-```
+```cpp
 #define CONFIG_LITTLEFS_FOR_IDF_3_2   /* For old IDF - like in release 1.0.4 */
 ```
 
@@ -388,22 +388,22 @@ Please have a look at [**ESP_WiFiManager Issue 39: Not able to read analog port 
 
 #### 2. ESP32 ADCs functions
 
-- ADC1 controls ADC function for pins **GPIO32-GPIO39**
-- ADC2 controls ADC function for pins **GPIO0, 2, 4, 12-15, 25-27**
+- `ADC1` controls ADC function for pins **GPIO32-GPIO39**
+- `ADC2` controls ADC function for pins **GPIO0, 2, 4, 12-15, 25-27**
 
 #### 3.. ESP32 WiFi uses ADC2 for WiFi functions
 
 Look in file [**adc_common.c**](https://github.com/espressif/esp-idf/blob/master/components/driver/adc_common.c#L61)
 
-> In ADC2, there're two locks used for different cases:
+> In `ADC2`, there're two locks used for different cases:
 > 1. lock shared with app and Wi-Fi:
 >    ESP32:
->         When Wi-Fi using the ADC2, we assume it will never stop, so app checks the lock and returns immediately if failed.
+>         When Wi-Fi using the `ADC2`, we assume it will never stop, so app checks the lock and returns immediately if failed.
 >    ESP32S2:
->         The controller's control over the ADC is determined by the arbiter. There is no need to control by lock.
+>         The controller's control over the `ADC` is determined by the arbiter. There is no need to control by lock.
 > 
 > 2. lock shared between tasks:
->    when several tasks sharing the ADC2, we want to guarantee
+>    when several tasks sharing the `ADC2`, we want to guarantee
 >    all the requests will be handled.
 >    Since conversions are short (about 31us), app returns the lock very soon,
 >    we use a spinlock to stand there waiting to do conversions one by one.
@@ -411,10 +411,10 @@ Look in file [**adc_common.c**](https://github.com/espressif/esp-idf/blob/master
 > adc2_spinlock should be acquired first, then adc2_wifi_lock or rtc_spinlock.
 
 
-- In order to use ADC2 for other functions, we have to **acquire complicated firmware locks and very difficult to do**
-- So, it's not advisable to use ADC2 with WiFi/BlueTooth (BT/BLE).
-- Use ADC1, and pins GPIO32-GPIO39
-- If somehow it's a must to use those pins serviced by ADC2 (**GPIO0, 2, 4, 12, 13, 14, 15, 25, 26 and 27**), use the **fix mentioned at the end** of [**ESP_WiFiManager Issue 39: Not able to read analog port when using the autoconnect example**](https://github.com/khoih-prog/ESP_WiFiManager/issues/39) to work with ESP32 WiFi/BlueTooth (BT/BLE).
+- In order to use `ADC2` for other functions, we have to **acquire complicated firmware locks and very difficult to do**
+- So, it's not advisable to use `ADC2` with WiFi/BlueTooth (BT/BLE).
+- Use `ADC1`, and pins GPIO32-GPIO39
+- If somehow it's a must to use those pins serviced by `ADC2` (**GPIO0, 2, 4, 12, 13, 14, 15, 25, 26 and 27**), use the **fix mentioned at the end** of [**ESP_WiFiManager Issue 39: Not able to read analog port when using the autoconnect example**](https://github.com/khoih-prog/ESP_WiFiManager/issues/39) to work with ESP32 WiFi/BlueTooth (BT/BLE).
 
 ---
 ---
@@ -430,7 +430,7 @@ Look in file [**adc_common.c**](https://github.com/espressif/esp-idf/blob/master
 String ssid = "ESP_" + String(ESP_getChipId(), HEX);
 const char* password = "your_password";
 ```
-then connect WebBrowser to configurable ConfigPortal IP address, default is 192.168.4.1
+then connect `WebBrowser` to configurable ConfigPortal IP address, default is `192.168.4.1`
 
 - Choose one of the access points scanned, enter password, click **Save**.
 - ESP will restart, then try to connect to the WiFi netwotk using STA-only mode, **without running the ConfigPortal WebServer and WiFi AP**. See [Accessing manager after connection](https://github.com/khoih-prog/ESP_WiFiManager/issues/15).
@@ -835,7 +835,6 @@ WiFi_STA_IPConfig WM_STA_IPconfig;
 // You'll loose the feature of dynamically changing from DHCP to static IP, or vice versa
 // You have to explicitly specify false to disable the feature.
 #define USE_STATIC_IP_CONFIG_IN_CP          false
-
 ```
 
 ---
@@ -859,7 +858,6 @@ WiFi_STA_IPConfig WM_STA_IPconfig;
   // You can select DHCP or Static IP here
   #define USE_DHCP_IP     true
 #endif
-
 ```
 
 ---
@@ -883,7 +881,6 @@ WiFi_STA_IPConfig WM_STA_IPconfig;
   // You can select DHCP or Static IP here
   #define USE_DHCP_IP     false
 #endif
-
 ```
 
 ---
@@ -912,7 +909,6 @@ WiFi_STA_IPConfig WM_STA_IPconfig;
 
 IPAddress dns1IP      = gatewayIP;
 IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
-
 ```
 
 ---
@@ -938,7 +934,6 @@ IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
 #endif
 
 #define USE_CONFIGURABLE_DNS      false
-
 ```
 
 ---
@@ -950,7 +945,6 @@ IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
 #define USE_ESP_WIFIMANAGER_NTP     false
-
 ```
 
 ---
@@ -966,7 +960,6 @@ IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
 // Use true to enable CloudFlare NTP service. System can hang if you don't have Internet access while accessing CloudFlare
 // See Issue #21: CloudFlare link in the default portal (https://github.com/khoih-prog/ESP_WiFiManager/issues/21)
 #define USE_CLOUDFLARE_NTP          true
-
 ```
 
 ---
@@ -982,7 +975,6 @@ IPAddress dns2IP      = IPAddress(8, 8, 8, 8);
 // Use true to enable CloudFlare NTP service. System can hang if you don't have Internet access while accessing CloudFlare
 // See Issue #21: CloudFlare link in the default portal (https://github.com/khoih-prog/ESP_WiFiManager/issues/21)
 #define USE_CLOUDFLARE_NTP          false
-
 ```
 
 ---
@@ -1067,7 +1059,7 @@ ESPAsync_wifiManager.setSTAStaticIPConfig(WM_STA_IPconfig);
 
 #### 16. Using MultiWiFi auto(Re)connect feature
 
-1. In loop()
+1. In `loop()`
 
 ```cpp
 void check_WiFi(void)
@@ -1109,9 +1101,9 @@ void loop()
 #### 17. How to auto getting _timezoneName
 
 
-1. Turn on auto NTP configuration by
+1. Turn on auto `NTP` configuration by
 
-```
+```cpp
 // Use false to disable NTP config. Advisable when using Cellphone, Tablet to access Config Portal.
 // See Issue 23: On Android phone ConfigPortal is unresponsive (https://github.com/khoih-prog/ESP_WiFiManager/issues/23)
 #define USE_ESP_WIFIMANAGER_NTP     true
@@ -1120,7 +1112,7 @@ void loop()
 2. The `_timezoneName`, in the format similar to **America/New_York, America/Toronto, Europe/London, etc.**, can be retrieved by using
 
 
-```
+```cpp
 String tempTZ = ESPAsync_wifiManager.getTimezoneName();
 ```
 
@@ -1129,9 +1121,9 @@ String tempTZ = ESPAsync_wifiManager.getTimezoneName();
 #### 18. How to get TZ variable to configure Timezone
 
 
-1. ESP32 and ESP8266 TZ can be configured, using the  similar to `EST5EDT,M3.2.0,M11.1.0` (for America/New_York) , as follows:
+1. ESP32 and ESP8266 `TZ` can be configured, using the  similar to `EST5EDT,M3.2.0,M11.1.0` (for America/New_York) , as follows:
 
-```
+```cpp
 // EST5EDT,M3.2.0,M11.1.0 (for America/New_York)
 // EST5EDT is the name of the time zone
 // EST is the abbreviation used when DST is off
@@ -1152,9 +1144,9 @@ String tempTZ = ESPAsync_wifiManager.getTimezoneName();
 #endif
 ```
 
-2. To convert from `_timezoneName` to TZ, use the function getTZ() as follows:
+2. To convert from `_timezoneName` to `TZ`, use the function `getTZ()` as follows:
 
-```
+```cpp
 const char * TZ_Result = ESPAsync_wifiManager.getTZ(_timezoneName);
 ```
 
@@ -1162,14 +1154,14 @@ The conversion depends on the stored TZs, which is using some memory, and can ca
 
 For example, your application is used in America continent, you need just
 
-```
+```cpp
 #define USING_AMERICA       true
 ```
 
 Hereafter is the regions' list
 
 
-```
+```cpp
 // Just use enough to save memory. On ESP8266, can cause blank ConfigPortal screen
 // if using too much memory
 #define USING_AFRICA        false
@@ -1190,7 +1182,7 @@ Hereafter is the regions' list
 #### 19. How to use the TZ variable to configure Timezone
 
 
-```
+```cpp
 #if ESP8266
       configTime(WM_config.TZ, "pool.ntp.org");
 #else
@@ -1202,7 +1194,7 @@ Hereafter is the regions' list
 then to print local time
 
 
-```
+```cpp
 void printLocalTime()
 {
 #if ESP8266
@@ -1230,7 +1222,7 @@ void printLocalTime()
 
 ### HOWTO Open Config Portal
 
-- When you want to open a config portal, with default DHCP hostname `ESP8266-XXXXXX` or `ESP32-XXXXXX`, just add
+- When you want to open a config portal, with default `DHCP` hostname `ESP8266-XXXXXX` or `ESP32-XXXXXX`, just add
 
 ```cpp
 #include <ESPAsync_WiFiManager.h>              //https://github.com/khoih-prog/ESPAsync_WiFiManager
@@ -1272,7 +1264,6 @@ and use fixed / dynamic / random AP channel by:
 ```cpp
 // Set config portal channel, default = 1. Use 0 => random channel from 1-13
 ESPAsync_wifiManager.setConfigPortalChannel(0);
-//////
 ```
 
 Once WiFi network information is saved in the `ESP32 / ESP8266`, it will try to autoconnect to WiFi every time it is started, without requiring any function calls in the sketch.
@@ -1307,7 +1298,7 @@ The Label can be any arbitrary string that help you identify the variable, but m
 
 The initial code will be
 
-```
+```cpp
 #define API_KEY_LEN                 17
 
 // Default configuration values
@@ -1327,9 +1318,9 @@ int pinScl                          = PIN_D1;     // Pin D1 mapped to pin GPIO5 
 
 ###  2. Initialize the variables to prepare for Config Portal (CP)
 
-The example [Async_ConfigOnSwitchFS](https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ConfigOnSwitchFS) will open the CP whenever a SW press is detected in loop(). So the code to add `dynamic variables` will be there, just after the CP `ESPAsync_WiFiManager` class initialization to create `ESPAsync_wifiManager` object.
+The example [Async_ConfigOnSwitchFS](https://github.com/khoih-prog/ESPAsync_WiFiManager/tree/master/examples/Async_ConfigOnSwitchFS) will open the CP whenever a SW press is detected in `loop()`. So the code to add `dynamic variables` will be there, just after the CP `ESPAsync_WiFiManager` class initialization to create `ESPAsync_wifiManager` object.
 
-```
+```cpp
 void loop()
 {
 // is configuration portal requested?
@@ -1356,7 +1347,7 @@ The `ESPAsync_WMParameter` class constructor will be used to initialize each new
 
 #### 2.1 Use the following simple constructor for simple variables such as `thingspeakApiKey`, `pinSda` and `pinScl` :
 
-```
+```cpp
 ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length);
 ```
 
@@ -1365,9 +1356,8 @@ ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaul
 The command to use will be 
 
 
-```
+```cpp
 ESPAsync_WMParameter p_thingspeakApiKey(ThingSpeakAPI_Label, "Thingspeak API Key", thingspeakApiKey, API_KEY_LEN);
-
 ```
 
 where
@@ -1382,7 +1372,7 @@ where
 
 For `pinSda` and `pinScl`, the command will be similar
 
-```
+```cpp
 // I2C SCL and SDA parameters are integers so we need to convert them to char array but
 // no other special considerations
 char convertedValue[3];
@@ -1407,7 +1397,7 @@ where
 
 #### 2.3 Use the more complex following constructor for variables such as `sensorDht22`:
 
-```
+```cpp
 ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaultValue, int length, const char *custom, int labelPlacement);
 ```
 
@@ -1416,7 +1406,7 @@ ESPAsync_WMParameter(const char *id, const char *placeholder, const char *defaul
 The command to use will be 
 
 
-```
+```cpp
 ESPAsync_WMParameter p_sensorDht22(SensorDht22_Label, "DHT-22 Sensor", "T", 2, customhtml, WFM_LABEL_AFTER);
 ```
 
@@ -1434,7 +1424,7 @@ where
 
 and customhtml Code is:
 
-```
+```cpp
 char customhtml[24] = "type=\"checkbox\"";
 
 if (sensorDht22)
@@ -1451,7 +1441,7 @@ Adding those `ESPAsync_WMParameter` objects created in Step 2 using the function
 
 #### 3.1 addParameter() function Prototype:
 
-```
+```cpp
 //adds a custom parameter
 bool addParameter(ESPAsync_WMParameter *p);
 ```
@@ -1461,7 +1451,7 @@ bool addParameter(ESPAsync_WMParameter *p);
 
 Add parameter objects, previously created in Step 2, such as : `p_thingspeakApiKey`, `p_sensorDht22`, `p_pinSda` and `p_pinScl`
 
-```
+```cpp
 //add all parameters here
 
 ESPAsync_wifiManager.addParameter(&p_thingspeakApiKey);
@@ -1490,7 +1480,7 @@ We can now retrieve the data, using `getValue()` function, for each `ESPAsync_WM
 
 The code is as follows:
 
-```
+```cpp
 // Getting posted form values and overriding local variables parameters
 // Config file is written regardless the connection state
 strcpy(thingspeakApiKey, p_thingspeakApiKey.getValue());
@@ -1501,7 +1491,7 @@ pinScl = atoi(p_pinScl.getValue());
 
 We can also save to FS file to use later in next boot.
 
-```
+```cpp
 // Writing JSON config file to flash for next boot
 writeConfigFile();
 ```
@@ -1512,13 +1502,13 @@ writeConfigFile();
 
 First, you have to familiarize yourself with `ArduinoJson` library, its functions, the disruptive differences between `ArduinoJson version 5.x.x-` and `v6.0.0+`. The best documentation can be found at [The best JSON library for embedded C++](https://arduinojson.org/).
 
-This documentation will discuss only ArduinoJson v6.x.x+ (`ARDUINOJSON_VERSION_MAJOR >= 6`)
+This documentation will discuss only `ArduinoJson v6.x.x+` (`ARDUINOJSON_VERSION_MAJOR >= 6`)
 
 
 Then have a look at the code snippet of `writeConfigFile()` function and the following step-by-step explanations.
 
 
-```
+```cpp
 bool writeConfigFile()
 {
   Serial.println("Saving config file");
@@ -1566,7 +1556,7 @@ bool writeConfigFile()
 
 We'll create an object with size 1024 bytes, enough to hold our data:
 
-```
+```cpp
 DynamicJsonDocument json(1024);
 ```
 
@@ -1574,13 +1564,13 @@ DynamicJsonDocument json(1024);
 
 Then `JSONify` all local parameters we've just received from CP and wish to store into FS by using the function prototype:
 
-```
+```cpp
 json[Unique_Label] = Value_For_Unique_Label;
 ```
 
 as follows:
 
-```
+```cpp
 // JSONify local configuration parameters
 json[ThingSpeakAPI_Label] = thingspeakApiKey;
 json[SensorDht22_Label]   = sensorDht22;
@@ -1594,7 +1584,7 @@ json[PinSCL_Label]        = pinScl;
 
 This is the `CONFIG_FILE` file name we already declared at the beginning of the sketch (for ESP32):
 
-```
+```cpp
 #include <SPIFFS.h>
 FS* filesystem =      &SPIFFS;
 #define FileFS        SPIFFS
@@ -1605,7 +1595,7 @@ const char* CONFIG_FILE = "/ConfigSW.json";
 Now just open the file for writing, and abort if open-for-writing error:
 
 
-```
+```cpp
 // Open file for writing
 File f = FileFS.open(CONFIG_FILE, "w");
 
@@ -1621,7 +1611,7 @@ if (!f)
 
 As simple as this single command to write the whole `json` object we declared then filled with data in steps 5.1 and 5.2
 
-```
+```cpp
 // Write data to file and close it
 serializeJson(json, f);
 ```
@@ -1630,7 +1620,7 @@ serializeJson(json, f);
 
 Soooo simple !!! Now everybody can do it.
 
-```
+```cpp
 f.close();
 ```
 
@@ -1641,15 +1631,15 @@ But **HOWTO use the saved data in the next startup** ???? That's in next step 6.
 ### 6. Read from FS using JSON format
 
 
-Now, you have familiarized yourself with ArduinoJson library, its functions. We'll discuss HOWTO read data from the CONFIG_FILE in Jsonified format, then HOWTO parse the to use.
+Now, you have familiarized yourself with ArduinoJson library, its functions. We'll discuss HOWTO read data from the `CONFIG_FILE` in Jsonified format, then HOWTO parse the to use.
 
-The documentation will discuss only ArduinoJson v6.x.x+ (`ARDUINOJSON_VERSION_MAJOR >= 6`)
+The documentation will discuss only `ArduinoJson v6.x.x+` (`ARDUINOJSON_VERSION_MAJOR >= 6`)
 
 
 First, have a look at the code snippet of `readConfigFile()` function.
 
 
-```
+```cpp
 bool readConfigFile()
 {
   // this opens the config file in read-mode
@@ -1730,14 +1720,14 @@ and the following step-by-step explanations.
 
 As simple as this
 
-```
+```cpp
 // this opens the config file in read-mode
 File f = FileFS.open(CONFIG_FILE, "r");
 ```
 
-We'll inform and abort if the CONFIG_FILE can't be opened (file not found, can't be opened, etc.)
+We'll inform and abort if the `CONFIG_FILE` can't be opened (file not found, can't be opened, etc.)
 
-```
+```cpp
 if (!f)
 {
   Serial.println("Configuration file not found");
@@ -1749,7 +1739,7 @@ if (!f)
 
 Now we have to determine the file size to create a buffer large enough to store the to-be-read data
 
-```
+```cpp
 // we could open the file
 size_t size = f.size();
 // Allocate a buffer to store contents of the file.
@@ -1761,7 +1751,7 @@ std::unique_ptr<char[]> buf(new char[size + 1]);
 
 Then just read the file into the buffer, and close the file to be safe
 
-```
+```cpp
 // Read and store file contents in buf
 f.readBytes(buf.get(), size);
 // Closing file
@@ -1777,19 +1767,19 @@ Why the same complicated `DynamicJsonDocument json` object ?? Because in steps 5
 
 We first create the object with enough size
 
-```
+```cpp
 DynamicJsonDocument json(1024);
 ```
 
-then populate it with data from buffer we read from CONFIG_FILE in step 6.2, pre-parse and check for error. All is done just by one command `deserializeJson()`
+then populate it with data from buffer we read from `CONFIG_FILE` in step 6.2, pre-parse and check for error. All is done just by one command `deserializeJson()`
 
-```
+```cpp
 auto deserializeError = deserializeJson(json, buf.get());
 ```
 
 Abort if there is any data error in the process of writing, storing, reading back. If OK, just nicely print out to the Debug Terminal
 
-```
+```cpp
 if ( deserializeError )
 {
   Serial.println("JSON parseObject() failed");
@@ -1805,18 +1795,18 @@ serializeJson(json, Serial);
 This is as simple as in the step 5.2, but in reverse direction.
 
 To be sure there is good corresponding data, not garbage, for each variable, we have to perform **sanity checks** by 
-verifying the `DynamicJsonDocument json object` still contains the correct keys we passed to it when we wrote into CONFIG_FILE. 
+verifying the `DynamicJsonDocument json object` still contains the correct keys we passed to it when we wrote into `CONFIG_FILE`. 
 
 For example:
 
-```
+```cpp
 if (json.containsKey(ThingSpeakAPI_Label))
 ```
 
 Then proceed to get every parameter we know we stored there from last CP `Save`.
 
 
-```
+```cpp
 // Parse all config file parameters, override
 // local config variables with parsed values
 if (json.containsKey(ThingSpeakAPI_Label))
@@ -1846,7 +1836,7 @@ if (json.containsKey(PinSCL_Label))
 **Just use those parameters for whatever purpose you designed them for in step 1:**
 
 
-```
+```cpp
 The application will use DHT sensor (either DHT11 or DHT22) and need to connect to ThingSpeak with unique user's API Key. The DHT sensor is connected to the ESP boards using SDA/SCL pins which also need to be configurable.
 ```
 
@@ -1943,9 +1933,9 @@ If you need to set a timeout so the `ESP32 / ESP8266` doesn't hang waiting to be
 ```cpp
 ESPAsync_wifiManager.setConfigPortalTimeout(120);
 ```
-which will wait 2 minutes (120 seconds). When the time passes, the startConfigPortal function will return and continue the sketch, 
-unless you're accessing the Config Portal. In this case, the `startConfigPortal` function will stay until you save config data or exit 
-the Config Portal.
+which will wait 2 minutes (120 seconds). When the time passes, the `startConfigPortal()` function will return and continue the sketch, 
+unless you're accessing the `Config Portal`. In this case, the `startConfigPortal()` function will stay until you save config data or exit 
+the `Config Portal`.
 
 
 #### On Demand ConfigPortal
@@ -2194,7 +2184,7 @@ ESPAsync_wifiManager.setRemoveDuplicateAPs(false);
 ### Example [Async_ConfigOnDRD_FS_MQTT_Ptr](examples/Async_ConfigOnDRD_FS_MQTT_Ptr)
 
 
-https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/5707085f3448146d59540d2903b33eb678b8f6a2/examples/Async_ConfigOnDRD_FS_MQTT_Ptr/Async_ConfigOnDRD_FS_MQTT_Ptr.ino#L17-L1408
+https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/703b82e36f7f374d5e4be73cc47fad0bb83420c7/examples/Async_ConfigOnDRD_FS_MQTT_Ptr/Async_ConfigOnDRD_FS_MQTT_Ptr.ino#L17-L1420
 
 ---
 ---
@@ -2205,11 +2195,11 @@ https://github.com/khoih-prog/ESPAsync_WiFiManager/blob/5707085f3448146d59540d29
 
 ##### 1.1 No Config Data => Config Portal
 
-This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Medium) on  **ESP32 ESP32_DEV.**. Config Portal was requested by DRD to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
+This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Medium) on  **ESP32 ESP32_DEV.**. `Config Portal` was requested by DRD to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 Config File not found
 Can't read Config File, using default values
@@ -2228,7 +2218,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 Config File not found
 Can't read Config File, using default values
@@ -2304,19 +2294,17 @@ MQTT connection successful!
 TWWWW 
 ```
 
-
-
 ---
 
 #### 2. [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) on  **ESP8266_NODEMCU_ESP12E 1.0.**. Config Portal was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
+This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Complex](examples/Async_ConfigOnDRD_FS_MQTT_Ptr_Complex) on  **ESP8266_NODEMCU_ESP12E 1.0.**. `Config Portal` was requested to input and save MQTT Credentials. The boards then connected to Adafruit MQTT Server successfully.
 
 ##### 2.1 With Config Data => Run normally
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -2356,7 +2344,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -2442,11 +2430,11 @@ TWW
 
 #### 3. [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on ESP32_DEV
 
-This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  **ESP32 ESP32_DEV.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
+This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  **ESP32 ESP32_DEV.**. `Config Portal` was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -2501,11 +2489,11 @@ HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH
 
 #### 4. [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on  **ESP8266_NODEMCU_ESP12E.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
+This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on  **ESP8266_NODEMCU_ESP12E.**. `Config Portal` was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully. WiFi AP **HueNet1** is then lost, and board **autoreconnects** itself to backup WiFi AP **HueNet2**.
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -2561,11 +2549,11 @@ HHHHHHHHHH HHHHHHHHHH HHH
 
 #### 5. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU_ESP12E.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU_ESP12E.**. `Config Portal` was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -2639,11 +2627,11 @@ By going to http://192.168.2.186/edit or http://async-esp8266fs.local/edit, you 
 
 #### 6. [Async_ESP32_FSWebServer_DRD](examples/Async_ESP32_FSWebServer_DRD) on ESP32_DEV
 
-This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](examples/Async_ESP32_FSWebServer_DRD)  on  **ESP32_DEV using newly-supported LittleFS.**. Config Portal was requested by DRD (also using **LittleFS**) to input and save Credentials. The boards then connected to WiFi successfully.
+This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](examples/Async_ESP32_FSWebServer_DRD)  on  **ESP32_DEV using newly-supported LittleFS.**. `Config Portal` was requested by DRD (also using **LittleFS**) to input and save Credentials. The boards then connected to WiFi successfully.
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -2745,16 +2733,16 @@ Using username = admin and password = admin
 HH
 ```
 
--
+---
 
 #### 7. [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset) on ESP32S2_DEV
 
-This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  **ESP32S2_DEV.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
+This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/Async_ConfigOnDoubleReset)  on  **ESP32S2_DEV.**. `Config Portal` was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully.
 
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -2784,14 +2772,14 @@ HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHHHHHHH HHHHH
 
 #### 8. [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ) on ESP32_DEV
 
-This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ)  on  **ESP32_DEV.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
+This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](examples/Async_ConfigOnDoubleReset_TZ)  on  **ESP32_DEV.**. `Config Portal` was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
 
 
 #### 8.1 DRD => Config Portal
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -2825,15 +2813,17 @@ WiFi connected...yeey :)
 [WM] dns1IP = 192.168.2.1 , dns2IP = 8.8.8.8
 [WM] OK
 After waiting 0.00 secs more in setup(), connection result is connected. Local IP: 192.168.2.232
-Local Date/Time: Thu Feb 10 23:49:26 2022
-Local Date/Time: Thu Feb 10 23:50:26 2022
+Local Date/Time: Fri Oct  7 16:16:03 2022
+Local Date/Time: Fri Oct  7 16:17:03 2022
+Local Date/Time: Fri Oct  7 16:18:03 2022
+Local Date/Time: Fri Oct  7 16:19:03 2022
 ```
 
 #### 8.3 Normal running with correct local time, TZ set and using NTP
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -2865,24 +2855,22 @@ After waiting 10.95 secs more in setup(), connection result is connected. Local 
 Stop doubleResetDetecting
 Saving config file...
 Saving config file OK
-Local Date/Time: Thu Feb 10 23:56:26 2022
-Local Date/Time: Thu Feb 10 23:57:26 2022
-Local Date/Time: Thu Feb 10 23:58:26 2022
-Local Date/Time: Thu Feb 10 23:59:26 2022
-Local Date/Time: Fri Feb 11 00:00:26 2022
+Local Date/Time: Fri Oct  7 16:20:03 2022
+Local Date/Time: Fri Oct  7 16:21:03 2022
+Local Date/Time: Fri Oct  7 16:22:03 2022
 ```
 
 ---
 
 #### 9. [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD) on ESP8266_NODEMCU_ESP12E
 
-This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU_ESP12E.**. Config Portal was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
+This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/Async_ESP_FSWebServer_DRD)  on  **ESP8266_NODEMCU_ESP12E.**. `Config Portal` was requested by DRD to input and save Credentials. The boards then connected to WiFi using new Static IP successfully, with correct local time, TZ set and using NTP
 
 #### 9.1 DRD => Config Portal
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -2946,8 +2934,9 @@ Open http://192.168.2.186/edit to see the file browser
 Using username = admin and password = admin
 ===============================================================
 [WM] freeing allocated params!
-Local Date/Time: Thu Feb 10 23:15:26 2022
-Local Date/Time: Thu Feb 10 23:16:26 2022
+Local Date/Time: Fri Oct  7 16:16:03 2022
+Local Date/Time: Fri Oct  7 16:17:03 2022
+Local Date/Time: Fri Oct  7 16:18:03 2022
 ```
 
 
@@ -2955,7 +2944,7 @@ Local Date/Time: Thu Feb 10 23:16:26 2022
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -3000,10 +2989,10 @@ Using username = admin and password = admin
 Stop doubleResetDetecting
 Saving config file...
 Saving config file OK
-Local Date/Time: Thu Feb 10 23:23:26 2022
-Local Date/Time: Thu Feb 10 23:24:26 2022
-Local Date/Time: Thu Feb 10 23:25:26 2022
-Local Date/Time: Thu Feb 10 23:26:26 2022
+Local Date/Time: Fri Oct  7 16:19:03 2022
+Local Date/Time: Fri Oct  7 16:20:03 2022
+Local Date/Time: Fri Oct  7 16:21:03 2022
+Local Date/Time: Fri Oct  7 16:22:03 2022
 ```
 
 ---
@@ -3014,7 +3003,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using SPIFFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -3046,10 +3035,10 @@ After waiting 11.85 secs more in setup(), connection result is connected. Local 
 Stop doubleResetDetecting
 Saving config file...
 Saving config file OK
-Local Date/Time: Thu Feb 10 23:22:26 2022
-Local Date/Time: Thu Feb 10 23:23:26 2022
-Local Date/Time: Thu Feb 10 23:24:26 2022
-Local Date/Time: Thu Feb 10 23:25:26 2022
+Local Date/Time: Fri Oct  7 16:19:03 2022
+Local Date/Time: Fri Oct  7 16:20:03 2022
+Local Date/Time: Fri Oct  7 16:21:03 2022
+Local Date/Time: Fri Oct  7 16:22:03 2022
 ```
 
 ---
@@ -3060,7 +3049,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S3_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -3103,7 +3092,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.14.1
+ESPAsync_WiFiManager v1.15.0
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
