@@ -31,11 +31,15 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.14.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1014000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.15.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1015000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
-#define _ESPASYNC_WIFIMGR_LOGLEVEL_    2
+#define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
+
+// To not display stored SSIDs and PWDs on Config Portal, select false. Default is true
+// Even the stored Credentials are not display, just leave them all blank to reconnect and reuse the stored Credentials 
+//#define DISPLAY_STORED_CREDENTIALS_IN_CP        false
 
 // Optional ms delay in ConfigPortal loop, if necessary. Using 0 if not necessary
 #define TIME_BETWEEN_CONFIG_PORTAL_LOOP         0L
@@ -1022,6 +1026,12 @@ void wifi_manager()
   Serial.print(F(", PWD = "));
   Serial.println(password);
 
+#if DISPLAY_STORED_CREDENTIALS_IN_CP
+  // New. Update Credentials, got from loadConfigData(), to display on CP
+  ESPAsync_wifiManager.setCredentials(WM_config.WiFi_Creds[0].wifi_ssid, WM_config.WiFi_Creds[0].wifi_pw, 
+                                      WM_config.WiFi_Creds[1].wifi_ssid, WM_config.WiFi_Creds[1].wifi_pw);
+#endif
+
   if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password.c_str()))
   {
     Serial.println(F("Not connected to WiFi but continuing anyway."));
@@ -1382,8 +1392,11 @@ void setup()
 
   if (initialConfig)
   {
+    loadConfigData();
+    
     wifi_manager();
   }
+  else
   {   
     // Pretend CP is necessary as we have no AP Credentials
     initialConfig = true;
@@ -1392,21 +1405,21 @@ void setup()
     if (loadConfigData())
     {
 #if USE_ESP_WIFIMANAGER_NTP      
-    if ( strlen(WM_config.TZ_Name) > 0 )
-    {
-      LOGERROR3(F("Current TZ_Name ="), WM_config.TZ_Name, F(", TZ = "), WM_config.TZ);
+      if ( strlen(WM_config.TZ_Name) > 0 )
+      {
+        LOGERROR3(F("Current TZ_Name ="), WM_config.TZ_Name, F(", TZ = "), WM_config.TZ);
 
   #if ESP8266
-      configTime(WM_config.TZ, "pool.ntp.org"); 
+        configTime(WM_config.TZ, "pool.ntp.org"); 
   #else
-      //configTzTime(WM_config.TZ, "pool.ntp.org" );
-      configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+        //configTzTime(WM_config.TZ, "pool.ntp.org" );
+        configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
   #endif   
-    }
-    else
-    {
-      Serial.println(F("Current Timezone is not set. Enter Config Portal to set."));
-    } 
+      }
+      else
+      {
+        Serial.println(F("Current Timezone is not set. Enter Config Portal to set."));
+      } 
 #endif
       
       for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)

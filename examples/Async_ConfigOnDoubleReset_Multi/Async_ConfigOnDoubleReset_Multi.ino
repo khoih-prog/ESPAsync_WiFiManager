@@ -247,6 +247,12 @@ void setup()
     //switched off via webserver or device is restarted.
     //ESPAsync_wifiManager.setConfigPortalTimeout(600);
 
+#if DISPLAY_STORED_CREDENTIALS_IN_CP
+    // New. Update Credentials, got from loadConfigData(), to display on CP
+    ESPAsync_wifiManager.setCredentials(WM_config.WiFi_Creds[0].wifi_ssid, WM_config.WiFi_Creds[0].wifi_pw, 
+                                        WM_config.WiFi_Creds[1].wifi_ssid, WM_config.WiFi_Creds[1].wifi_pw);
+#endif
+
     // Starts an access point
     if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password.c_str()))
       Serial.println(F("Not connected to WiFi but continuing anyway."));

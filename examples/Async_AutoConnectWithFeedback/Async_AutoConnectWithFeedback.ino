@@ -18,11 +18,15 @@
   #error This code is intended to run on the ESP8266 or ESP32 platform! Please check your Tools->Board setting.
 #endif
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.14.0"
-#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1014000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN_TARGET      "ESPAsync_WiFiManager v1.15.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION_MIN             1015000
 
 // Use from 0 to 4. Higher number, more debugging messages and memory usage.
 #define _ESPASYNC_WIFIMGR_LOGLEVEL_    3
+
+// To not display stored SSIDs and PWDs on Config Portal, select false. Default is true
+// Even the stored Credentials are not display, just leave them all blank to reconnect and reuse the stored Credentials 
+//#define DISPLAY_STORED_CREDENTIALS_IN_CP        false
 
 //Ported to ESP32
 #ifdef ESP32
@@ -795,6 +799,12 @@ void setup()
     Serial.print(AP_SSID);
     Serial.print(F(", PWD = "));
     Serial.println(AP_PASS);
+
+#if DISPLAY_STORED_CREDENTIALS_IN_CP
+    // New. Update Credentials, got from loadConfigData(), to display on CP
+    ESPAsync_wifiManager.setCredentials(WM_config.WiFi_Creds[0].wifi_ssid, WM_config.WiFi_Creds[0].wifi_pw, 
+                                        WM_config.WiFi_Creds[1].wifi_ssid, WM_config.WiFi_Creds[1].wifi_pw);
+#endif
 
     // Starts an access point
     //if (!ESPAsync_wifiManager.startConfigPortal((const char *) ssid.c_str(), password))
