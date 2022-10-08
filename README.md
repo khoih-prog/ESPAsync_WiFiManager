@@ -362,13 +362,13 @@ The current library implementation, using `xyz-Impl.h` instead of standard `xyz.
 
 You can use
 
-```
+```cpp
 #include <ESPAsync_WiFiManager.hpp>               //https://github.com/khoih-prog/ESPAsync_WiFiManager
 ```
 
 in many files. But be sure to use the following `#include <ESPAsync_WiFiManager.h>` **in just 1 `.h`, `.cpp` or `.ino` file**, which must **not be included in any other file**, to avoid `Multiple Definitions` Linker Error
 
-```
+```cpp
 // To be included only in main(), .ino with setup() to avoid `Multiple Definitions` Linker Error
 #include <ESPAsync_WiFiManager.h>          //https://github.com/khoih-prog/ESPAsync_WiFiManager
 ```
@@ -1137,10 +1137,10 @@ String tempTZ = ESPAsync_wifiManager.getTimezoneName();
 // .0 is Sunday
 
 #if ESP8266
-      configTime(WM_config.TZ, "pool.ntp.org"); 
+  configTime(WM_config.TZ, "pool.ntp.org"); 
 #else
-      //configTzTime(WM_config.TZ, "pool.ntp.org" );
-      configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
+  //configTzTime(WM_config.TZ, "pool.ntp.org" );
+  configTzTime(WM_config.TZ, "time.nist.gov", "0.pool.ntp.org", "1.pool.ntp.org");
 #endif
 ```
 
