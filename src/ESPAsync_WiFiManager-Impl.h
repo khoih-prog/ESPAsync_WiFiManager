@@ -412,18 +412,9 @@ void ESPAsync_WiFiManager::setupConfigPortal()
   else
     channel = _WiFiAPChannel;
 
-  if (_apPassword != NULL)
-  {
-    LOGWARN1(F("AP Channel ="), channel);
+  LOGWARN1(F("AP Channel ="), channel);
 
-    //WiFi.softAP(_apName, _apPassword);//password option
-    WiFi.softAP(_apName, _apPassword, channel);
-  }
-  else
-  {
-    // Can't use channel here
-    WiFi.softAP(_apName);
-  }
+  WiFi.softAP(_apName, _apPassword, channel);
 
   delay(500); // Without delay I've seen the IP address blank
 
