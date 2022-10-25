@@ -64,4 +64,33 @@ Steps to reproduce:
 
 ### Additional context
 
-Add any other context about the problem here.
+Add any other context about the problem here
+
+---
+
+### Sending Feature Requests
+
+Feel free to post feature requests. It's helpful if you can explain exactly why the feature would be useful.
+
+There are usually some outstanding feature requests in the [existing issues list](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues?q=is%3Aopen+is%3Aissue+label%3Aenhancement), feel free to add comments to them.
+
+---
+
+### Sending Pull Requests
+
+Pull Requests with changes and fixes are also welcome!
+
+Please use the `astyle` to reformat the updated library code as follows (demo for Ubuntu Linux)
+
+1. Change directory to the library GitHub
+
+```
+xy@xy-Inspiron-3593:~$ cd Arduino/xy/ESPAsync_WiFiManager_GitHub/
+xy@xy-Inspiron-3593:~/Arduino/xy/ESPAsync_WiFiManager_GitHub$
+```
+
+2. Issue astyle command
+
+```
+xy@xy-Inspiron-3593:~/Arduino/xy/ESPAsync_WiFiManager_GitHub$ bash utils/restyle.sh
+```
