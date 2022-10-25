@@ -863,6 +863,9 @@ bool ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *apP
     }
 #endif    // ( USING_ESP32_S2 || USING_ESP32_C3 )
 
+    // yield before processing our flags "connect" and/or "stopConfigPortal"
+    yield();
+
     if (connect)
     {
       TimedOut = false;
@@ -905,13 +908,13 @@ bool ESPAsync_WiFiManager::startConfigPortal(char const *apName, char const *apP
 
     if (stopConfigPortal)
     {
+      TimedOut = false;
+
       LOGERROR("Stop ConfigPortal");
 
       stopConfigPortal = false;
       break;
     }
-
-    yield();
 
 #if ( defined(TIME_BETWEEN_CONFIG_PORTAL_LOOP) && (TIME_BETWEEN_CONFIG_PORTAL_LOOP > 0) )
   #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)   
@@ -1823,9 +1826,6 @@ void ESPAsync_WiFiManager::handleWifiSave(AsyncWebServerRequest *request)
   LOGDEBUG(F("Sent wifi save page"));
 
   connect = true; //signal ready to connect/reset
-
-  // Restore when Press Save WiFi
-  _configPortalTimeout = DEFAULT_PORTAL_TIMEOUT;
 }
 
 //////////////////////////////////////////
@@ -1879,9 +1879,6 @@ void ESPAsync_WiFiManager::handleServerClose(AsyncWebServerRequest *request)
   stopConfigPortal = true; //signal ready to shutdown config portal
 
   LOGDEBUG(F("Sent server close page"));
-
-  // Restore when Press Save WiFi
-  _configPortalTimeout = DEFAULT_PORTAL_TIMEOUT;
 }
 
 //////////////////////////////////////////
