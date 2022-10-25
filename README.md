@@ -2199,7 +2199,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Medium
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 Config File not found
 Can't read Config File, using default values
@@ -2218,7 +2218,7 @@ Opening Configuration Portal. No timeout : DRD or No stored Credentials..
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Medium using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 Config File not found
 Can't read Config File, using default values
@@ -2304,7 +2304,7 @@ This is terminal debug output when running [Async_ConfigOnDRD_FS_MQTT_Ptr_Comple
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -2344,7 +2344,7 @@ TWWWW WTWWW
 
 ```
 Starting Async_ConfigOnDRD_FS_MQTT_Ptr_Complex using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 {"AIO_SERVER_Label":"io.adafruit.com","AIO_SERVERPORT_Label":"1883","AIO_USERNAME_Label":"user_name","AIO_KEY_Label":"aio_key"}
 Config File successfully parsed
@@ -2434,7 +2434,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using SPIFFS on ESP32_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -2493,7 +2493,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```cpp
 Starting Async_ConfigOnDoubleReset with DoubleResetDetect using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 [WM] RFC925 Hostname = ConfigOnDoubleReset
 [WM] setSTAStaticIPConfig for USE_CONFIGURABLE_DNS
@@ -2553,7 +2553,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```cpp
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 Opening / directory
 FS File: CanadaFlag_1.png, size: 40.25KB
@@ -2631,7 +2631,7 @@ This is terminal debug output when running [Async_ESP32_FSWebServer_DRD](example
 
 ```
 Starting Async_ESP32_FSWebServer_DRD using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 FS File: /CanadaFlag_1.png, size: 40.25KB
 FS File: /CanadaFlag_2.png, size: 8.12KB
@@ -2742,7 +2742,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S2_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -2779,7 +2779,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -2823,7 +2823,7 @@ Local Date/Time: Fri Oct  7 16:19:03 2022
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using LittleFS on ESP32_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -2870,7 +2870,7 @@ This is terminal debug output when running [Async_ESP_FSWebServer_DRD](examples/
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -2944,7 +2944,7 @@ Local Date/Time: Fri Oct  7 16:18:03 2022
 
 ```
 Starting Async_ESP_FSWebServer_DRD using LittleFS on ESP8266_NODEMCU_ESP12E
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 Opening / directory
 FS File: drd.dat, size: 4B
@@ -3003,7 +3003,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset_TZ](exampl
 
 ```
 Starting Async_ConfigOnDoubleReset_TZ using SPIFFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = 12345678
 [WM] * Add SSID =  HueNet1 , PW =  12345678
@@ -3049,7 +3049,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32S3_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -3092,7 +3092,7 @@ This is terminal debug output when running [Async_ConfigOnDoubleReset](examples/
 
 ```
 Starting Async_ConfigOnDoubleReset using LittleFS on ESP32C3_DEV
-ESPAsync_WiFiManager v1.15.0
+ESPAsync_WiFiManager v1.15.1
 ESP_DoubleResetDetector v1.3.2
 ESP Self-Stored: SSID = HueNet1, Pass = password
 [WM] * Add SSID =  HueNet1 , PW =  password
@@ -3185,7 +3185,12 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 18. Thanks to [Dean Ott](https://github.com/deanjott) for reporting [WiFiManager works only on port 80 #75](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/75) and providing the solution leading to v1.9.7
 19. Thanks to [Twaste](https://github.com/Twaste) for initiate the discussion in [Different behaviour using the src_cpp or src_h lib #80](https://github.com/khoih-prog/ESPAsync_WiFiManager/discussions/80) and providing the idea to the solution, to fix `multiple-definitions` linker error, leading to v1.10.0
 20. Thanks to [Zongyi Yang](https://github.com/ZongyiYang) for creating merged PR [Fixes Captive Portal hanging depending on active core for AsyncTCP #100 #104](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/104).
-21. Thanks to [MattiaCC93](https://github.com/MattiaCC93) for open discussion [Help for storing variables in memory (non-volatile) #87](https://github.com/khoih-prog/ESP_WiFiManager/discussions/87#discussioncomment-3593028) and report the ESP32 chipID bug, leading to v1.14.0.
+21. Thanks to [MattiaCC93](https://github.com/MattiaCC93) for open discussion [Help for storing variables in memory (non-volatile) #87](https://github.com/khoih-prog/ESP_WiFiManager/discussions/87#discussioncomment-3593028) and report the ESP32 chipID bug, leading to v1.14.0
+22. Thanks to [slaesh](https://github.com/slaesh) for creating merged PRs
+- [fix: using random CH for non-password use too #118](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/118)
+- [fix: ending portal loop without processing its flags #119](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/119)
+, leading to v1.15.1
+
 
 <table>
   <tr>
@@ -3219,6 +3224,9 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
     <td align="center"><a href="https://github.com/Twaste"><img src="https://github.com/Twaste.png" width="100px;" alt="Twaste"/><br /><sub><b>Twaste</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/ZongyiYang"><img src="https://github.com/ZongyiYang.png" width="100px;" alt="ZongyiYang"/><br /><sub><b>Zongyi Yang</b></sub></a><br /></td>
     <td align="center"><a href="https://github.com/MattiaCC93"><img src="https://github.com/MattiaCC93.png" width="100px;" alt="MattiaCC93"/><br /><sub><b>MattiaCC93</b></sub></a><br /></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/slaesh"><img src="https://github.com/slaesh.png" width="100px;" alt="slaesh"/><br /><sub><b>slaesh</b></sub></a><br /></td>
   </tr>
 </table>
 

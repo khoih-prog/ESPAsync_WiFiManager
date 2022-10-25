@@ -5,7 +5,7 @@
   ESPAsync_WiFiManager is a library for the ESP8266/Arduino platform, using (ESP)AsyncWebServer to enable easy
   configuration and reconfiguration of WiFi credentials using a Captive Portal.
 
-  Modified from 
+  Modified from
   1. Tzapu               (https://github.com/tzapu/WiFiManager)
   2. Ken Taylor          (https://github.com/kentaylor)
   3. Alan Steremberg     (https://github.com/alanswx/ESPAsyncWiFiManager)
@@ -13,8 +13,8 @@
 
   Built by Khoi Hoang https://github.com/khoih-prog/ESPAsync_WiFiManager
   Licensed under MIT license
-  
-  Version: 1.15.0
+
+  Version: 1.15.1
 
   Version Modified By  Date      Comments
   ------- -----------  ---------- -----------
@@ -30,6 +30,7 @@
   1.14.0  K Hoang      09/09/2022 Fix ESP32 chipID and add ESP_getChipOUI()
   1.14.1  K Hoang      15/09/2022 Remove dependency on ESP_AsyncWebServer, ESPAsyncTCP and AsyncTCP in `library.properties`
   1.15.0  K Hoang      07/10/2022 Optional display Credentials (SSIDs, PWDs) in Config Portal
+  1.15.1  K Hoang      25/10/2022 Using random channel for softAP without password. Add astyle using allman style
  *****************************************************************************************************************************/
 
 #pragma once
@@ -77,13 +78,13 @@
 
 ////////////////////////////////////////////////////
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.15.0"
+#define ESP_ASYNC_WIFIMANAGER_VERSION           "ESPAsync_WiFiManager v1.15.1"
 
 #define ESP_ASYNC_WIFIMANAGER_VERSION_MAJOR     1
 #define ESP_ASYNC_WIFIMANAGER_VERSION_MINOR     15
-#define ESP_ASYNC_WIFIMANAGER_VERSION_PATCH     0
+#define ESP_ASYNC_WIFIMANAGER_VERSION_PATCH     1
 
-#define ESP_ASYNC_WIFIMANAGER_VERSION_INT      1015000
+#define ESP_ASYNC_WIFIMANAGER_VERSION_INT       1015001
 
 ////////////////////////////////////////////////////
 

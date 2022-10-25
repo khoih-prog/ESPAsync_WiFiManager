@@ -12,6 +12,7 @@
 ## Table of Contents
 
 * [Changelog](#changelog)
+  * [Releases v1.15.1](#releases-v1151)
   * [Releases v1.15.0](#releases-v1150)
   * [Releases v1.14.1](#releases-v1141)
   * [Releases v1.14.0](#releases-v1140)
@@ -53,6 +54,13 @@
 ---
 
 ## Changelog
+
+### Releases v1.15.1
+
+1. Using random channel for softAP without password. Check [fix: using random CH for non-password use too #118](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/118)
+2. Fix bug. Check [fix: ending portal loop without processing its flags #119](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/119)
+3. Add astyle using `allman` style. Restyle the library
+
 
 ### Releases v1.15.0
 
