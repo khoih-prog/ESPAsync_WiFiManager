@@ -309,12 +309,12 @@ typedef struct
 ////////////////////////////////////////////////////
 
 #ifndef TIME_BETWEEN_MODAL_SCANS
-  // Default to 30s
+  // Default to 120s
   #define TIME_BETWEEN_MODAL_SCANS          120000UL
 #endif
 
 #ifndef TIME_BETWEEN_MODELESS_SCANS
-  // Default to 60s
+  // Default to 120s
   #define TIME_BETWEEN_MODELESS_SCANS       120000UL
 #endif
 
