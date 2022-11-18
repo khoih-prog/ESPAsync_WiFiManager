@@ -157,7 +157,7 @@ String requestDigestAuthentication(const char * realm){
 
 bool checkDigestAuthentication(const char * header, const char * method, const char * username, const char * password, const char * realm, bool passwordIsHash, const char * nonce, const char * opaque, const char * uri){
   if(username == NULL || password == NULL || header == NULL || method == NULL){
-    //os_printf("AUTH FAIL: missing requred fields\n");
+    //os_printf("AUTH FAIL: missing required fields\n");
     return false;
   }
 

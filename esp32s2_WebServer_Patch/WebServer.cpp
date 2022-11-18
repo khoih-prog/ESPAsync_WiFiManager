@@ -423,7 +423,7 @@ void WebServer::_prepareHeader(String& response, int code, const char* content_t
 
 void WebServer::send(int code, const char* content_type, const String& content) {
     String header;
-    // Can we asume the following?
+    // Can we assume the following?
     //if(code == 200 && content.length() == 0 && _contentLength == CONTENT_LENGTH_NOT_SET)
     //  _contentLength = CONTENT_LENGTH_UNKNOWN;
     _prepareHeader(header, code, content_type, content.length());

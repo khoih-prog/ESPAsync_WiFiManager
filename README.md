@@ -1329,7 +1329,7 @@ void loop()
     Serial.println("\nConfiguration portal requested.");
     digitalWrite(LED_BUILTIN, LED_ON); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
 
-    //Local intialization. Once its business is done, there is no need to keep it around
+    //Local initialization. Once its business is done, there is no need to keep it around
     ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "ConfigOnSwitchFS");
 
     //Check if there is stored WiFi router/password credentials.
@@ -1760,7 +1760,7 @@ f.close();
 
 ### 6.3 Populate the just-read Jsonified data into the DynamicJsonDocument json object
 
-We again use the same `DynamicJsonDocument json` object to store the data we've just read fron `CONFIG_FILE`.
+We again use the same `DynamicJsonDocument json` object to store the data we've just read from `CONFIG_FILE`.
 
 Why the same complicated `DynamicJsonDocument json` object ?? Because in steps 5, we did store `Jsonified data` using the same `DynamicJsonDocument json` object. It's much easier we now use it again to facilitate the parsing of `Jsonified data` back to the data we can use easily.
 
@@ -1951,7 +1951,7 @@ void loop()
     Serial.println(F("\nConfiguration portal requested."));
     digitalWrite(LED_BUILTIN, LED_ON); // turn the LED on by making the voltage LOW to tell us we are in configuration mode.
 
-    //Local intialization. Once its business is done, there is no need to keep it around
+    //Local initialization. Once its business is done, there is no need to keep it around
     ESPAsync_WiFiManager ESPAsync_wifiManager(&webServer, &dnsServer, "ConfigOnSwitch");
 
     ESPAsync_wifiManager.setMinimumSignalQuality(-1);
@@ -3178,7 +3178,7 @@ Submit issues to: [ESPAsync_WiFiManager issues](https://github.com/khoih-prog/ES
 11. Thanks to [Russell Jahn](https://github.com/russelljahn) for reporting [ESPAsync_WiFiManager::startConfigPortal() will cause a watchdog timeout when called from a higher-priority task. #39](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/39) leading to v1.5.0 and v1.6.0
 12. Thanks to [robcazzaro](https://github.com/robcazzaro) for reporting [Minor: examples/Async_ESP32_FSWebServer/ wrongly uses FileFS.begin(true) #47](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/47) leading to v1.6.2
 13. Thanks to [mattbradford83](https://github.com/mattbradford83) for identify, impressively locate, fix the bug and issue PR [Allow captive portal to run more than once by closing dnsServer cleanly. #49](https://github.com/khoih-prog/ESPAsync_WiFiManager/pull/49) leading to v1.6.3
-14. Thanks to [yiancar](https://github.com/yiancar) to report the issue and propose a fix in [In AP, DNS server always redirects to 192.168.4.1 no mater what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58) leading to v1.7.1
+14. Thanks to [yiancar](https://github.com/yiancar) to report the issue and propose a fix in [In AP, DNS server always redirects to 192.168.4.1 no matter what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58) leading to v1.7.1
 15. Thanks to [Stephen Lavelle](https://github.com/increpare) and [Ben Peart](https://github.com/benpeart) for requesting enhancement in [_timezoneName never getting set? #51](https://github.com/khoih-prog/ESP_WiFiManager/issues/51) and [How to retrieve timezone? #51](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/51) leading to new v1.8.0
 16. Thanks to [eth0up](https://github.com/eth0up) to make the PR [Add support for Wifi hidden SSID scanning. #66](https://github.com/khoih-prog/ESP_WiFiManager/pull/66) leading to v1.7.4
 17. Thanks to [Francisco Trillo](https://github.com/Frtrillo) for reporting [Not working with ESP32 and Core 2.0.1 (or 2.0.0+) #74](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/74) leading to v1.9.5

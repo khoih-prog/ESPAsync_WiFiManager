@@ -169,7 +169,7 @@
 
 ### Releases v1.7.1
 
-1. Fix captive-portal bug if Config Portal AP address is not default 192.168.4.1. Check [In AP, DNS server always redirects to 192.168.4.1 no mater what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58)
+1. Fix captive-portal bug if Config Portal AP address is not default 192.168.4.1. Check [In AP, DNS server always redirects to 192.168.4.1 no matter what APStaticIP is set to. #58](https://github.com/khoih-prog/ESP_WiFiManager/issues/58)
 2. Fix MultiWiFi bug.
 
 ### Releases v1.7.0
@@ -237,7 +237,7 @@
 
 ### Releases v1.2.0
 
-1. Restore cpp code besides Impl.h code to use in case of `multiple definition` linker error. See [`Change Implementation to seperate *.h and *.cpp file instead of *.h and *-Impl.h`](https://github.com/khoih-prog/ESP_WiFiManager/issues/38) and [`Support building in PlatformIO PR`](https://github.com/khoih-prog/ESP_WiFiManager/pull/20). Also have a look at [**HOWTO Fix Multiple Definitions Linker Error**](https://github.com/khoih-prog/ESPAsync_WiFiManager#HOWTO-Fix-Multiple-Definitions-Linker-Error)
+1. Restore cpp code besides Impl.h code to use in case of `multiple definition` linker error. See [`Change Implementation to separate *.h and *.cpp file instead of *.h and *-Impl.h`](https://github.com/khoih-prog/ESP_WiFiManager/issues/38) and [`Support building in PlatformIO PR`](https://github.com/khoih-prog/ESP_WiFiManager/pull/20). Also have a look at [**HOWTO Fix Multiple Definitions Linker Error**](https://github.com/khoih-prog/ESPAsync_WiFiManager#HOWTO-Fix-Multiple-Definitions-Linker-Error)
 2. Fix bug [/close does not close the config portal](https://github.com/khoih-prog/ESPAsync_WiFiManager/issues/16).
 
 ### Releases v1.1.2
