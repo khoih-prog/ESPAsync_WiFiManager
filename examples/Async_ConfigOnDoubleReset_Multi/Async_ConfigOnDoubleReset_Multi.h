@@ -80,10 +80,10 @@
       #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
         #warning Using ESP32 Core 1.0.6 or 2.0.0+
       #endif
-      
+
       // The library has been merged into esp32 core from release 1.0.6
       #include <LittleFS.h>       // https://github.com/espressif/arduino-esp32/tree/master/libraries/LittleFS
-      
+
       extern FS* filesystem;   // =      &LittleFS;
       #define FileFS        LittleFS
       #define FS_Name       "LittleFS"
@@ -91,15 +91,15 @@
       #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
         #warning Using ESP32 Core 1.0.5-. You must install LITTLEFS library
       #endif
-      
+
       // The library has been merged into esp32 core from release 1.0.6
       #include <LITTLEFS.h>       // https://github.com/lorol/LITTLEFS
-      
+
       extern FS* filesystem;   // =      &LITTLEFS;
       #define FileFS        LITTLEFS
       #define FS_Name       "LittleFS"
     #endif
-    
+
   #elif USE_SPIFFS
     #include <SPIFFS.h>
     extern FS* filesystem;    // =      &SPIFFS;
@@ -129,7 +129,7 @@
   extern ESP8266WiFiMulti wifiMulti;
 
   #define USE_LITTLEFS      true
-  
+
   #if USE_LITTLEFS
     #include <LittleFS.h>
     extern FS* filesystem;    // =      &LittleFS;
@@ -141,9 +141,9 @@
     #define FS_Name       "SPIFFS"
   #endif
   //////
-  
+
   #define ESP_getChipId()   (ESP.getChipId())
-  
+
   #define LED_ON      LOW
   #define LED_OFF     HIGH
 #endif
@@ -187,7 +187,7 @@
     #define ESP_DRD_USE_LITTLEFS    false
     #define ESP_DRD_USE_SPIFFS      true
   #endif
-  
+
   #define ESP_DRD_USE_EEPROM      false
   #define ESP8266_DRD_USE_RTC     false
 #endif
@@ -317,7 +317,7 @@ extern bool initialConfig;    // = false;
   #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
     #warning Using DHCP IP
   #endif
-  
+
   extern IPAddress stationIP;   //   = IPAddress(0, 0, 0, 0);
   extern IPAddress gatewayIP;   //   = IPAddress(192, 168, 1, 1);
   extern IPAddress netMask;     //     = IPAddress(255, 255, 255, 0);
@@ -326,16 +326,16 @@ extern bool initialConfig;    // = false;
   #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
     #warning Using static IP
   #endif
-  
+
   #ifdef ESP32
     extern IPAddress stationIP;   //   = IPAddress(192, 168, 2, 232);
   #else
     extern IPAddress stationIP;   //   = IPAddress(192, 168, 2, 186);
   #endif
-  
+
   extern IPAddress gatewayIP;   //   = IPAddress(192, 168, 2, 1);
   extern IPAddress netMask;     //     = IPAddress(255, 255, 255, 0);
-#endif  
+#endif
 
 #define USE_CONFIGURABLE_DNS      true
 
@@ -364,7 +364,7 @@ uint8_t connectMultiWiFi();
 
 
 #if USE_ESP_WIFIMANAGER_NTP
-void printLocalTime();
+  void printLocalTime();
 #endif
 
 void heartBeatPrint();

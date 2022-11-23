@@ -49,12 +49,12 @@
   WiFiMulti wifiMulti;
 
   #if USE_LITTLEFS
-    #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )     
+    #if ( defined(ESP_ARDUINO_VERSION_MAJOR) && (ESP_ARDUINO_VERSION_MAJOR >= 2) )
       FS* filesystem =      &LittleFS;
-    #else     
+    #else
       FS* filesystem =      &LITTLEFS;
     #endif
-    
+
   #elif USE_SPIFFS
     FS* filesystem =      &SPIFFS;
   #else
@@ -72,7 +72,7 @@
     FS* filesystem =      &SPIFFS;
   #endif
   //////
-  
+
 #endif
 
 DoubleResetDetector* drd;
@@ -99,7 +99,7 @@ bool initialConfig;    // = false;
   #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
     #warning Using DHCP IP
   #endif
-  
+
   IPAddress stationIP   = IPAddress(0, 0, 0, 0);
   IPAddress gatewayIP   = IPAddress(192, 168, 1, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
@@ -108,13 +108,13 @@ bool initialConfig;    // = false;
   #if (_ESPASYNC_WIFIMGR_LOGLEVEL_ > 3)
     #warning Using static IP
   #endif
-  
+
   #ifdef ESP32
     IPAddress stationIP   = IPAddress(192, 168, 2, 232);
   #else
     IPAddress stationIP   = IPAddress(192, 168, 2, 186);
   #endif
-  
+
   IPAddress gatewayIP   = IPAddress(192, 168, 2, 1);
   IPAddress netMask     = IPAddress(255, 255, 255, 0);
 #endif
@@ -161,7 +161,8 @@ void configWiFi(WiFi_STA_IPConfig in_WM_STA_IPconfig)
 {
 #if USE_CONFIGURABLE_DNS
   // Set static IP, Gateway, Subnetmask, DNS1 and DNS2. New in v1.0.5
-  WiFi.config(in_WM_STA_IPconfig._sta_static_ip, in_WM_STA_IPconfig._sta_static_gw, in_WM_STA_IPconfig._sta_static_sn, in_WM_STA_IPconfig._sta_static_dns1, in_WM_STA_IPconfig._sta_static_dns2);
+  WiFi.config(in_WM_STA_IPconfig._sta_static_ip, in_WM_STA_IPconfig._sta_static_gw, in_WM_STA_IPconfig._sta_static_sn,
+              in_WM_STA_IPconfig._sta_static_dns1, in_WM_STA_IPconfig._sta_static_dns2);
 #else
   // Set static IP, Gateway, Subnetmask, Use auto DNS1 and DNS2.
   WiFi.config(in_WM_STA_IPconfig._sta_static_ip, in_WM_STA_IPconfig._sta_static_gw, in_WM_STA_IPconfig._sta_static_sn);
@@ -175,15 +176,15 @@ uint8_t connectMultiWiFi()
 #if ESP32
   // For ESP32, this better be 0 to shorten the connect time.
   // For ESP32-S2/C3, must be > 500
-  #if ( USING_ESP32_S2 || USING_ESP32_C3 )
-    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           500L
-  #else
-    // For ESP32 core v1.0.6, must be >= 500
-    #define WIFI_MULTI_1ST_CONNECT_WAITING_MS           800L
-  #endif
+#if ( USING_ESP32_S2 || USING_ESP32_C3 )
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS           500L
+#else
+  // For ESP32 core v1.0.6, must be >= 500
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS           800L
+#endif
 #else
   // For ESP8266, this better be 2200 to enable connect the 1st time
-  #define WIFI_MULTI_1ST_CONNECT_WAITING_MS             2200L
+#define WIFI_MULTI_1ST_CONNECT_WAITING_MS             2200L
 #endif
 
 #define WIFI_MULTI_CONNECT_WAITING_MS                   500L
@@ -204,7 +205,8 @@ uint8_t connectMultiWiFi()
   for (uint8_t i = 0; i < NUM_WIFI_CREDENTIALS; i++)
   {
     // Don't permit NULL SSID and password len < MIN_AP_PASSWORD_SIZE (8)
-    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "") && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
+    if ( (String(WM_config.WiFi_Creds[i].wifi_ssid) != "")
+         && (strlen(WM_config.WiFi_Creds[i].wifi_pw) >= MIN_AP_PASSWORD_SIZE) )
     {
       LOGERROR3(F("* Additional SSID = "), WM_config.WiFi_Creds[i].wifi_ssid, F(", PW = "), WM_config.WiFi_Creds[i].wifi_pw );
     }
@@ -221,7 +223,7 @@ uint8_t connectMultiWiFi()
 #endif
 
   int i = 0;
-  
+
   status = wifiMulti.run();
   delay(WIFI_MULTI_1ST_CONNECT_WAITING_MS);
 
@@ -247,12 +249,12 @@ uint8_t connectMultiWiFi()
 
     // To avoid unnecessary DRD
     drd->loop();
-  
-#if ESP8266      
+
+#if ESP8266
     ESP.reset();
 #else
     ESP.restart();
-#endif  
+#endif
   }
 
   return status;
@@ -264,26 +266,28 @@ void printLocalTime()
 {
 #if ESP8266
   static time_t now;
-  
+
   now = time(nullptr);
-  
+
   if ( now > 1451602800 )
   {
     Serial.print("Local Date/Time: ");
     Serial.print(ctime(&now));
   }
+
 #else
   struct tm timeinfo;
 
   getLocalTime( &timeinfo );
 
-  // Valid only if year > 2000. 
+  // Valid only if year > 2000.
   // You can get from timeinfo : tm_year, tm_mon, tm_mday, tm_hour, tm_min, tm_sec
   if (timeinfo.tm_year > 100 )
   {
     Serial.print("Local Date/Time: ");
     Serial.print( asctime( &timeinfo ) );
   }
+
 #endif
 }
 
@@ -310,7 +314,8 @@ void heartBeatPrint()
   {
     Serial.print(F(" "));
   }
-#endif  
+
+#endif
 }
 
 void check_WiFi()
@@ -332,9 +337,9 @@ void check_status()
 #define WIFICHECK_INTERVAL    1000L
 
 #if USE_ESP_WIFIMANAGER_NTP
-  #define HEARTBEAT_INTERVAL    60000L
+#define HEARTBEAT_INTERVAL    60000L
 #else
-  #define HEARTBEAT_INTERVAL    10000L
+#define HEARTBEAT_INTERVAL    10000L
 #endif
 
   current_millis = millis();
@@ -357,7 +362,7 @@ void check_status()
 int calcChecksum(uint8_t* address, uint16_t sizeToCalc)
 {
   uint16_t checkSum = 0;
-  
+
   for (uint16_t index = 0; index < sizeToCalc; index++)
   {
     checkSum += * ( ( (byte*) address ) + index);
@@ -391,10 +396,10 @@ bool loadConfigData()
     if ( WM_config.checksum != calcChecksum( (uint8_t*) &WM_config, sizeof(WM_config) - sizeof(WM_config.checksum) ) )
     {
       LOGERROR(F("WM_config checksum wrong"));
-      
+
       return false;
     }
-    
+
     // New in v1.4.0
     displayIPConfigStruct(WM_STA_IPconfig);
     //////
@@ -417,7 +422,7 @@ void saveConfigData()
   if (file)
   {
     WM_config.checksum = calcChecksum( (uint8_t*) &WM_config, sizeof(WM_config) - sizeof(WM_config.checksum) );
-    
+
     file.write((uint8_t*) &WM_config, sizeof(WM_config));
 
     displayIPConfigStruct(WM_STA_IPconfig);
